@@ -225,6 +225,11 @@ class WhitelistedTaggitSelect2(autocomplete.TaggitSelect2):
 
 class UpdateProjectForm(ProjectTriggerBuildMixin, ProjectBasicsForm,
                         ProjectExtraForm):
+
+    def __init__(self, *args, **kwargs):
+        super(UpdateProjectForm, self).__init__(*args, **kwargs)
+        self.fields['tags'].help_text = _('Project tags.')
+
     class Meta(object):
         model = Project
         fields = (
