@@ -161,5 +161,5 @@ class AllowedTagAutocomplete(autocomplete.Select2QuerySetView):
         """Filter and order allowed tags."""
         qs = AllowedTag.objects.filter(enabled=True)
         if self.q:
-            return qs.filter(name__istartswith=self.q)
+            qs = qs.filter(name__istartswith=self.q)
         return qs.order_by('name')

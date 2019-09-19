@@ -271,6 +271,7 @@ class TestTranslationForm(TestCase):
             {
                 'documentation_type': 'sphinx',
                 'language': 'en',
+                'tags': '',
             },
             instance=self.project_a_es
         )
@@ -285,6 +286,7 @@ class TestTranslationForm(TestCase):
             {
                 'documentation_type': 'sphinx',
                 'language': 'es',
+                'tags': '',
             },
             instance=self.project_b_en
         )
@@ -300,6 +302,7 @@ class TestTranslationForm(TestCase):
             {
                 'documentation_type': 'sphinx',
                 'language': 'br',
+                'tags': '',
             },
             instance=self.project_b_en
         )
@@ -322,6 +325,7 @@ class TestTranslationForm(TestCase):
                 'name': self.project_a_es.name,
                 'documentation_type': 'sphinx',
                 'language': 'es',
+                'tags': '',
             },
             instance=self.project_a_es
         )
@@ -335,6 +339,7 @@ class TestTranslationForm(TestCase):
                 'name': self.project_b_en.name,
                 'documentation_type': 'sphinx',
                 'language': 'en',
+                'tags': '',
             },
             instance=self.project_b_en
         )

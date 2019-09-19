@@ -48,7 +48,8 @@ class PrivacyTests(TestCase):
                   'default_version': LATEST,
                   'python_interpreter': 'python',
                   'description': 'OOHHH AH AH AH KONG SMASH',
-                  'documentation_type': 'sphinx'},
+                  'documentation_type': 'sphinx',
+                  'tags': ''},
             user=User.objects.get(username='eric'))
         proj = form.save()
         # Update these directly, no form has all the fields we need
