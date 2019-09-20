@@ -2,7 +2,7 @@
 {% load i18n %}
 
     {% block title %}
-      {% trans "Server Error" %}
+      {% trans "Errore interno" %}
     {% endblock %}
 
     {% block header-wrapper %}
@@ -10,15 +10,10 @@
     {% endblock %}
 
 {% block content %}
-<pre style="line-height: 1.25; white-space: pre;">
-          .
-         ":"
-       ___:____     |"\/"|
-     ,'        `.    \  /
-     |  O        \___/  |
-   ~^~^~^~^~^~^~^~^~^~^~^~^~
-
-   Fail.  Check back in a bit!
-
-  </pre>
+<div>
+  <h1>500</h1>
+  <h2>Errore interno</h2>
+  <p>Il sistema non e' riuscito a completare l'operazione prevista, <a href="javascript:history.back();" title="Torna alla pagina precedente">torna indietro</a> o utilizza il menu per continuare la navigazione.</p>
+  <a href="/">Torna alla Home</a>
+</div>
 {% endblock %}
