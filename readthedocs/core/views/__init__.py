@@ -107,11 +107,18 @@ def server_error_500(request, template_name='500.html'):
     return r
 
 
-def server_error_404(request, exception, template_name='404.html'):  # pylint: disable=unused-argument  # noqa
+def server_error_404(request, template_name='404.html'):  # pylint: disable=unused-argument  # noqa
     """A simple 404 handler so we get media."""
     response = get_redirect_response(request, path=request.get_full_path())
     if response:
         return response
     r = render(request, template_name)
     r.status_code = 404
+    return r
+
+
+def server_error_401(request, template_name='401.html'):
+    """A simple 401 handler so we get media."""
+    r = render(request, template_name)
+    r.status_code = 401
     return r
