@@ -99,6 +99,7 @@ class CommunityBaseSettings(Settings):
             'readthedocs.payments',
             'readthedocs.notifications',
             'readthedocs.integrations',
+            'docs_italia_convertitore_web',
 
             # allauth
             'allauth',

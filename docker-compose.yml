@@ -2,6 +2,7 @@ version: '3.4'
 services:
   http:
     image: nginx:1.16
+    container_name: italia_docs_italia_it_nginx
     depends_on:
       - web
       - api
@@ -50,6 +51,9 @@ services:
 
   celery-web:
     container_name: italia_docs_italia_it_celery_web
+    build:
+      context: .
+      target: docs_italia_it_celery_web
     image: italia/docs_italia_it:latest
     depends_on:
       - web
@@ -60,6 +64,8 @@ services:
     env_file:
       - .dockerenv
       - .secrets
+    external_links:
+      - italia_docs_italia_it_nginx:local.docs.italia.it
 
   celery-docs:
     container_name: italia_docs_italia_it_celery_docs

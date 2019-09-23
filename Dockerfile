@@ -90,6 +90,33 @@ RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 
 CMD ["/bin/bash"]
 
+# `docs_italia_it_celery_web`: Build image for celery-web
+# We need additional packages to run the document converter
+
+FROM docs_italia_it_web AS docs_italia_it_celery_web
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /tmp/converter
+ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/v0.6/converti.zip /tmp/converter
+ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/v0.6/pandoc-font-to-style.zip /tmp/converter
+ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/v0.6/pandoc-to-sphinx.zip /tmp/converter
+ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/v0.6/pandoc.zip /tmp/converter
+RUN unzip '/tmp/converter/*.zip' -d /usr/local/bin \
+    && rm -rf /tmp/converter
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4/filtro-acronimi /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4/filtro-didascalia /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4/filtro-google-docs /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4/filtro-quotes /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4/filtro-references /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4/filtro-rimuovi-div /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4/filtro-stile-liste /usr/local/bin
+RUN chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
+
+RUN apt-get purge unzip -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
+
 # `docs_italia_it_web_prod`: Production image for Application
 # Copies the application code inside the container
 
