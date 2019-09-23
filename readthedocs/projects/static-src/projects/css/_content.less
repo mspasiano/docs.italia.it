@@ -265,7 +265,7 @@ select {
 
   .search-main-icon {
     margin-right: -54px;
-    z-index: 10;
+    z-index: 1;
 
     .input-group-text {
       background: transparent;
@@ -280,6 +280,10 @@ select {
     border-bottom: 0;
     padding: .375rem .5rem .375rem 3.375rem;
     box-shadow: 0 10px 40px 0 rgba(102, 165, 227, 0.4);
+
+    &:focus {
+      z-index: 0;
+    }
   }
 }
 
