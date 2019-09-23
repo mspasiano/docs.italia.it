@@ -1,57 +1,41 @@
 {% extends "base.html" %}
 {% load core_tags %}
 {% load i18n %}
-
 {% block title %}
-  {% trans "Maze Found" %}
+{% trans "Maze Found" %}
 {% endblock %}
-
 {% block header-wrapper %}
-  {% include "error_header.html" %}
+{% include "error_header.html" %}
 {% endblock %}
-
 {% block content %}
-    {% if suggestion %}
-      <div class="suggestions">
-          <h1>You've found something that doesn't exist.</h1>
-          <p>{{ suggestion.message }}</p>
-          {% ifequal suggestion.type 'top' %}
-          <p>
-              <a href="{{ suggestion.href }}">Go to the top of the documentation.</a>
-          </p>
-          {% endifequal %}
-          {% ifequal suggestion.type 'list' %}
-          <ul>
-            {% for item in suggestion.list %}
-              <li><a href="{% doc_url item.project item.version_slug item.pagename %}">{{ item.label }}</a></li>
-            {% endfor %}
-          </ul>
-          {% endifequal %}
-      </div>
-    {% endif %}
-<pre style="line-height: 1.25; white-space: pre;">
-
-        \          SORRY            /
-         \                         /
-          \    This page does     /
-           ]   not exist yet.    [    ,'|
-           ]                     [   /  |
-           ]___               ___[ ,'   |
-           ]  ]\             /[  [ |:   |
-           ]  ] \           / [  [ |:   |
-           ]  ]  ]         [  [  [ |:   |
-           ]  ]  ]__     __[  [  [ |:   |
-           ]  ]  ] ]\ _ /[ [  [  [ |:   |
-           ]  ]  ] ] (#) [ [  [  [ :===='
-           ]  ]  ]_].nHn.[_[  [  [
-           ]  ]  ]  HHHHH. [  [  [
-           ]  ] /   `HH("N  \ [  [
-           ]__]/     HHH  "  \[__[
-           ]         NNN         [
-           ]         N/"         [
-           ]         N H         [
-          /          N            \
-         /           q,            \
-        /                           \
-</pre>
+{% if suggestion %}
+<div class="suggestions">
+    <h1>You've found something that doesn't exist.</h1>
+    <p>{{ suggestion.message }}</p>
+    {% ifequal suggestion.type 'top' %}
+    <p>
+        <a href="{{ suggestion.href }}">Go to the top of the documentation.</a>
+    </p>
+    {% endifequal %}
+    {% ifequal suggestion.type 'list' %}
+    <ul>
+        {% for item in suggestion.list %}
+        <li><a href="{% doc_url item.project item.version_slug item.pagename %}">{{ item.label }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endifequal %}
+</div>
+{% endif %}
+<div id="main" role="main">
+    <div class="Grid">
+        <div class="Grid-cell Grid-cell--center u-size10of12 u-sm-size8of12 u-md-size5of12 u-lg-size4of12">
+            <div class="ErrorPage u-textCenter u-text-xxs u-text-md-xs u-text-lg-s">
+                <h1 class="ErrorPage-title">404</h1>
+                <h2 class="ErrorPage-subtitle">Pagina non trovata</h2>
+                <p class="Prose u-margin-r-all">Oops! La pagina che cerchi non è stata trovata, <a href="javascript:history.back();" title="Torna alla pagina precedente">torna indietro</a> o utilizza il menu per continuare la navigazione.</p>
+                <a class="Button Button--default u-margin-r-all" href="#">Torna alla Home</a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
