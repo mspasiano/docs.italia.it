@@ -88,7 +88,7 @@ class Backend(BaseVCS):
 
     @property
     def last_commit_date(self):
-        _, stdout = self.run('bzr', 'log', '-r-1', '|', 'awk', '"NR==6 {print $3}"')
+        _, stdout, _ = self.run('bzr', 'log', '-r-1', '|', 'awk', '"NR==6 {print $3}"')
         return datetime.strptime(stdout, "%Y-%m-%d").strftime("%d.%m.%Y")
 
     def checkout(self, identifier=None):
