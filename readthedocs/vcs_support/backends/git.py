@@ -216,6 +216,11 @@ class Backend(BaseVCS):
         _, stdout, _ = self.run('git', 'rev-parse', 'HEAD')
         return stdout.strip()
 
+    @property
+    def last_commit_date(self):
+        _, stdout, _ = self.run('git', 'log', '-1', '--date=format: "%d.%m.%Y"', '--format=%cd')
+        return stdout.strip()
+
     def checkout(self, identifier=None):
         self.check_working_dir()
 
