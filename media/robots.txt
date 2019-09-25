@@ -3,7 +3,3 @@ Disallow: /builds/
 Disallow: /projects/
 Disallow: /profiles/
 Disallow: /sustainability/click/
-Noindex: /builds/
-Noindex: /projects/
-Noindex: /profiles/
-Noindex: /sustainability/click/
