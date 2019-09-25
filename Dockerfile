@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         libpq-dev \
         libxslt1-dev \
+        unzip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
@@ -89,6 +90,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
 
 CMD ["/bin/bash"]
+
+# `docs_italia_it_celery_web`: Build image for celery-web
+# We need additional packages to run the document converter
+
+FROM docs_italia_it_web AS docs_italia_it_celery_web
+
+ARG COMANDI_CONVERSIONE_VERSION=v0.6
+ARG PANDOC_FILTERS_VERSION=v0.1.4
+
+RUN mkdir /tmp/converter
+ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/converti.zip /tmp/converter
+ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc-font-to-style.zip /tmp/converter
+ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc-to-sphinx.zip /tmp/converter
+ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc.zip /tmp/converter
+RUN unzip '/tmp/converter/*.zip' -d /usr/local/bin \
+    && rm -rf /tmp/converter
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-acronimi /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-didascalia /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-google-docs /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-quotes /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-references /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-rimuovi-div /usr/local/bin
+ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-stile-liste /usr/local/bin
+RUN chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
 
 # `docs_italia_it_web_prod`: Production image for Application
 # Copies the application code inside the container
