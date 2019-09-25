@@ -230,7 +230,11 @@ select:hover {
   background-color: #d1e7ff !important;
 }
 .search-main .search-main-icon {
-  font-size: 1.4rem;
+  margin-right: -54px;
+  z-index: 1;
+}
+.search-main .search-main-icon .input-group-text {
+  background: transparent;
 }
 .search-main input[type=text].search-main-input {
   height: 4.2rem;
@@ -238,7 +242,11 @@ select:hover {
   font-size: 1.6rem;
   font-weight: normal;
   border-bottom: 0;
+  padding: .375rem .5rem .375rem 3.375rem;
   box-shadow: 0 10px 40px 0 rgba(102, 165, 227, 0.4);
+}
+.search-main input[type=text].search-main-input:focus {
+  z-index: 0;
 }
 .simplelayout-main-content p,
 .simplelayout-main-content ul {
@@ -379,6 +387,9 @@ select:hover {
   color: #19191a;
   background: transparent url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23292b2c' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3E%3C/svg%3E") 0.4rem 0.6rem no-repeat;
   background-size: 0.75rem 0.75rem;
+}
+.bd-navbar .navbar-collapsable {
+  z-index: 10;
 }
 @media (min-width: 768px) {
   @supports ((position: -webkit-sticky) or (position: sticky)) {
@@ -591,7 +602,7 @@ select:hover {
 .publish .list-group {
   position: -webkit-sticky;
   position: sticky;
-  top: 5rem;
+  top: 104px;
   z-index: 10;
   display: none;
   height: 125px;

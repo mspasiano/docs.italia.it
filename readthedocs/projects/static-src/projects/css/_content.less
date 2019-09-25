@@ -264,7 +264,12 @@ select {
   }
 
   .search-main-icon {
-    font-size: 1.4rem;
+    margin-right: -54px;
+    z-index: 1;
+
+    .input-group-text {
+      background: transparent;
+    }
   }
 
   input[type=text].search-main-input {
@@ -273,7 +278,12 @@ select {
     font-size: 1.6rem;
     font-weight: normal;
     border-bottom: 0;
+    padding: .375rem .5rem .375rem 3.375rem;
     box-shadow: 0 10px 40px 0 rgba(102, 165, 227, 0.4);
+
+    &:focus {
+      z-index: 0;
+    }
   }
 }
 
