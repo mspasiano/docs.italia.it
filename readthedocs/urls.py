@@ -14,7 +14,7 @@ from tastypie.api import Api
 from readthedocs.api.base import (ProjectResource, UserResource,
                                   VersionResource, FileResource)
 from readthedocs.core.urls import docs_urls, core_urls, deprecated_urls
-from readthedocs.core.views import (SupportView,
+from readthedocs.core.views import (SupportView, server_error_401,
                                     server_error_404, server_error_500)
 from readthedocs.search import views as search_views
 
@@ -27,6 +27,7 @@ v1_api.register(FileResource())
 
 admin.autodiscover()
 
+handler401 = server_error_401
 handler404 = server_error_404
 handler500 = server_error_500
 
@@ -47,6 +48,8 @@ rtd_urls = [
     url(r'^accounts/gold/', include('readthedocs.gold.urls')),
     # For redirects
     url(r'^builds/', include('readthedocs.builds.urls')),
+    # For testing the 401's with DEBUG on.
+    url(r'^401/$', handler401),
     # For testing the 404's with DEBUG on.
     url(r'^404/$', handler404),
     # For testing the 500's with DEBUG on.
