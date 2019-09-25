@@ -162,7 +162,10 @@ def project_version_detail(request, project_slug, version_slug):
                 version.built = False
                 version.save()
             if 'privacy_level' in form.changed_data:
-                log.info('Version privacy_level has changed %s, update_search is called', version.slug)
+                log.info(
+                    'Version privacy_level has changed %s, update_search is called',
+                    version.slug
+                )
                 broadcast(
                     type='app', task=tasks.update_search, args=[version.pk, 'reindex', False]
                 )
