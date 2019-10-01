@@ -50,7 +50,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -mvenv /virtualenv
 COPY requirements/* /app/
 COPY docker /app
-RUN /virtualenv/bin/pip install -r /app/docsitalia.txt
+RUN /virtualenv/bin/pip install -r /app/docsitalia-converter.txt
 RUN apt-get purge build-essential -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
 ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
 
