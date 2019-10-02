@@ -4,7 +4,6 @@ private_web_root
 public_cname_project
 public_cname_root
 public_web_root
-media
 .tox
 .pytest
 deploy
