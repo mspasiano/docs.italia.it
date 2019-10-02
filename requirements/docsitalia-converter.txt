@@ -1,0 +1,2 @@
+-r docsitalia.txt
+git+https://github.com/italia/docs-italia-convertitore-web.git@master#egg=docs-italia-convertitore-web

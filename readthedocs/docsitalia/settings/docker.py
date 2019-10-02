@@ -6,9 +6,9 @@ import re
 from readthedocs.settings.base import CommunityBaseSettings
 
 _redis = {
-    'default': dict(zip(['host', 'port', 'db'], re.split(':|/', os.environ['REDIS_CACHE_URL']))),
-    'celery': dict(zip(['host', 'port', 'db'], re.split(':|/', os.environ['REDIS_CELERY_URL']))),
-    'stats': dict(zip(['host', 'port', 'db'], re.split(':|/', os.environ['REDIS_STATS_URL']))),
+    'default': dict(zip(['host', 'port', 'db'], re.split(':|/|@', os.environ['REDIS_CACHE_URL']))),
+    'celery': dict(zip(['host', 'port', 'db'], re.split(':|/|@', os.environ['REDIS_CELERY_URL']))),
+    'stats': dict(zip(['host', 'port', 'db'], re.split(':|/|@', os.environ['REDIS_STATS_URL']))),
 }
 
 
@@ -67,13 +67,23 @@ class CommunityProdSettings(CommunityBaseSettings):
 
         return apps
 
+    if os.environ.get('REDIS_PASS', None):
+        REDIS_CELERY_URL = ':%(pass)s@%(url)s' % {
+            'pass': os.environ['REDIS_PASS'], 'url': os.environ['REDIS_CELERY_URL']
+        }
+        for cache_name in _redis:
+            _redis[cache_name]['host'] = ':%(pass)s@%(host)s' % {
+                'pass': os.environ['REDIS_PASS'], 'host': _redis[cache_name]['host']
+            }
     # Celery
     CACHES = dict(
         (cache_name, {
             'BACKEND': 'redis_cache.RedisCache',
-            'LOCATION': '{host}:{port}'.format(**cache),
+            'LOCATION': 'redis://{host}:{port}'.format(**cache),
             'OPTIONS': {
                 'DB': cache['db'],
+                'PARSER_CLASS': 'redis.connection.HiredisParser',
+                'PICKLE_VERSION': -1,
             },
         })
         for (cache_name, cache)
@@ -81,8 +91,8 @@ class CommunityProdSettings(CommunityBaseSettings):
         if cache_name != 'celery'
     )
 
-    BROKER_URL = 'redis://%s' % os.environ['REDIS_CELERY_URL']
-    CELERY_RESULT_BACKEND = 'redis://%s' % os.environ['REDIS_CELERY_URL']
+    BROKER_URL = 'redis://%s' % REDIS_CELERY_URL
+    CELERY_RESULT_BACKEND = 'redis://%s' % REDIS_CELERY_URL
 
     # Docker
     DOCKER_SOCKET = os.environ.get('DOCKER_BUILD_HOST', None)
@@ -113,7 +123,16 @@ class CommunityProdSettings(CommunityBaseSettings):
     CELERY_TASK_RESULT_EXPIRES = 7200
 
     # Elastic Search
-    ES_HOSTS = os.environ['ES_HOST'].split(',')
+    ES_HOSTS = []
+    for host in os.environ['ES_HOST'].split(','):
+        if os.environ.get('ES_USER', None) and os.environ.get('ES_PASS', None):
+            ES_HOSTS.append('http://%(user)s:%(pass)s@%(host)s' % {
+                'user': os.environ.get('ES_USER', None),
+                'pass': os.environ.get('ES_PASS', None),
+                'host': host,
+            })
+        else:
+            ES_HOSTS.append(host)
 
     # RTD settings
     # This goes together with FILE_SYNCER setting
@@ -177,11 +196,11 @@ class CommunityProdSettings(CommunityBaseSettings):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'rtd',
-            'USER': 'docs',
-            'PASSWORD': '',
-            'HOST': 'db',
-            'PORT': '5432',
+            'NAME': os.environ.get('POSTGRES_NAME'),
+            'USER': os.environ.get('POSTGRES_USER'),
+            'PASSWORD': os.environ.get('POSTGRES_PASS'),
+            'HOST': os.environ.get('POSTGRES_HOST'),
+            'PORT': os.environ.get('POSTGRES_PORT'),
         },
     }
 
