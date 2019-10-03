@@ -93,6 +93,7 @@ FROM docs_italia_it_dev AS docs_italia_it_prod
 
 COPY readthedocs/ /app/readthedocs/
 COPY media/ /app/media/
-COPY manage.py /app
+COPY logs/ /app/logs/
+COPY *.py setup* *.json /app/
 
 CMD ["/bin/bash"]
