@@ -109,6 +109,7 @@ class BaseSphinx(BaseBuilder):
                 'https://readthedocs.org',
             ),
             'commit': self.project.vcs_repo(self.version.slug).commit,
+            'today': self.project.vcs_repo(self.version.slug).last_commit_date,
             'versions': versions,
             'downloads': downloads,
 
