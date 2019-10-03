@@ -12,6 +12,7 @@ services:
       - "docs:/home/documents"
       - "./docker/nginx/conf.d/general-configuration.conf:/etc/nginx/conf.d/general-configuration.conf"
       - "./docker/nginx/snippets/:/etc/nginx/snippets/"
+      - "./docker/nginx/404/:/home/documents/404/"
       - "./docker/nginx/sites-available/readthedocs-main.conf:/etc/nginx/conf.d/default.conf"
 
   web:
