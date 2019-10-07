@@ -140,4 +140,9 @@ if settings.DEBUG:
     ]
     groups.append(debug_urls)
 
+docsitalia_urls = [
+    url(r'', include('readthedocs.docsitalia.urls')),
+]
+groups.append(docsitalia_urls)
+
 urlpatterns = reduce(add, groups)

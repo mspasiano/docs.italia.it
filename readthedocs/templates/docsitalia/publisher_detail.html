@@ -1,0 +1,70 @@
+{% extends "docsitalia/base.html" %}
+{% load i18n %}
+
+{% block content %}
+{% comment %}
+Pagina di dettaglio del publisher con la lista
+dei publisher projects
+{% endcomment %}
+<section class="container">
+  {% include 'docsitalia/includes/breadcrumb.html' %}
+  <div class="pb-5">
+    <h1 class="mb-4">{{ object }}</h1>
+    <h2 class="mb-4 font-weight-normal">Tutti i progetti dell'amministrazione {{ object }}</h2>
+    <div class="row">
+      {% for project in object.active_publisher_projects %}
+      {% include 'docsitalia/includes/card.html' %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="publisher-metadata">
+  {% if object.metadata %}
+  {{ object.metadata.name }}
+  <a href="{{ object.metadata.website }}">{{ object.metadata.website }}</a>
+  {{ object.metadata.description }}
+  <img src="{{ object.metadata.assets.logo }}"/>
+  {% endif %}
+</div>
+<div class="publisher-projects-metadata">
+  {% if object.projects_metada %}
+  {{ object.projects_metadata.title }}
+  {{ object.projects_metadata.description }}
+  {{ object.projects_metadata.website }}
+  {% endif %}
+</div>
+{% comment %}
+<div class="publisher-search" style="display: none">
+  Questo è il popup di ricerca
+  ancora da definire
+  <a class="js-publisher-search-close">close</a>
+  {% include "core/widesearchbar.html" %}
+  <strong>Ricerche frequenti</strong>
+  <ul>
+    <li>
+      <a>Tag 1</a>
+    </li>
+    <li>
+      <a>Tag 2</a>
+    </li>
+    <li>
+      <a>Progetto Spid</a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+La search bar dentro il publisher %}
+{% block extra_scripts %}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.js-publisher-search-close').on('click', function () {
+            $('.publisher-search').hide();
+        });
+        $('.js-open-publisher-search').on('click', function () {
+            $('.publisher-search').show();
+        });
+    });
+</script>
+{% endcomment %}
+{% endblock %}
