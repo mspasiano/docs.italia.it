@@ -73,28 +73,13 @@ FROM docs_italia_it_web AS docs_italia_it_build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
-        curl \
-        doxygen \
-        libcairo2-dev \
-        libenchant1c2a \
-        libevent-dev \
-        libgraphviz-dev \
-        liblcms2-dev \
-        libwebp-dev \
-        pandoc \
-        pkg-config \
-        python-m2crypto \
-        python-matplotlib \
+        libjpeg62-turbo-dev \
+        libpq-dev \
         python-pip \
         python-virtualenv \
-        python2.7 \
         python2.7-dev \
-        sqlite \
-        texlive-extra-utils \
-        texlive-fonts-recommended \
-        texlive-generic-recommended \
+        texlive \
         texlive-latex-extra \
-        texlive-latex-recommended \
     && rm -rf /var/lib/apt/lists/*
 
 CMD ["/bin/bash"]
