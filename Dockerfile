@@ -27,8 +27,7 @@ FROM docs_italia_it_base AS docs_italia_it_test
 RUN pip install --no-cache-dir tox
 
 CMD ["/bin/bash"]
-
-# `docs_italia_it_build`: Build image for celery-build
+# `docs_italia_it_build`: Stage for celery-build
 # We need additional packages to build documentation in LocalBuildEnvironment
 
 FROM docs_italia_it_base AS docs_italia_it_build
@@ -60,6 +59,9 @@ RUN curl -sSL ${COMANDI_CONVERSIONE_URL}/converti.zip | bsdtar -xf- -C /usr/loca
     && curl -sSL ${PANDOC_FILTERS_URL}/filturo-stile-liste > /usr/local/bin/filtro-stile-liste \
     && chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
 
+COPY _build/converter/converti _build/converter/pandoc* _build/converter/filtro* /usr/local/bin/
+RUN chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
+
 CMD ["/bin/bash"]
 
 # `docs_italia_it_dev`: Application Image
@@ -71,18 +73,18 @@ CMD ["/bin/bash"]
 FROM docs_italia_it_build AS docs_italia_it_dev
 
 RUN python -mvenv /virtualenv
-COPY requirements/* /app/
-COPY docker /app
-RUN /virtualenv/bin/pip install --no-cache-dir -r /app/docsitalia.txt
+COPY requirements/ /app/requirements/
+COPY docker/ /app/docker/
+RUN /virtualenv/bin/pip install -r /app/requirements/docsitalia-converter.txt
 ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
 
 CMD ["/bin/bash"]
 
-# `docs_italia_it_prod`: Production image for Application
-# Copies the application code inside the container
-
 FROM docs_italia_it_dev AS docs_italia_it_prod
 
-COPY . /app
+COPY readthedocs/ /app/readthedocs/
+COPY media/ /app/media/
+COPY logs/ /app/logs/
+COPY *.py setup* *.json /app/
 
 CMD ["/bin/bash"]

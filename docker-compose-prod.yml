@@ -18,8 +18,8 @@ services:
     container_name: italia_docs_italia_it_web
     build:
       context: .
-      target: docs_italia_it_dev
-    image: italia/docs_italia_it_dev:latest
+      target: docs_italia_it_prod
+    image: italia/docs_italia_it_prod:latest
     depends_on:
       - db
       - es
@@ -36,7 +36,7 @@ services:
 
   api:
     container_name: italia_docs_italia_it_api
-    image: italia/docs_italia_it_dev:latest
+    image: italia/docs_italia_it_prod:latest
     depends_on:
       - celery-build
     ports:
@@ -51,7 +51,7 @@ services:
 
   celery-web:
     container_name: italia_docs_italia_it_celery_web
-    image: italia/docs_italia_it_dev:latest
+    image: italia/docs_italia_it_prod:latest
     depends_on:
       - web
     command: docker/celery.sh -A readthedocs -Ofair -c 3 -Q web -l INFO
@@ -66,7 +66,7 @@ services:
 
   celery-docs:
     container_name: italia_docs_italia_it_celery_docs
-    image: italia/docs_italia_it_dev:latest
+    image: italia/docs_italia_it_prod:latest
     depends_on:
       - web
     command: docker/celery.sh -A readthedocs -Ofair -c 2 -Q docs -l INFO
@@ -79,7 +79,7 @@ services:
 
   celery-build:
     container_name: italia_docs_italia_it_celery_build
-    image: italia/docs_italia_it_dev:latest
+    image: italia/docs_italia_it_prod:latest
     depends_on:
       - web
     command: docker/celery.sh -A readthedocs -Ofair -c 6 -Q builder,build,default,celery -l INFO
@@ -93,10 +93,6 @@ services:
 
   db:
     image: postgres:10
-    environment:
-      - POSTGRES_PASSWORD="docs"
-      - POSTGRES_USER="docs"
-      - POSTGRES_DB="rtd"
     depends_on:
       - es
     volumes:
@@ -115,8 +111,6 @@ services:
     image: redis
     depends_on:
       - es
-    volumes:
-      - "./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf"
 
 volumes:
   docs:
