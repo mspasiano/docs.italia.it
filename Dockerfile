@@ -31,38 +31,17 @@ FROM docs_italia_it_base AS docs_italia_it_test
 RUN pip install --no-cache-dir tox
 
 CMD ["/bin/bash"]
+# `docs_italia_it_build`: Stage for celery-build
+# We need additional packages to build documentation in LocalBuildEnvironment
 
-# `docs_italia_it_web`: Application Image
-# Image for all the application containers (web, api, celery-docs, celery-web)
-# We don't need to copy the RTD code in this image as will be mounted the live
-# one via the local volume. We only need to copy the files needed inside the
-# container (utility shell scripts and requirements)
-
-FROM docs_italia_it_base AS docs_italia_it_web
+FROM docs_italia_it_base AS docs_italia_it_build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
         libfreetype6-dev \
         libjpeg-dev \
         libjpeg-turbo-progs \
         libtiff5-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN python -mvenv /virtualenv
-COPY requirements/* /app/
-COPY docker /app
-RUN /virtualenv/bin/pip install -r /app/docsitalia.txt
-RUN apt-get purge build-essential -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
-ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
-
-CMD ["/bin/bash"]
-
-# `docs_italia_it_build`: Build image for celery-build
-# We need additional packages to build documentation in LocalBuildEnvironment
-
-FROM docs_italia_it_web AS docs_italia_it_build
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
         curl \
         doxygen \
         libcairo2-dev \
@@ -89,42 +68,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
 
-CMD ["/bin/bash"]
-
-# `docs_italia_it_celery_web`: Build image for celery-web
-# We need additional packages to run the document converter
-
-FROM docs_italia_it_web AS docs_italia_it_celery_web
-
-ARG COMANDI_CONVERSIONE_VERSION=v0.6
-ARG PANDOC_FILTERS_VERSION=v0.1.4
-
-RUN mkdir /tmp/converter
-ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/converti.zip /tmp/converter
-ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc-font-to-style.zip /tmp/converter
-ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc-to-sphinx.zip /tmp/converter
-ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc.zip /tmp/converter
-RUN unzip '/tmp/converter/*.zip' -d /usr/local/bin \
-    && rm -rf /tmp/converter
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-acronimi /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-didascalia /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-google-docs /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-quotes /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-references /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-rimuovi-div /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-stile-liste /usr/local/bin
+COPY _build/converter/converti _build/converter/pandoc* _build/converter/filtro* /usr/local/bin/
 RUN chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
 
-# `docs_italia_it_web_prod`: Production image for Application
-# Copies the application code inside the container
+CMD ["/bin/bash"]
 
-FROM docs_italia_it_web AS docs_italia_it_web_prod
+# `docs_italia_it_dev`: Application Image
+# Image for all the application containers
+# We don't need to copy the RTD code in this image as will be mounted the live
+# one via the local volume. We only need to copy the files needed inside the
+# container (utility shell scripts and requirements)
 
-COPY . /app
+FROM docs_italia_it_build AS docs_italia_it_dev
 
-# `docs_italia_it_build_prod`: Production image for Build
-# Copies the application code inside the container
+RUN python -mvenv /virtualenv
+COPY requirements/ /app/requirements/
+COPY docker/ /app/docker/
+RUN /virtualenv/bin/pip install -r /app/requirements/docsitalia-converter.txt
+ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
 
-FROM docs_italia_it_build AS docs_italia_it_build_prod
+CMD ["/bin/bash"]
 
-COPY . /app
+FROM docs_italia_it_dev AS docs_italia_it_prod
+
+COPY readthedocs/ /app/readthedocs/
+COPY media/ /app/media/
+COPY logs/ /app/logs/
+COPY *.py setup* *.json /app/
+
+CMD ["/bin/bash"]
