@@ -1,4 +1,5 @@
 -r testing.txt
 
 psycopg2==2.7.3.2
+pytest-cov==2.8.1
 requests-mock==1.4.0
