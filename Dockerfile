@@ -7,8 +7,9 @@ FROM python:3.6-slim AS docs_italia_it_base
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
         git \
-        libpq5 \
+        libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
@@ -23,58 +24,19 @@ WORKDIR /app
 
 FROM docs_italia_it_base AS docs_italia_it_test
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 RUN pip install --no-cache-dir tox
-
-CMD ["/bin/bash"]
-
-# `docs_italia_it_web`: Application Image
-# Image for all the application containers (web, api, celery-docs, celery-web)
-# We don't need to copy the RTD code in this image as will be mounted the live
-# one via the local volume. We only need to copy the files needed inside the
-# container (utility shell scripts and requirements)
-
-FROM docs_italia_it_base AS docs_italia_it_web
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libjpeg62-turbo \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN python -mvenv /virtualenv
-
-COPY requirements/* /app/
-
-COPY docker /app
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        libjpeg62-turbo-dev \
-        libpq-dev \
-    && /virtualenv/bin/pip install --no-cache-dir -r /app/docsitalia.txt \
-    && apt-get purge \
-        build-essential \
-        libjpeg62-turbo-dev \
-        libpq-dev \
-        -y --auto-remove \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
 
 CMD ["/bin/bash"]
 
 # `docs_italia_it_build`: Build image for celery-build
 # We need additional packages to build documentation in LocalBuildEnvironment
 
-FROM docs_italia_it_web AS docs_italia_it_build
+FROM docs_italia_it_base AS docs_italia_it_build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
+        curl \
+        libarchive-tools \
         libjpeg62-turbo-dev \
-        libpq-dev \
         python-pip \
         python-virtualenv \
         python2.7-dev \
@@ -82,47 +44,45 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         texlive-latex-extra \
     && rm -rf /var/lib/apt/lists/*
 
-CMD ["/bin/bash"]
-
-# `docs_italia_it_celery_web`: Build image for celery-web
-# We need additional packages to run the document converter
-
-FROM docs_italia_it_web AS docs_italia_it_celery_web
-
 ARG COMANDI_CONVERSIONE_URL=https://github.com/italia/docs-italia-comandi-conversione/releases/download/v0.6
 ARG PANDOC_FILTERS_URL=https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4
-ARG BIN_PATH=/usr/local/bin
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl \
-        libarchive-tools \
-    && curl -sSL ${COMANDI_CONVERSIONE_URL}/converti.zip | bsdtar -xf- -C ${BIN_PATH} \
-    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc-font-to-style.zip | bsdtar -xf- -C ${BIN_PATH} \
-    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc-to-sphinx.zip | bsdtar -xf- -C ${BIN_PATH} \
-    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc.zip | bsdtar -xf- -C ${BIN_PATH} \
-    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-acronimi > ${BIN_PATH}/filtro-acronimi \
-    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-didascalia > ${BIN_PATH}/filtro-didascalia \
-    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-google-docs > ${BIN_PATH}/filtro-google-docs \
-    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-quotes > ${BIN_PATH}/filtro-quotes \
-    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-references > ${BIN_PATH}/filtro-references \
-    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-rimuovi-div > ${BIN_PATH}/filtro-rimuovi-div \
-    && curl -sSL ${PANDOC_FILTERS_URL}/filturo-stile-liste > ${BIN_PATH}/filtro-stile-liste \
-    && chmod 755 ${BIN_PATH}/converti ${BIN_PATH}/pandoc* ${BIN_PATH}/filtro-* \
-    && apt-get purge -y --auto-remove \
-        curl \
-        libarchive-tools \
-    && rm -rf /var/lib/apt/lists/*
+RUN curl -sSL ${COMANDI_CONVERSIONE_URL}/converti.zip | bsdtar -xf- -C /usr/local/bin \
+    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc-font-to-style.zip | bsdtar -xf- -C /usr/local/bin \
+    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc-to-sphinx.zip | bsdtar -xf- -C /usr/local/bin \
+    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc.zip | bsdtar -xf- -C /usr/local/bin \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-acronimi > /usr/local/bin/filtro-acronimi \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-didascalia > /usr/local/bin/filtro-didascalia \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-google-docs > /usr/local/bin/filtro-google-docs \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-quotes > /usr/local/bin/filtro-quotes \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-references > /usr/local/bin/filtro-references \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-rimuovi-div > /usr/local/bin/filtro-rimuovi-div \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filturo-stile-liste > /usr/local/bin/filtro-stile-liste \
+    && chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
 
-# `docs_italia_it_web_prod`: Production image for Application
+CMD ["/bin/bash"]
+
+# `docs_italia_it_dev`: Application Image
+# Image for all the application containers
+# We don't need to copy the RTD code in this image as will be mounted the live
+# one via the local volume. We only need to copy the files needed inside the
+# container (utility shell scripts and requirements)
+
+FROM docs_italia_it_build AS docs_italia_it_dev
+
+RUN python -mvenv /virtualenv
+COPY requirements/* /app/
+COPY docker /app
+RUN /virtualenv/bin/pip install --no-cache-dir -r /app/docsitalia.txt
+ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
+
+CMD ["/bin/bash"]
+
+# `docs_italia_it_prod`: Production image for Application
 # Copies the application code inside the container
 
-FROM docs_italia_it_web AS docs_italia_it_web_prod
+FROM docs_italia_it_dev AS docs_italia_it_prod
 
 COPY . /app
 
-# `docs_italia_it_build_prod`: Production image for Build
-# Copies the application code inside the container
-
-FROM docs_italia_it_build AS docs_italia_it_build_prod
-
-COPY . /app
+CMD ["/bin/bash"]
