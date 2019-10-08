@@ -54,7 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         libjpeg62-turbo-dev \
         libpq-dev \
-    && /virtualenv/bin/pip install --no-cache-dir -r /app/docsitalia.txt \
+    && /virtualenv/bin/pip install --no-cache-dir -r /app/docsitalia-converter.txt \
     && apt-get purge \
         build-essential \
         libjpeg62-turbo-dev \

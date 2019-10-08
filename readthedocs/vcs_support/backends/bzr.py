@@ -7,6 +7,7 @@ import csv
 import re
 
 from builtins import bytes, str  # pylint: disable=redefined-builtin
+from datetime import datetime
 from six import StringIO
 
 from readthedocs.projects.exceptions import RepositoryError
@@ -84,6 +85,11 @@ class Backend(BaseVCS):
     def commit(self):
         _, stdout = self.run('bzr', 'revno')[:2]
         return stdout.strip()
+
+    @property
+    def last_commit_date(self):
+        _, stdout, _ = self.run('bzr', 'log', '-r-1', '|', 'awk', '"NR==6 {print $3}"')
+        return datetime.strptime(stdout, "%Y-%m-%d").strftime("%d.%m.%Y")
 
     def checkout(self, identifier=None):
         super(Backend, self).checkout()
