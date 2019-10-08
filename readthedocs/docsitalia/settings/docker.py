@@ -68,7 +68,7 @@ class CommunityProdSettings(CommunityBaseSettings):
         return apps
 
     if os.environ.get('REDIS_PASS', None):
-        REDIS_CELERY_URL = '%(pass)s@%(url)s' % {
+        REDIS_CELERY_URL = ':%(pass)s@%(url)s' % {
             'pass': os.environ['REDIS_PASS'], 'url': os.environ['REDIS_CELERY_URL']
         }
         for cache_name in _redis.keys():
