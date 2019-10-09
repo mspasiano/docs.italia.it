@@ -4,20 +4,15 @@
 
 FROM python:3.6-slim AS docs_italia_it_base
 
-ENV DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
         git \
-        libpq-dev \
-        libxslt1-dev \
-        unzip \
+        libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
-ENV APPDIR /app
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PYTHONUNBUFFERED=1 DEBUG=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
 
 # `docs_italia_it_test`: Test Image
@@ -27,6 +22,11 @@ WORKDIR /app
 # volume
 
 FROM docs_italia_it_base AS docs_italia_it_test
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir tox
 
@@ -41,17 +41,27 @@ CMD ["/bin/bash"]
 FROM docs_italia_it_base AS docs_italia_it_web
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libfreetype6-dev \
-        libjpeg-dev \
-        libjpeg-turbo-progs \
-        libtiff5-dev \
+        libjpeg62-turbo \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python -mvenv /virtualenv
+
 COPY requirements/* /app/
+
 COPY docker /app
-RUN /virtualenv/bin/pip install -r /app/docsitalia-converter.txt
-RUN apt-get purge build-essential -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libjpeg62-turbo-dev \
+        libpq-dev \
+    && /virtualenv/bin/pip install --no-cache-dir -r /app/docsitalia-converter.txt \
+    && apt-get purge \
+        build-essential \
+        libjpeg62-turbo-dev \
+        libpq-dev \
+        -y --auto-remove \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
 
 CMD ["/bin/bash"]
@@ -63,31 +73,14 @@ FROM docs_italia_it_web AS docs_italia_it_build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
-        curl \
-        doxygen \
-        libcairo2-dev \
-        libenchant1c2a \
-        libevent-dev \
-        libgraphviz-dev \
-        liblcms2-dev \
-        libwebp-dev \
-        pandoc \
-        pkg-config \
-        python-m2crypto \
-        python-matplotlib \
+        libjpeg62-turbo-dev \
+        libpq-dev \
         python-pip \
         python-virtualenv \
-        python2.7 \
         python2.7-dev \
-        sqlite \
-        texlive-extra-utils \
-        texlive-fonts-recommended \
-        texlive-generic-recommended \
+        texlive \
         texlive-latex-extra \
-        texlive-latex-recommended \
     && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && apt-get clean
 
 CMD ["/bin/bash"]
 
@@ -96,24 +89,29 @@ CMD ["/bin/bash"]
 
 FROM docs_italia_it_web AS docs_italia_it_celery_web
 
-ARG COMANDI_CONVERSIONE_VERSION=v0.6
-ARG PANDOC_FILTERS_VERSION=v0.1.4
+ARG COMANDI_CONVERSIONE_URL=https://github.com/italia/docs-italia-comandi-conversione/releases/download/v0.6
+ARG PANDOC_FILTERS_URL=https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4
+ARG BIN_PATH=/usr/local/bin
 
-RUN mkdir /tmp/converter
-ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/converti.zip /tmp/converter
-ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc-font-to-style.zip /tmp/converter
-ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc-to-sphinx.zip /tmp/converter
-ADD https://github.com/italia/docs-italia-comandi-conversione/releases/download/${COMANDI_CONVERSIONE_VERSION}/pandoc.zip /tmp/converter
-RUN unzip '/tmp/converter/*.zip' -d /usr/local/bin \
-    && rm -rf /tmp/converter
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-acronimi /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-didascalia /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-google-docs /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-quotes /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-references /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-rimuovi-div /usr/local/bin
-ADD https://github.com/italia/docs-italia-pandoc-filters/releases/download/${PANDOC_FILTERS_VERSION}/filtro-stile-liste /usr/local/bin
-RUN chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        libarchive-tools \
+    && curl -sSL ${COMANDI_CONVERSIONE_URL}/converti.zip | bsdtar -xf- -C ${BIN_PATH} \
+    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc-font-to-style.zip | bsdtar -xf- -C ${BIN_PATH} \
+    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc-to-sphinx.zip | bsdtar -xf- -C ${BIN_PATH} \
+    && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc.zip | bsdtar -xf- -C ${BIN_PATH} \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-acronimi > ${BIN_PATH}/filtro-acronimi \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-didascalia > ${BIN_PATH}/filtro-didascalia \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-google-docs > ${BIN_PATH}/filtro-google-docs \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-quotes > ${BIN_PATH}/filtro-quotes \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-references > ${BIN_PATH}/filtro-references \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filtro-rimuovi-div > ${BIN_PATH}/filtro-rimuovi-div \
+    && curl -sSL ${PANDOC_FILTERS_URL}/filturo-stile-liste > ${BIN_PATH}/filtro-stile-liste \
+    && chmod 755 ${BIN_PATH}/converti ${BIN_PATH}/pandoc* ${BIN_PATH}/filtro-* \
+    && apt-get purge -y --auto-remove \
+        curl \
+        libarchive-tools \
+    && rm -rf /var/lib/apt/lists/*
 
 # `docs_italia_it_web_prod`: Production image for Application
 # Copies the application code inside the container
