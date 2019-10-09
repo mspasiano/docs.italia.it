@@ -68,13 +68,13 @@ class CommunityProdSettings(CommunityBaseSettings):
         return apps
 
     if os.environ.get('REDIS_PASS', None):
-        REDIS_CELERY_URL = '%(pass)s@%(url)s' % {
+        REDIS_CELERY_URL = ':%(pass)s@%(url)s' % {
             'pass': os.environ['REDIS_PASS'], 'url': os.environ['REDIS_CELERY_URL']
         }
-        for cache_name in _redis.keys():
+        for cache_name in _redis:
             _redis[cache_name]['host'] = ':%(pass)s@%(host)s' % {
                 'pass': os.environ['REDIS_PASS'], 'host': _redis[cache_name]['host']
-        }
+            }
     # Celery
     CACHES = dict(
         (cache_name, {
@@ -126,7 +126,7 @@ class CommunityProdSettings(CommunityBaseSettings):
     ES_HOSTS = []
     for host in os.environ['ES_HOST'].split(','):
         if os.environ.get('ES_USER', None) and os.environ.get('ES_PASS', None):
-            ES_HOSTS.append('http://%(user)s:%(pass)@%(host)s' % {
+            ES_HOSTS.append('http://%(user)s:%(pass)s@%(host)s' % {
                 'user': os.environ.get('ES_USER', None),
                 'pass': os.environ.get('ES_PASS', None),
                 'host': host,

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import os
 
-from .test import CommunityTestSettings
+from readthedocs.settings.test import CommunityTestSettings
 
 
 CommunityTestSettings.load_settings(__name__)

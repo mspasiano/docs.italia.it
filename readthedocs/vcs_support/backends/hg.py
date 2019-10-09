@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """Mercurial-related utilities."""
 from __future__ import absolute_import
+
+from datetime import datetime
+
 from readthedocs.projects.exceptions import RepositoryError
 from readthedocs.vcs_support.base import BaseVCS, VCSVersion
 
@@ -89,6 +92,11 @@ class Backend(BaseVCS):
     def commit(self):
         _, stdout = self.run('hg', 'identify', '--id')[:2]
         return stdout.strip()
+
+    @property
+    def last_commit_date(self):
+        _, stdout, _ = self.run('hg', 'log', '--template={date|shortdate}', '-l1')
+        return datetime.strptime(stdout, "%Y-%m-%d").strftime("%d.%m.%Y")
 
     def checkout(self, identifier=None):
         super(Backend, self).checkout()

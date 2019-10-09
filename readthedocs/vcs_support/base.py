@@ -129,6 +129,10 @@ class BaseVCS(object):
         """Returns a string representing the current commit."""
         raise NotImplementedError
 
+    @property
+    def last_commit_date(self):
+        raise NotImplementedError
+
     def checkout(self, identifier=None):
         """
         Set the state to the given identifier.
