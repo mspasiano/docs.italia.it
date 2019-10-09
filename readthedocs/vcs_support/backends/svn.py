@@ -6,6 +6,7 @@ from __future__ import absolute_import
 import csv
 
 from builtins import str
+from datetime import datetime
 from six import StringIO  # noqa
 
 from readthedocs.projects.exceptions import RepositoryError
@@ -96,6 +97,11 @@ class Backend(BaseVCS):
     def commit(self):
         _, stdout = self.run('svnversion')[:2]
         return stdout.strip()
+
+    @property
+    def last_commit_date(self):
+        _, stdout, _ = self.run('svn', 'propget', '--revprop', '-rHEAD', 'svn:date')
+        return datetime.strptime(stdout, "%Y-%m-%dT%H:%M:%S.%fz").strftime("%d.%m.%Y")
 
     def checkout(self, identifier=None):
         super(Backend, self).checkout()

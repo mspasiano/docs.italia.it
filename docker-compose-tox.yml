@@ -11,7 +11,7 @@ services:
     command: tox -e py36 -- --ds=readthedocs.docsitalia.settings.testdocsitalia_docker
     volumes:
       - ".:/app:rw"
-      - "tox:/app/.tox"
+      - ".tox:/app/.tox"
   db:
     image: postgres:10
 
