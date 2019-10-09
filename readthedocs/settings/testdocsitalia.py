@@ -5,13 +5,6 @@ from .test import CommunityTestSettings
 
 CommunityTestSettings.load_settings(__name__)
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'PREFIX': 'docs',
-    }
-}
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

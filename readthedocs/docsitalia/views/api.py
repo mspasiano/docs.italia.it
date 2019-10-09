@@ -51,6 +51,7 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
     @action(detail=True)
     def active_versions(self, request, **kwargs):
         """Returns active versions, non private, of a project"""
+        # TODO merge (get_project_for_user_or_404 does not exist)
         project = self.get_project_for_user_or_404(
             kwargs[self.lookup_field])
         versions = project.versions.filter(active=True, privacy_level=PUBLIC)

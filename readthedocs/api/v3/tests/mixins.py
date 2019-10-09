@@ -5,7 +5,7 @@ from pathlib import Path
 import django_dynamic_fixture as fixture
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.utils.timezone import make_aware
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
@@ -16,8 +16,8 @@ from readthedocs.projects.models import Project
 from readthedocs.redirects.models import Redirect
 
 
-class APIEndpointMixin(TestCase):
-
+class APIEndpointMixin(TransactionTestCase):
+    reset_sequences = True
     fixtures = []
 
     def setUp(self):

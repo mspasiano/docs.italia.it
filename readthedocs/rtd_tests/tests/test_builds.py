@@ -4,7 +4,7 @@ import os
 
 import mock
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django_dynamic_fixture import fixture, get
 from django.utils import timezone
 
@@ -29,7 +29,8 @@ from readthedocs.rtd_tests.tests.test_config_integration import create_load
 from ..mocks.environment import EnvironmentMockGroup
 
 
-class BuildEnvironmentTests(TestCase):
+class BuildEnvironmentTests(TransactionTestCase):
+    reset_sequences = True
 
     def setUp(self):
         self.mocks = EnvironmentMockGroup()
@@ -378,8 +379,8 @@ class BuildEnvironmentTests(TestCase):
         self.assertEqual(task.get_env_vars(), env)
 
 
-class BuildModelTests(TestCase):
-
+class BuildModelTests(TransactionTestCase):
+    reset_sequences = True
     fixtures = ['test_data']
 
     def setUp(self):

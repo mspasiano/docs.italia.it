@@ -338,7 +338,7 @@ class DocsItaliaTest(TestCase):
         self.assertEqual(remote_repos.count(), 1)
 
     @patch('django.contrib.messages.api.add_message')
-    @override_settings(PUBLIC_PROTO='http', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_PROTO='https', PUBLIC_DOMAIN='readthedocs.org')
     def test_project_custom_resolver(self, add_message):
 
         with patch('readthedocs.projects.models.resolve') as resolve_func:
@@ -652,6 +652,7 @@ class DocsItaliaTest(TestCase):
         with self.assertRaises(ValueError):
             validate_document_metadata(None, 'name: Documento')
 
+    # todo
     def test_project_root_is_served_by_docsitalia(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
@@ -1031,7 +1032,7 @@ class DocsItaliaTest(TestCase):
               "container_time_limit": None,
               "install_project": False,
               "use_system_packages": False,
-              "suffix": ".rst",
+              # "suffix": ".rst", TODO merge
               "skip": False,
               "requirements_file": None,
               "python_interpreter": "python",

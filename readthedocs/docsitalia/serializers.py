@@ -82,7 +82,7 @@ class DocsItaliaProjectAdminSerializer(DocsItaliaProjectSerializer):
             'container_time_limit',
             'install_project',
             'use_system_packages',
-            'suffix',
+            # 'suffix', TODO merge
             'skip',
             'requirements_file',
             'python_interpreter',
