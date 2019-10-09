@@ -11,9 +11,21 @@ dei publisher projects
   <div class="pb-5">
     <h1 class="mb-4">{{ object }}</h1>
     <h2 class="mb-4 font-weight-normal">Tutti i progetti dell'amministrazione {{ object }}</h2>
+    <div class="row d-flex p-2 border-bottom">
+      <span class="text">
+        {% if object.active_publisher_projects.count == 0 %}
+          Nessun risultato
+        {% elif object.active_publisher_projects.count == 1 %}
+          {{ object.active_publisher_projects.count }} risultato
+        {% else %}
+          {{ object.active_publisher_projects.count }} risultati
+        {% endif %}
+      </span>
+    </div>
+
     <div class="row">
       {% for project in object.active_publisher_projects %}
-      {% include 'docsitalia/includes/card.html' %}
+        {% include 'docsitalia/includes/project_card.html' %}
       {% endfor %}
     </div>
   </div>
