@@ -8,7 +8,7 @@ services:
     image: italia/docs_italia_it_test:latest
     depends_on:
       - db
-    command: tox -e py36 -- --ds=readthedocs.settings.testdocsitalia_docker
+    command: tox -e py36 -- --ds=readthedocs.docsitalia.settings.testdocsitalia_docker
     volumes:
       - ".:/app:rw"
       - "tox:/app/.tox"

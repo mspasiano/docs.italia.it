@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import os
 
-from .test import CommunityTestSettings
+from readthedocs.settings.test import CommunityTestSettings
 
 
 CommunityTestSettings.load_settings(__name__)
@@ -22,6 +22,13 @@ DATABASES = {
         'PASSWORD': '',
         'NAME': 'test_docsitalia'
     }
+}
+
+# Override classes
+CLASS_OVERRIDES = {
+    'readthedocs.builds.syncers.Syncer': 'readthedocs.builds.syncers.LocalSyncer',
+    'readthedocs.core.resolver.Resolver': 'readthedocs.docsitalia.resolver.ItaliaResolver',
+    'readthedocs.oauth.services.GitHubService': 'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService',  # noqa
 }
 
 
