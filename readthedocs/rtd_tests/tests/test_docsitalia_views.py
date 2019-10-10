@@ -491,14 +491,22 @@ class DocsItaliaViewsTest(TestCase):
         naked_no_build_project_lang_url = '%sit/' % naked_no_build_project_url
 
         response = self.client.get(naked_project_url)
-        self.assertRedirects(response, project.get_canonical_url(), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, '{}index.html'.format(project.get_canonical_url()), fetch_redirect_response=False,
+        )
         response = self.client.get(naked_project_lang_url)
-        self.assertRedirects(response, project.get_canonical_url(), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, '{}index.html'.format(project.get_canonical_url()), fetch_redirect_response=False,
+        )
 
         response = self.client.get(naked_no_build_project_url)
-        self.assertRedirects(response, no_build_project.get_canonical_url(), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, '{}index.html'.format(no_build_project.get_canonical_url()), fetch_redirect_response=False,
+        )
         response = self.client.get(naked_no_build_project_lang_url)
-        self.assertRedirects(response, no_build_project.get_canonical_url(), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, '{}index.html'.format(no_build_project.get_canonical_url()), fetch_redirect_response=False,
+        )
 
         response = self.client.get(naked_privateproject_url)
         self.assertEqual(response.status_code, 404)

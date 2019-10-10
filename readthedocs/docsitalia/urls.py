@@ -94,6 +94,14 @@ urlpatterns = [
         DocumentRedirect.as_view(),
         name='document_redirect'
     ),
+    url(
+        (
+            r'^(?P<publisherslug>[-\w]+)/(?P<projectslug>[-\w]+)/(?P<slug>[-\w]+)/'
+            r'(?P<lang>[\w]{2})/(?P<version>[^/]+)(/?)$'
+        ),
+        DocumentRedirect.as_view(),
+        name='document_redirect'
+    ),
 ]
 
 if apps.is_installed('docs_italia_convertitore_web'):
