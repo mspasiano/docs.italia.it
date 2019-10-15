@@ -87,6 +87,6 @@ FROM docs_italia_it_dev AS docs_italia_it_prod
 COPY readthedocs/ /app/readthedocs/
 COPY media/ /app/media/
 COPY logs/ /app/logs/
-COPY *.py setup* *.json /app/
+COPY fabfile.py manage.py setup* *.json /app/
 
 CMD ["/bin/bash"]
