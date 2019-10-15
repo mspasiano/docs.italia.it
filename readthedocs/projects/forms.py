@@ -7,6 +7,7 @@ from __future__ import (
 from random import choice
 
 from builtins import object
+from dal import autocomplete
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -18,6 +19,7 @@ from guardian.shortcuts import assign
 from textclassifier.validators import ClassifierValidator
 
 from readthedocs.builds.constants import TAG
+from readthedocs.docsitalia.models import AllowedTag
 from readthedocs.core.utils import slugify, trigger_build
 from readthedocs.core.utils.extend import SettingsOverrideObject
 from readthedocs.integrations.models import Integration
@@ -210,8 +212,28 @@ class ProjectAdvancedForm(ProjectTriggerBuildMixin, ProjectForm):
         return filename
 
 
+class WhitelistedTaggitSelect2(autocomplete.TaggitSelect2):
+    def build_attrs(self, *args, **kwargs):
+        attrs = super(WhitelistedTaggitSelect2, self).build_attrs(*args, **kwargs)
+        attrs['data-tags'] = 'false'
+        return attrs
+
+    def value_from_datadict(self, data, files, name):
+        csv_tags = super(WhitelistedTaggitSelect2, self).value_from_datadict(data, files, name)
+        tags = set(csv_tags.split(','))
+        filtered_tags = tags & set(
+            AllowedTag.objects.filter(enabled=True).values_list('name', flat=True),
+        )
+        return ','.join(filtered_tags)
+
+
 class UpdateProjectForm(ProjectTriggerBuildMixin, ProjectBasicsForm,
                         ProjectExtraForm):
+
+    def __init__(self, *args, **kwargs):
+        super(UpdateProjectForm, self).__init__(*args, **kwargs)
+        self.fields['tags'].help_text = _('Project tags.')
+
     class Meta(object):
         model = Project
         fields = (
@@ -227,6 +249,9 @@ class UpdateProjectForm(ProjectTriggerBuildMixin, ProjectBasicsForm,
             'project_url',
             'tags',
         )
+        widgets = {
+            'tags': WhitelistedTaggitSelect2(url='allowedtag-autocomplete'),
+        }
 
     def clean_language(self):
         language = self.cleaned_data['language']
