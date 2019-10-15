@@ -239,6 +239,10 @@ class PublisherProject(models.Model):
         """Get publisher project description from metadata"""
         return self.metadata.get('description', '')
 
+    def short_name(self):
+        """Get publisher project short-name from metadata"""
+        return self.metadata.get('short-name', '')
+
     def get_absolute_url(self):
         """get absolute url for publisher project"""
         return reverse('publisher_project_detail', args=[self.publisher.slug, self.slug])
