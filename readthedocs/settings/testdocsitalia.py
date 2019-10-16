@@ -12,7 +12,7 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '',
         'PASSWORD': '',
-        'NAME': 'test_docsitalia'
+        'NAME': 'docsitalia'
     }
 }
 
