@@ -2,6 +2,7 @@
 """Docs italia api"""
 
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
@@ -48,12 +49,18 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
             qs = qs.filter(publisherproject__slug=project)
         return qs
 
+    def get_project_for_user_or_404(self, lookup_value):
+        lookup_query = {self.lookup_field: lookup_value}
+        qs = self.get_queryset()
+
+        return get_object_or_404(qs, **lookup_query)
+
     @action(detail=True)
     def active_versions(self, request, **kwargs):
         """Returns active versions, non private, of a project"""
-        # TODO merge (get_project_for_user_or_404 does not exist)
         project = self.get_project_for_user_or_404(
-            kwargs[self.lookup_field])
+            kwargs[self.lookup_field]
+        )
         versions = project.versions.filter(active=True, privacy_level=PUBLIC)
         return Response({
             'versions': VersionSerializer(versions, many=True).data,

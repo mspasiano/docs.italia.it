@@ -385,12 +385,10 @@ class BuildEnvironmentTests(TransactionTestCase):
 @skip('merging')
 class BuildModelTests(TransactionTestCase):
     reset_sequences = True
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
 
     def setUp(self):
-        self.eric = User(username='eric')
-        self.eric.set_password('test')
-        self.eric.save()
+        self.eric = User.objects.get(username='eric')
 
         self.project = get(Project)
         self.project.users.add(self.eric)

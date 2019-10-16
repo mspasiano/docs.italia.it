@@ -108,7 +108,7 @@ class RedirectTests(TestCase):
             'http://pip.readthedocs.org/en/latest/test.html',
         )
 
-    @skip('merging code')
+    # @skip('merging code')
     @override_settings(USE_SUBDOMAIN=True)
     def test_improper_subdomain_filename_only(self):
         r = self.client.get('/test.html', HTTP_HOST='pip.readthedocs.org')
@@ -124,7 +124,7 @@ class RedirectAppTests(TestCase):
         self.pip = Project.objects.get(slug='pip')
         self.pip.versions.create_latest()
 
-    @skip('merging code')
+    # @skip('merging code')
     @override_settings(USE_SUBDOMAIN=True)
     def test_redirect_prefix_infinite(self):
         """
