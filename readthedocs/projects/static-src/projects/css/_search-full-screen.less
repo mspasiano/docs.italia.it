@@ -1,0 +1,45 @@
+.sfs-modal-button {
+  background: transparent;
+  border: none;
+  color: white;
+
+  .sfs-modal-button-icon-bg {
+    background: white;
+    border-radius: 44px;
+    height: 44px;
+    width: 44px;
+    margin-left: 10px;
+  }
+}
+
+.sfs-modal.modal {
+  height: 100%;
+  height: calc(~"100% - 48px");
+  top: 48px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  border: none;
+  background: transparent;
+  border-radius: 0px;
+  padding: 0px;
+  z-index: 1072; // .bd-navbar ha z-index 1071
+
+  .modal-dialog {
+    background: white;
+    margin: 0px;
+    max-width: none;
+    height: 100%;
+
+    .modal-content {
+      min-height: 100%;
+      box-shadow: none;
+
+      .autocomplete-wrapper-big {
+        .autocomplete {
+          padding-left: 65px;
+        }
+      }
+    }
+  }
+}

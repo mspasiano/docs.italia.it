@@ -1,0 +1,92 @@
+{% load i18n %}
+{% load static %}
+
+<!-- Button trigger modal -->
+<button class="sfs-modal-button d-flex align-items-center" type="button" data-toggle="modal" data-target="#modalSearchFullScreen">
+  <span>Cerca</span>
+  <div class="sfs-modal-button-icon-bg d-flex align-items-center justify-content-center">
+    <svg class="icon icon-sm icon-primary">
+      <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-search' %}"></use>
+    </svg>
+  </div>
+</button>
+
+<!-- Modal -->
+<div class="modal sfs-modal fade" tabindex="-1" role="dialog" id="modalSearchFullScreen">
+   <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="container">
+          <!-- Header -->
+          <div class="row mt-5 mb-5">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+              <h1 class="text-secondary">Cerca</h5>
+              <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                <svg class="icon icon-lg">
+                  <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-close' %}"></use>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Input -->
+          <div class="row">
+            <div class="col-12">
+              <div class="form-group autocomplete-wrapper-big">
+                <input
+                  type="search"
+                  class="autocomplete"
+                  placeholder="Cerca progetti, documenti o per tag"
+                  id="autocompleteSearchFullScreen"
+                  name="autocompleteSearchFullScreen"
+                  data-autocomplete='[{"text":"Abruzzo","link":"#"},{"text":"Basilicata","link":"#"},{"text":"Calabria","link":"#"},{"text":"Campania","link":"#"},{"text":"Emilia Romagna","link":"#"},{"text":"Friuli Venezia Giulia","link":"#"},{"text":"Lazio","link":"#"},{"text":"Liguria","link":"#"},{"text":"Lombardia","link":"#"},{"text":"Marche","link":"#"},{"text":"Molise","link":"#"},{"text":"Piemonte","link":"#"},{"text":"Puglia","link":"#"},{"text":"Sardegna","link":"#"},{"text":"Sicilia","link":"#"},{"text":"Toscana","link":"#"},{"text":"Trentino Alto Adige","link":"#"},{"text":"Umbria","link":"#"},{"text":"Valle d’Aosta","link":"#"},{"text":"Veneto","link":"#"}]'>
+                <span class="autocomplete-icon" aria-hidden="true">
+                  <svg class="icon icon-sm">
+                    <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-search' %}"></use>
+                  </svg>
+                </span>
+                <!-- <ul class="autocomplete-list" id="autocompleteListSearchFullScreen">
+                  <li>
+                    <a href="#">
+                      <div class="avatar size-sm">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Paola Pistoia">
+                      </div>
+                      <span class="autocomplete-list-text">
+                        <span>Paola <mark>Pi</mark>stoia</span><em>Profilo</em>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#">
+                      <div class="avatar size-sm">
+                        <img src="https://randomuser.me/api/portraits/men/46.jpg" alt="Pierluigi Rossi">
+                      </div>
+                      <span class="autocomplete-list-text">
+                        <span><mark>Pi</mark>erluigi Rossi</span><em>Profilo</em>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#">
+                      <svg class="icon icon-sm"><use xlink:href="/bootstrap-italia/dist/svg/sprite.svg#it-pa"></use></svg>
+                      <span class="autocomplete-list-text">
+                        <span>Comune di <mark>Pi</mark>sa</span><em>Amministrazione</em>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#">
+                      <svg class="icon icon-sm"><use xlink:href="/bootstrap-italia/dist/svg/sprite.svg#it-file"></use></svg>
+                      <span class="autocomplete-list-text">
+                        <span>Linee guida per i cataloghi pubblica amministrazione</span><em>Documento</em>
+                      </span>
+                    </a>
+                  </li>
+                </ul> -->
+                <label for="autocompleteSearchFullScreen" class="sr-only">Cerca nel sito</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+   </div>
+</div>
