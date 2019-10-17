@@ -133,7 +133,11 @@ class CommunityProdSettings(CommunityBaseSettings):
             })
         else:
             ES_HOSTS.append(host)
-
+    ELASTICSEARCH_DSL = {
+        'default': {
+            'hosts': ES_HOSTS
+        },
+    }
     # RTD settings
     # This goes together with FILE_SYNCER setting
     # eg: FILE_SINCER = 'readthedocs.builds.syncers.*' (likely RemoteSyncer)
