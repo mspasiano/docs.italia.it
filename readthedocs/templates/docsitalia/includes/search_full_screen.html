@@ -86,6 +86,37 @@
               </div>
             </div>
           </div>
+
+          <!-- Filters -->
+          <div class="row">
+            <div class="col-12 sfs-modal-tags-container">
+              <button type="button" class="btn btn-xs sfs-btn-tag btn-primary" data-filter="all">Tutto</button>
+              <button type="button" class="btn btn-xs sfs-btn-tag btn-icon btn-outline-secondary" data-filter="projects">
+                <svg class="icon icon-secondary">
+                  <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-folder' %}"></use>
+                </svg>
+                <span>Progetti</span>
+              </button>
+              <button type="button" class="btn btn-xs sfs-btn-tag btn-icon btn-outline-secondary" data-filter="documents">
+                <svg class="icon icon-secondary">
+                  <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-file' %}"></use>
+                </svg>
+                <span>Documenti</span>
+              </button>
+              <button type="button" class="btn btn-xs sfs-btn-tag btn-icon btn-outline-secondary" data-filter="tags">
+                <svg class="icon icon-secondary">
+                  <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-note' %}"></use>
+                </svg>
+                <span>Tags</span>
+              </button>
+              <button type="button" class="btn btn-xs sfs-btn-tag btn-icon btn-outline-secondary" data-filter="administrations">
+                <svg class="icon icon-secondary">
+                  <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-pa' %}"></use>
+                </svg>
+                <span>Amministrazioni</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
    </div>
