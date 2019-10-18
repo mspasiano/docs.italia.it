@@ -42,7 +42,7 @@ services:
       - web
     ports:
       - "8002:8002"
-    command: bash -c "wait-for-it -s -t 60 es:9200 -- docker/gunicorn.sh --reload --log-level debug -w 1 -b 0.0.0.0:8002" --
+    command: docker/gunicorn.sh --reload --log-level debug -w 1 -b 0.0.0.0:8002
     volumes:
       - ".:/app:rw"
       - "docs:/home/documents"
