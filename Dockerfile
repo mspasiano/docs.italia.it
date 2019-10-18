@@ -24,7 +24,7 @@ WORKDIR /app
 
 FROM docs_italia_it_base AS docs_italia_it_test
 
-RUN pip install --no-cache-dir tox
+RUN pip install --no-cache-dir -U pip tox
 
 CMD ["/bin/bash"]
 
@@ -37,9 +37,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         libarchive-tools \
         libjpeg62-turbo-dev \
-        python-pip \
-        python-virtualenv \
-        python2.7-dev \
         texlive \
         texlive-latex-extra \
         latexmk \
@@ -61,7 +58,7 @@ RUN curl -sSL ${COMANDI_CONVERSIONE_URL}/converti.zip | bsdtar -xf- -C /usr/loca
     && curl -sSL ${PANDOC_FILTERS_URL}/filturo-stile-liste > /usr/local/bin/filtro-stile-liste \
     && chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
 
-RUN pip install --no-cache-dir virtualenv
+RUN pip install --no-cache-dir -U pip virtualenv
 
 CMD ["/bin/bash"]
 
@@ -73,9 +70,8 @@ CMD ["/bin/bash"]
 
 FROM docs_italia_it_build AS docs_italia_it_dev
 
-RUN python -mvenv /virtualenv
 COPY requirements/ /app/requirements/
-RUN /virtualenv/bin/pip install --no-cache-dir -r /app/requirements/docsitalia-converter.txt
+RUN pip install --no-cache-dir -r /app/requirements/docsitalia-converter.txt
 COPY docker/ /app/docker/
 
 ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
