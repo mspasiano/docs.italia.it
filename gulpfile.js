@@ -44,7 +44,7 @@ var sources = {
         'font/fontawesome-webfont.woff2': {src: 'bower_components/font-awesome/fonts/fontawesome-webfont.woff2'},
         'font/FontAwesome.otf': {src: 'bower_components/font-awesome/fonts/FontAwesome.otf'}
     },
-    projects: {
+    docsitalia: {
         'js/tools.js': {},
         'js/import.js': {},
         'css/import.less': {},
