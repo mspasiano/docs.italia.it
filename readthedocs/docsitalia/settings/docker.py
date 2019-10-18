@@ -82,7 +82,6 @@ class CommunityProdSettings(CommunityBaseSettings):
             'LOCATION': 'redis://{host}:{port}'.format(**cache),
             'OPTIONS': {
                 'DB': cache['db'],
-                'PARSER_CLASS': 'redis.connection.HiredisParser',
                 'PICKLE_VERSION': -1,
             },
         })

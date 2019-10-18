@@ -1,3 +1,2 @@
 -r deploy.txt
 django-restricted-sessions
-hiredis
