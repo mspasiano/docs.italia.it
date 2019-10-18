@@ -186,6 +186,5 @@ class DocsItaliaImport(ImportView):  # pylint: disable=too-many-ancestors
         update_project_from_metadata(project, metadata)
 
         project_import.send(sender=project, request=self.request)
-        # TODO basic?
-        trigger_build(project, basic=True)
+        trigger_build(project)
         return redirect('projects_detail', project_slug=project.slug)
