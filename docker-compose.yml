@@ -55,7 +55,7 @@ services:
     image: italia/docs_italia_it_dev:latest
     depends_on:
       - web
-    command: docker/celery.sh -A readthedocs.worker -Ofair -c 3 -Q web -l INFO
+    command: bash -c "wait-for-it -s -t 60 es:9200 -- docker/celery.sh -A readthedocs.worker -Ofair -c 3 -Q web -l INFO" --
     volumes:
       - ".:/app:rw"
       - "docs:/home/documents"

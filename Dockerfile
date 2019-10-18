@@ -78,6 +78,10 @@ COPY docker/ /app/docker/
 
 ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        wait-for-it \
+    && rm -rf /var/lib/apt/lists/*
+
 CMD ["/bin/bash"]
 
 # `docs_italia_it_web_prod`: Production image for Application
