@@ -95,9 +95,9 @@ services:
   db:
     image: postgres:10
     environment:
-      - POSTGRES_PASSWORD="docs"
-      - POSTGRES_USER="docs"
-      - POSTGRES_DB="rtd"
+      - POSTGRES_PASSWORD=docs
+      - POSTGRES_USER=docs
+      - POSTGRES_DB=rtd
     depends_on:
       - es
     volumes:
