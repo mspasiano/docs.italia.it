@@ -61,6 +61,8 @@ RUN curl -sSL ${COMANDI_CONVERSIONE_URL}/converti.zip | bsdtar -xf- -C /usr/loca
     && curl -sSL ${PANDOC_FILTERS_URL}/filturo-stile-liste > /usr/local/bin/filtro-stile-liste \
     && chmod 755 /usr/local/bin/converti /usr/local/bin/pandoc* /usr/local/bin/filtro-*
 
+RUN pip install --no-cache-dir virtualenv
+
 CMD ["/bin/bash"]
 
 # `docs_italia_it_dev`: Final application Image
