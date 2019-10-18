@@ -352,6 +352,8 @@ class Virtualenv(PythonEnvironment):
                 ),
                 'sphinx-rtd-theme<0.5',
                 'readthedocs-sphinx-ext<1.1',
+                'pyyaml==5.1.2',
+                'git+https://github.com/italia/docs-italia-theme@bootstrap-italia',
             ])
 
         cmd = copy.copy(pip_install_cmd)
