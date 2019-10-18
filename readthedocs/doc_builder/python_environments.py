@@ -314,10 +314,13 @@ class Virtualenv(PythonEnvironment):
 
         # Install latest pip first,
         # so it is used when installing the other requirements.
-        cmd = pip_install_cmd + ['pip']
-        self.build_env.run(
-            *cmd, bin_path=self.venv_bin(), cwd=self.checkout_path
-        )
+        if False:
+            # FIXME: We skip this for now while investigating the failure when a new virtualenv is created on top
+            # of an existing virtualenv
+            cmd = pip_install_cmd + ['pip']
+            self.build_env.run(
+                *cmd, bin_path=self.venv_bin(), cwd=self.checkout_path
+            )
 
         requirements = [
             'Pygments==2.3.1',
