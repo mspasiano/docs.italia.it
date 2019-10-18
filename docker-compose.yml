@@ -27,7 +27,7 @@ services:
       - redis
     ports:
       - "8001:8001"
-    command: docker/gunicorn.sh collect --reload --log-level debug -w 1 -b 0.0.0.0:8001
+    command: bash -c "wait-for-it -s -t 60 es:9200 -- docker/gunicorn.sh collect --reload --log-level debug -w 1 -b 0.0.0.0:8001" --
     volumes:
       - ".:/app:rw"
       - "docs:/home/documents"
@@ -39,10 +39,10 @@ services:
     container_name: italia_docs_italia_it_api
     image: italia/docs_italia_it_dev:latest
     depends_on:
-      - celery-build
+      - web
     ports:
       - "8002:8002"
-    command: docker/gunicorn.sh --reload --log-level debug -w 1 -b 0.0.0.0:8002
+    command: bash -c "wait-for-it -s -t 60 es:9200 -- docker/gunicorn.sh --reload --log-level debug -w 1 -b 0.0.0.0:8002" --
     volumes:
       - ".:/app:rw"
       - "docs:/home/documents"
@@ -55,7 +55,7 @@ services:
     image: italia/docs_italia_it_dev:latest
     depends_on:
       - web
-    command: bash -c "wait-for-it -s -t 60 es:9200 -- docker/celery.sh -A readthedocs.worker -Ofair -c 3 -Q web -l INFO" --
+    command: bash -c "wait-for-it -s -t 60 es:9200 -- docker/celery.sh -A readthedocs.worker -Ofair -c 3 -Q web,web01,reindex -l INFO" --
     volumes:
       - ".:/app:rw"
       - "docs:/home/documents"
@@ -65,25 +65,12 @@ services:
     external_links:
       - italia_docs_italia_it_nginx:local.docs.italia.it
 
-  celery-docs:
-    container_name: italia_docs_italia_it_celery_docs
-    image: italia/docs_italia_it_dev:latest
-    depends_on:
-      - web
-    command: docker/celery.sh -A readthedocs.worker -Ofair -c 2 -Q docs -l INFO
-    volumes:
-      - ".:/app:rw"
-      - "docs:/home/documents"
-    env_file:
-      - .dockerenv
-      - .secrets
-
   celery-build:
     container_name: italia_docs_italia_it_celery_build
     image: italia/docs_italia_it_dev:latest
     depends_on:
       - web
-    command: docker/celery.sh -A readthedocs.worker -Ofair -c 6 -Q builder,build,default,celery -l INFO
+    command: docker/celery.sh -A readthedocs.worker -Ofair -c 6 -Q builder,celery,default,build01 -l INFO
     volumes:
       - ".:/app:rw"
       - "docs:/home/documents"
@@ -98,8 +85,6 @@ services:
       - POSTGRES_PASSWORD=docs
       - POSTGRES_USER=docs
       - POSTGRES_DB=rtd
-    depends_on:
-      - es
     volumes:
       - dbdata:/var/lib/postgresql/data
 
@@ -118,8 +103,6 @@ services:
   redis:
     image: redis
     command: redis-server /usr/local/etc/redis/redis.conf
-    depends_on:
-      - es
     volumes:
       - "./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf"
 

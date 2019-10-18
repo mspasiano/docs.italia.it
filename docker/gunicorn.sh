@@ -9,5 +9,4 @@ if [ "$1" = "collect" ]; then
   python manage.py migrate
   python manage.py reindex_elasticsearch
 fi
-sleep 10
 gunicorn --error-logfile="-" --timeout=3000  readthedocs.wsgi:application $*
