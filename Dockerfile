@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python2.7-dev \
         texlive \
         texlive-latex-extra \
+        latexmk \
     && rm -rf /var/lib/apt/lists/*
 
 ARG COMANDI_CONVERSIONE_URL=https://github.com/italia/docs-italia-comandi-conversione/releases/download/v0.6
