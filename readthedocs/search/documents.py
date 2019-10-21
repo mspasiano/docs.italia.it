@@ -58,7 +58,7 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
         model = Project
         fields = ('name', 'slug', 'description')
         ignore_signals = True
-        # Ensure the Project is reindexed when Publisher or PublisherProject is updated
+        # ensure the Project is reindexed when Publisher or PublisherProject is updated
         related_models = [PublisherProject, Publisher]
 
     def get_queryset(self):
@@ -86,7 +86,6 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
                 'project': publisher_projects[0].slug,
                 'publisher': publisher_projects[0].publisher.name
             }
-
 
     @classmethod
     def faceted_search(cls, query, user, language=None):
@@ -140,10 +139,38 @@ class PageDocument(RTDDocTypeMixin, DocType):
 
     modified_model_field = 'modified_date'
 
+    # DocsItalia
+    docsitalia = fields.ObjectField(
+        properties={
+            'project': fields.KeywordField(),
+            'publisher': fields.TextField(),
+        }
+    )
+
     class Meta:
         model = HTMLFile
         fields = ('commit', 'build')
         ignore_signals = True
+        # ensure the Page is reindexed when Publisher or PublisherProject is updated
+        related_models = [PublisherProject, Publisher]
+
+    def get_queryset(self):
+        """Fetch related instances."""
+        return super().get_queryset().prefetch_related(
+            'project__publisherproject_set__publisher'
+        )
+
+    def get_instances_from_related(self, related_instance):
+        """If related_models is set, define how to retrieve the Car instance(s) from the related model.
+        The related_models option should be used with caution because it can lead in the index
+        to the updating of a lot of items.
+        """
+        if isinstance(related_instance, Publisher):
+            return HTMLFile.objects.filter(
+                project__publisherproject__publisher=related_instance
+            )
+        elif isinstance(related_instance, PublisherProject):
+            return HTMLFile.objects.filter(project__publisherproject=related_instance)
 
     def prepare_domains(self, html_file):
         """Prepares and returns the values for domains field."""
@@ -183,6 +210,16 @@ class PageDocument(RTDDocTypeMixin, DocType):
             ))
 
         return all_domains
+
+    def prepare_docsitalia(self, instance):
+        """Return docsitalia object."""
+        # not using more sophisticated Django methods in order to exploit prefetching
+        publisher_projects = list(instance.project.publisherproject_set.all())
+        if publisher_projects:
+            return {
+                'project': publisher_projects[0].slug,
+                'publisher': publisher_projects[0].publisher.name
+            }
 
     @classmethod
     def faceted_search(
