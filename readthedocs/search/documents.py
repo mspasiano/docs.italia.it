@@ -47,12 +47,8 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
     modified_model_field = 'modified_date'
 
     # DocsItalia
-    docsitalia = fields.ObjectField(
-        properties={
-            'project': fields.KeywordField(),
-            'publisher': fields.TextField(),
-        }
-    )
+    publisher_project = fields.KeywordField()
+    publisher = fields.TextField()
 
     class Meta:
         model = Project
@@ -77,15 +73,21 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
         elif isinstance(related_instance, PublisherProject):
             return related_instance.projects.all()
 
-    def prepare_docsitalia(self, instance):
-        """Return docsitalia object."""
+    def prepare_publisher_project(self, instance):
+        """Prepare docsitalia publisher project field."""
         # not using more sophisticated Django methods in order to exploit prefetching
-        publisher_projects = list(instance.publisherproject_set.all())
-        if publisher_projects:
-            return {
-                'project': publisher_projects[0].slug,
-                'publisher': publisher_projects[0].publisher.name
-            }
+        try:
+            return instance.publisherproject_set.all()[0].slug
+        except IndexError:
+            return
+
+    def prepare_publisher(self, instance):
+        """Prepare docsitalia publisher field."""
+        # not using more sophisticated Django methods in order to exploit prefetching
+        try:
+            return instance.publisherproject_set.all()[0].publisher.name
+        except IndexError:
+            return
 
     @classmethod
     def faceted_search(cls, query, user, language=None):
@@ -140,12 +142,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
     modified_model_field = 'modified_date'
 
     # DocsItalia
-    docsitalia = fields.ObjectField(
-        properties={
-            'project': fields.KeywordField(),
-            'publisher': fields.TextField(),
-        }
-    )
+    publisher_project = fields.KeywordField()
+    publisher = fields.TextField()
 
     class Meta:
         model = HTMLFile
@@ -153,12 +151,6 @@ class PageDocument(RTDDocTypeMixin, DocType):
         ignore_signals = True
         # ensure the Page is reindexed when Publisher or PublisherProject is updated
         related_models = [PublisherProject, Publisher]
-
-    def get_queryset(self):
-        """Fetch related instances."""
-        return super().get_queryset().prefetch_related(
-            'project__publisherproject_set__publisher'
-        )
 
     def get_instances_from_related(self, related_instance):
         """If related_models is set, define how to retrieve the Car instance(s) from the related model.
@@ -211,15 +203,21 @@ class PageDocument(RTDDocTypeMixin, DocType):
 
         return all_domains
 
-    def prepare_docsitalia(self, instance):
-        """Return docsitalia object."""
+    def prepare_publisher_project(self, instance):
+        """Prepare docsitalia publisher project field."""
         # not using more sophisticated Django methods in order to exploit prefetching
-        publisher_projects = list(instance.project.publisherproject_set.all())
-        if publisher_projects:
-            return {
-                'project': publisher_projects[0].slug,
-                'publisher': publisher_projects[0].publisher.name
-            }
+        try:
+            return instance.project.publisherproject_set.all()[0].slug
+        except IndexError:
+            return
+
+    def prepare_publisher(self, instance):
+        """Prepare docsitalia publisher field."""
+        # not using more sophisticated Django methods in order to exploit prefetching
+        try:
+            return instance.project.publisherproject_set.all()[0].publisher.name
+        except IndexError:
+            return
 
     @classmethod
     def faceted_search(
@@ -251,6 +249,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
         # Also do not index certain files
         queryset = queryset.internal().filter(
             project__documentation_type__contains='sphinx'
+        ).prefetch_related(
+            'project__publisherproject_set__publisher'
         )
 
         # TODO: Make this smarter
