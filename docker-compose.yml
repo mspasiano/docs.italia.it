@@ -55,7 +55,7 @@ services:
     image: italia/docs_italia_it_dev:latest
     depends_on:
       - web
-    command: bash -c "wait-for-it -s -t 60 es:9200 -- docker/celery.sh -A readthedocs.worker -Ofair -c 3 -Q web,web01,reindex -l INFO" --
+    command: bash -c "wait-for-it -s -t 60 es:9200 -- docker/celery.sh -A readthedocs.worker -Ofair -c 3 -Q web,web01,reindex -l DEBUG" --
     volumes:
       - ".:/app:rw"
       - "docs:/home/documents"
@@ -70,7 +70,7 @@ services:
     image: italia/docs_italia_it_dev:latest
     depends_on:
       - web
-    command: docker/celery.sh -A readthedocs.worker -Ofair -c 6 -Q builder,celery,default,build01 -l INFO
+    command: docker/celery.sh -A readthedocs.worker -Ofair -c 6 -Q docs,builder,celery,default,build01 -l DEBUG
     volumes:
       - ".:/app:rw"
       - "docs:/home/documents"
