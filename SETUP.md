@@ -63,7 +63,7 @@
 8. Create empty indexes:
 
     ```bash
-    ./docker/create_indexes.sh
+    ./docker/create_indices.sh
     ```
 
 9. Collegarsi alla URL http://local.docs.italia.it/dashboard/ e verificare che l'import dei repository funzioni correttamente seguendo i seguenti passaggi:

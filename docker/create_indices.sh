@@ -2,5 +2,5 @@
 
 set -e
 
-echo "Creating empty indexes"
+echo "Creating empty indices"
 docker-compose exec -T web python manage.py search_index --create
