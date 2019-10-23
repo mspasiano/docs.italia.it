@@ -56,7 +56,7 @@ class CommunityProdSettings(CommunityBaseSettings):
 
     @property
     def INSTALLED_APPS(self):  # noqa
-        apps = super(CommunityProdSettings, self).INSTALLED_APPS
+        apps = super().INSTALLED_APPS
         # Insert our depends above RTD applications, after guaranteed third
         # party package
         if os.environ.get('DOCS_CONVERTER_VERSION', False):
@@ -64,6 +64,9 @@ class CommunityProdSettings(CommunityBaseSettings):
 
         if os.environ.get('SENTRY_DSN', False):
             apps.insert(apps.index('rest_framework'), 'raven.contrib.django.raven_compat')
+
+        if os.environ.get('DEBUG', False):
+            apps.append('debug_toolbar')
 
         return apps
 
@@ -239,17 +242,18 @@ class CommunityProdSettings(CommunityBaseSettings):
 
     # Add fancy sessions after the session middleware
     @property
-    def MIDDLEWARE_CLASSES(self): # NOQA
-        classes = super(CommunityProdSettings, self).MIDDLEWARE_CLASSES
-        classes = list(classes)
-        index = classes.index(
+    def MIDDLEWARE(self):
+        middlewares = list(super().MIDDLEWARE)
+        index = middlewares.index(
             'readthedocs.core.middleware.FooterNoSessionMiddleware'
         )
-        classes.insert(
+        middlewares.insert(
             index + 1,
             'restrictedsessions.middleware.RestrictedSessionsMiddleware'
         )
-        return tuple(classes)
+        if os.environ.get('DEBUG', False):
+            middlewares.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+        return middlewares
 
     RESTRICTEDSESSIONS_AUTHED_ONLY = True
 
@@ -270,6 +274,14 @@ class CommunityProdSettings(CommunityBaseSettings):
         }
         return logging
 
+    INTERNAL_IPS = ["127.0.0.1", "localhost", "local.docs.italia.it"]
+
+    def show_toolbar(request):
+            return True
+
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': show_toolbar,
+    }
 
 CommunityProdSettings.load_settings(__name__)
 
