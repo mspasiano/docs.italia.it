@@ -70,3 +70,4 @@ dev.db-journal
 
 .secrets
 *.bz2
+*.sql
