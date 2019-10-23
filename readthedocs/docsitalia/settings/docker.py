@@ -140,8 +140,6 @@ class CommunityProdSettings(CommunityBaseSettings):
     # RTD settings
     # This goes together with FILE_SYNCER setting
     # eg: FILE_SINCER = 'readthedocs.builds.syncers.*' (likely RemoteSyncer)
-    MULTIPLE_APP_SERVERS = os.environ['APP_HOSTS'].split(',')
-    MULTIPLE_BUILD_SERVERS = os.environ['WORKER_HOSTS'].split(',')
     SLUMBER_API_HOST = 'http://%s' % os.environ['API_HOST']
     SLUMBER_USERNAME = os.environ['SLUMBER_USERNAME']
     SLUMBER_PASSWORD = os.environ['SLUMBER_PASSWORD']

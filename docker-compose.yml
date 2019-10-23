@@ -93,6 +93,7 @@ services:
       context: docker/elasticsearch
     environment:
       - cluster.name=docsitalia
+      - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - 9200:9200

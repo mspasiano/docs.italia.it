@@ -14,4 +14,4 @@ fi
 echo "Dumping database to '$1'"
 docker-compose up -d "${DB_CONTAINER}"
 sleep 5
-docker-compose exec -T "${DB_CONTAINER}" pg_dump -U postgres -Ox "${DB_NAME}" > $1
+docker-compose exec -T "${DB_CONTAINER}" pg_dump -U "${DB_USER}" -Ox "${DB_NAME}" > $1
