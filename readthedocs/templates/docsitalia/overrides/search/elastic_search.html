@@ -23,8 +23,8 @@
             {% if type == 'file' %}
             {% if facets.project %}
             <li><h3 class="pt-2">{% trans 'Projects' %}</h3></li>
-            {% for name, count in facets.project.items %}
-            <li class="list-item large {% if project == name %}active{% endif %}">
+            {% for name, count, selected in facets.project.items %}
+            <li class="list-item large {% if selected %}active{% endif %}">
               {% if project == name %}
               <a href="?{% url_replace request 'project' ''  %}">{{ name }}
                 {% else %}
@@ -40,8 +40,8 @@
 
             {% if facets.language %}
             <li><h3 class="pt-2">Lingua</h3></li>
-            {% for name, count in facets.language.items %}
-            <li class="list-item large {% if language == name %}active{% endif %}">
+            {% for name, count, selected in facets.language.items %}
+            <li class="list-item large {% if selected %}active{% endif %}">
               {% if language == name %}
                 <a href="?{% url_replace request 'language' ''  %}">{{ name }}
               {% else %}
@@ -57,8 +57,8 @@
 
             {% if facets.publisher %}
             <li><h3 class="pt-2">Amministrazione</h3></li>
-            {% for name, count in facets.publisher.items %}
-            <li class="list-item large {% if publisher == name %}active{% endif %}">
+            {% for name, count, selected in facets.publisher %}
+            <li class="list-item large {% if selected %}active{% endif %}">
               {% if publisher == name %}
                 <a href="?{% url_replace request 'publisher' ''  %}">{{ name }}</a>
               {% else %}
@@ -71,14 +71,14 @@
             <li><span class="divider"></span></li>
             {% endif %}
 
-            {% if facets.progetto %}
+            {% if facets.publisher_project %}
             <li><h3 class="pt-2">Progetto</h3></li>
-            {% for name, count in facets.progetto.items %}
-            <li class="list-item large {% if progetto == name %}active{% endif %}">
-              {% if progetto == name %}
-                <a href="?{% url_replace request 'progetto' ''  %}">{{ name|get_publisher_project }}</a>
+            {% for name, count, selected in facets.publisher_project %}
+            <li class="list-item large {% if selected %}active{% endif %}">
+              {% if publisher_project == name %}
+                <a href="?{% url_replace request 'publisher_project' ''  %}">{{ name|get_publisher_project }}</a>
               {% else %}
-                <a href="?{% url_replace request 'progetto' name  %}">{{ name|get_publisher_project }}
+                <a href="?{% url_replace request 'publisher_project' name  %}">{{ name|get_publisher_project }}
                   ({{ count }})
                 </a>
               {% endif %}
@@ -106,7 +106,7 @@
                 {% if language %} <input type="hidden" name="language" value="{{ language }}"> {% endif %}
                 {% endcomment %}
                 {% if publisher %} <input type="hidden" name="publisher" value="{{ publisher }}"> {% endif %}
-                {% if progetto %} <input type="hidden" name="progetto" value="{{ progetto }}"> {% endif %}
+                {% if publisher_project %} <input type="hidden" name="publisher_project" value="{{ publisher_project }}"> {% endif %}
               </div>
               <div class="row justify-content-center">
                 <div class="submit-input-wrapper col col-md-6">
@@ -118,6 +118,7 @@
           </div>
         </div>
         <!-- END search form -->
+
         {% if query %}
           <!-- BEGIN search results -->
           <div class="module">
@@ -144,34 +145,57 @@
             {% endcomment %}
 
             <ul class="row">
-              {% for result in results.hits.hits %}
+              {% for result in results %}
               <li class="document-card col-12 col-md-4 item p-2 p-md-3">
-                <p class="document-card-header icon icon-type-document neutral-1-color-a8">{{ result.fields.publisher }}</p>
-                {% if result.fields.name %}
+                <p class="document-card-header icon-type-document neutral-1-color-a8">{{ result.publisher }}</p>
+                {% if type == "project" %}
                   {# Project #}
                   <h3 class="document-card-title color-inherit">
-                    <a href="{% doc_url_patched result.fields.slug|get_project %}">{{ result.fields.name }}</a>
+                    <a href="{% doc_url_patched result.slug|get_project %}">{{ result.name }}</a>
                   </h3>
                   <div class="document-card-description color-inherit">
-                    {% for fragment in result.highlight.description|slice:":1" %}
+                    {% for fragment in result.meta.highlight.description|slice:":1" %}
                     <p>
                       ...{{ fragment|safe }}...
                     </p>
                     {% endfor %}
                   </div>
                   {# End Project #}
-                {% elif result.fields.path %}
+                {% elif type == "file" %}
                   {# File #}
                   <h3 class="document-card-title color-inherit">
-                    {% with result.fields.project|get_project as proj %}
-                    <a href="{% doc_url_patched proj result.fields.version result.fields.path %}?highlight={{ query }}">{{ proj }} - {{ result.fields.title|safe }}</a>
+                    {% with result.project|get_project as proj %}
+                    <a href="{% doc_url_patched proj result.version result.full_path %}?highlight={{ query }}">{{ proj }} - {{ result.title|safe }}</a>
                     {% endwith %}
                   </h3>
                   <div class="document-card-description color-inherit">
-                    {% for fragment in result.highlight.content|slice:":1" %}
-                    <p>
-                      ...{{ fragment|safe }}...
-                    </p>
+                    {% for inner_hit in result.meta.inner_hits|slice:":1" %}
+                        {% if inner_hit.type == 'sections' %}
+                          {% comment %} <p>
+                            <a href="{% doc_url result.project|get_project result.version result.full_path %}#{{ inner_hit.source.id }}">
+                              {% if inner_hit.highlight|get_key_or_none:"sections.title" %}
+                                {% with section_title=inner_hit.highlight|get_key_or_none:"sections.title" %}
+                                  {{ section_title.0|safe }}
+                                {% endwith %}
+                              {% else %}
+                                {{ inner_hit.source.title }}
+                              {% endif %}
+                            </a>
+                          </p> {% endcomment %}
+                          {% if inner_hit.highlight|get_key_or_none:"sections.content" %}
+                            {% with section_content=inner_hit.highlight|get_key_or_none:"sections.content" %}
+                              {% for content in section_content %}
+                                <p class="fragment">
+                                  ... {{ content|safe }} ...
+                                </p>
+                              {% endfor %}
+                            {% endwith %}
+                          {% else %}
+                            <p class="fragment">
+                              {{ inner_hit.source.content|safe }} ...
+                            </p>
+                          {% endif %}
+                        {% endif %}
                     {% endfor %}
                   </div>
                   {# End File #}

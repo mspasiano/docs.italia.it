@@ -48,7 +48,8 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
 
     # DocsItalia
     publisher_project = fields.KeywordField()
-    publisher = fields.TextField()
+    # publisher is currently used for faceting only, not for queries
+    publisher = fields.KeywordField()
 
     class Meta:
         model = Project
@@ -90,15 +91,24 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
             return
 
     @classmethod
-    def faceted_search(cls, query, user, language=None):
+    def faceted_search(
+            cls, query, user, language=None, publisher=None, publisher_project=None,
+    ):
         from readthedocs.search.faceted_search import ProjectSearch
         kwargs = {
             'user': user,
             'query': query,
         }
 
+        filters = {}
         if language:
-            kwargs['filters'] = {'language': language}
+            filters['language'] = language
+        if publisher:
+            filters['publisher'] = publisher
+        if publisher_project:
+            filters['publisher_project'] = publisher_project
+
+        kwargs['filters'] = filters
 
         return ProjectSearch(**kwargs)
 
@@ -143,7 +153,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
 
     # DocsItalia
     publisher_project = fields.KeywordField()
-    publisher = fields.TextField()
+    # publisher is currently used for faceting only, not for queries
+    publisher = fields.KeywordField()
 
     class Meta:
         model = HTMLFile
@@ -222,7 +233,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
     @classmethod
     def faceted_search(
             cls, query, user, projects_list=None, versions_list=None,
-            filter_by_user=True
+            filter_by_user=True, publisher=None, publisher_project=None,
     ):
         from readthedocs.search.faceted_search import PageSearch
         kwargs = {
@@ -236,6 +247,10 @@ class PageDocument(RTDDocTypeMixin, DocType):
             filters['project'] = projects_list
         if versions_list is not None:
             filters['version'] = versions_list
+        if publisher:
+            filters['publisher'] = publisher
+        if publisher_project:
+            filters['publisher_project'] = publisher_project
 
         kwargs['filters'] = filters
 

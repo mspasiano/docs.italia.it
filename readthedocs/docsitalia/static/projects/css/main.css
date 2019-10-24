@@ -554,7 +554,7 @@ select:hover {
   width: 2rem;
   background: linear-gradient(to right, rgba(255, 255, 255, 0), #ffffff 50%);
 }
-.document-card-description em {
+.document-card-description span, .document-card-description em {
   background: #bffffd;
   font-weight: 700;
 }
