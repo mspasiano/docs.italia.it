@@ -2,8 +2,9 @@ import logging
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import FacetedSearch, TermsFacet
-from elasticsearch_dsl.faceted_search import NestedFacet
+from elasticsearch_dsl.faceted_search import FacetedResponse, NestedFacet
 from elasticsearch_dsl.query import Bool, SimpleQueryString, Nested, Match
+from elasticsearch_dsl.search import Search
 
 from django.conf import settings
 
@@ -73,7 +74,7 @@ class RTDFacetedSearch(FacetedSearch):
 
         for operator in self.operators:
             query_string = SimpleQueryString(
-                query=query, fields=self.fields, default_operator=operator
+                query=query, fields=self.fields, default_operator=operator,
             )
             all_queries.append(query_string)
 
@@ -212,6 +213,14 @@ class PageSearchBase(RTDFacetedSearch):
             query=bool_query
         )
         return nested_query
+
+    def search(self):
+        """Construct the Search object and return a faceted search response."""
+        s = Search(
+            doc_type=self.doc_types, index=self.index, using=self.using,
+            extra={'min_score': getattr(settings, 'ES_SEARCH_FILE_MIN_SCORE', 1)},
+        )
+        return s.response_class(FacetedResponse)
 
 
 class PageSearch(SettingsOverrideObject):
