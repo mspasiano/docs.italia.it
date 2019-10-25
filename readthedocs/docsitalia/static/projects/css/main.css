@@ -198,7 +198,7 @@ select:hover {
 .column-search-filters li {
   list-style: none;
 }
-.column-search-filters li .active {
+.column-search-filters li.active {
   font-weight: 500;
   color: #004080;
 }
