@@ -155,6 +155,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
     publisher_project = fields.KeywordField()
     # publisher is currently used for faceting only, not for queries
     publisher = fields.KeywordField()
+    privacy_level = fields.KeywordField(attr='version.privacy_level')
 
     class Meta:
         model = HTMLFile
@@ -264,7 +265,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
         # Also do not index certain files
         queryset = queryset.internal().filter(
             project__documentation_type__contains='sphinx'
-        ).prefetch_related(
+        ).select_related('version').prefetch_related(
             'project__publisherproject_set__publisher'
         )
 

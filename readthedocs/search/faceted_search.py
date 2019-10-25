@@ -9,6 +9,7 @@ from elasticsearch_dsl.search import Search
 from django.conf import settings
 
 from readthedocs.core.utils.extend import SettingsOverrideObject
+from readthedocs.projects.constants import PRIVATE
 from readthedocs.search.documents import (
     PageDocument,
     ProjectDocument,
@@ -219,7 +220,7 @@ class PageSearchBase(RTDFacetedSearch):
         s = Search(
             doc_type=self.doc_types, index=self.index, using=self.using,
             extra={'min_score': getattr(settings, 'ES_SEARCH_FILE_MIN_SCORE', 1)},
-        )
+        ).exclude("term", privacy_level=PRIVATE)
         return s.response_class(FacetedResponse)
 
 
