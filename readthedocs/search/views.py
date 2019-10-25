@@ -6,7 +6,6 @@ from operator import attrgetter
 
 from django.shortcuts import get_object_or_404, render
 
-from elasticsearch_dsl.search import Search
 from readthedocs.builds.constants import LATEST
 from readthedocs.projects.models import Project
 from readthedocs.search.faceted_search import (
@@ -87,7 +86,6 @@ def elastic_search(request, project_slug=None):
             query=user_input.query, user=request.user, **kwargs
         )
         results = search[:50].execute()
-
         facets = results.facets
 
         log.info(
