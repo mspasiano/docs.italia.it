@@ -12,7 +12,7 @@ _redis = {
 }
 
 
-class CommunityProdSettings(CommunityBaseSettings):
+class DocsItaliaDockerSettings(CommunityBaseSettings):
 
     """Settings for local development"""
 
@@ -55,10 +55,18 @@ class CommunityProdSettings(CommunityBaseSettings):
     PRIVATE_BASE = DOCS_BASE
 
     @property
+    def TEMPLATES(self):  # noqa
+        TEMPLATES = super().TEMPLATES
+        TEMPLATE_OVERRIDES = os.path.join(super().TEMPLATE_ROOT, 'docsitalia', 'overrides')
+        TEMPLATES[0]['DIRS'].insert(0, TEMPLATE_OVERRIDES)
+        return TEMPLATES
+
+    @property
     def INSTALLED_APPS(self):  # noqa
         apps = super().INSTALLED_APPS
         # Insert our depends above RTD applications, after guaranteed third
         # party package
+        apps.append('readthedocs.docsitalia')
         if os.environ.get('DOCS_CONVERTER_VERSION', False):
             apps.insert(apps.index('rest_framework'), 'docs_italia_convertitore_web')
 
@@ -260,7 +268,7 @@ class CommunityProdSettings(CommunityBaseSettings):
     # Logging
     @property
     def LOGGING(self): # NOQA
-        logging = super(CommunityProdSettings, self).LOGGING
+        logging = super(DocsItaliaDockerSettings, self).LOGGING
         logging['formatters']['syslog'] = {
             'format': 'readthedocs/%(name)s[%(process)d]: '
                       '%(levelname)s %(message)s [%(name)s:%(lineno)s]',
@@ -283,7 +291,7 @@ class CommunityProdSettings(CommunityBaseSettings):
         'SHOW_TOOLBAR_CALLBACK': show_toolbar,
     }
 
-CommunityProdSettings.load_settings(__name__)
+DocsItaliaDockerSettings.load_settings(__name__)
 
 if not os.environ.get('DJANGO_SETTINGS_SKIP_LOCAL', False):
     try:
