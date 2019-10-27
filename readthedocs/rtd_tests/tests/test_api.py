@@ -1,10 +1,8 @@
 import base64
 import datetime
 import json
-from collections import OrderedDict
 
 import mock
-from unittest import skip
 
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
@@ -2115,7 +2113,6 @@ class APIVersionTests(TransactionTestCase):
     reset_sequences = True
     fixtures = ['eric', 'test_data']
 
-    @skip('merging')
     def test_get_version_by_id(self):
         """
         Test the full response of ``/api/v2/version/{pk}`` is what we expects.
@@ -2157,8 +2154,7 @@ class APIVersionTests(TransactionTestCase):
                 'environment_variables': {},
                 'enable_epub_build': True,
                 'enable_pdf_build': True,
-                # 'features': ['allow_deprecated_webhooks'], TODO figure out
-                'features': [],
+                'features': ['allow_deprecated_webhooks'],
                 'has_valid_clone': False,
                 'has_valid_webhook': False,
                 'id': 6,

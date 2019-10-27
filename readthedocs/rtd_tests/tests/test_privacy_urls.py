@@ -1,7 +1,6 @@
 import re
 
 import mock
-from unittest import skip
 
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.admindocs.views import extract_views_from_urlpatterns
@@ -197,7 +196,6 @@ class PublicProjectMixin(ProjectMixin):
 
 class PrivateProjectMixin(ProjectMixin):
 
-    # @skip('merging code')
     def test_private_urls(self):
         from readthedocs.projects.urls.private import urlpatterns
         self._test_url(urlpatterns)

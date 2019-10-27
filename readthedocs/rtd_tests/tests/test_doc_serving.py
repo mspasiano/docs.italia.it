@@ -2,7 +2,6 @@ import os
 
 import django_dynamic_fixture as fixture
 import mock
-from unittest import skip
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -83,7 +82,6 @@ class TestPrivateDocs(BaseDocServing):
         self.assertTrue('private_web_root' in str(exc.exception))
         self.assertTrue('public_web_root' not in str(exc.exception))
 
-    # @skip('merge (reverse about_docs_italia)')
     @override_settings(
         PYTHON_MEDIA=False,
         USE_SUBDOMAIN=True,
@@ -106,7 +104,6 @@ class TestPrivateDocs(BaseDocServing):
         # Private projects/versions always return 404 for robots.txt
         self.assertEqual(response.status_code, 404)
 
-    # @skip('merge (reverse about_docs_italia)')
     @override_settings(
         USE_SUBDOMAIN=True,
         PUBLIC_DOMAIN='readthedocs.io',

@@ -505,7 +505,7 @@ class DocsItaliaViewsTest(TestCase):
         response = self.client.get(naked_privateproject_lang_url)
         self.assertEqual(response.status_code, 404)
 
-    @pytest.mark.skip(reason="merging code")
+    @pytest.mark.skip(reason="SEARCH")
     def test_docsitalia_api_returns_400_without_project(self):
         # TODO redo search on merge
         response = self.client.get('/api/v2/docsearch/?q=query&project=projectslug&version=latest')
@@ -513,7 +513,7 @@ class DocsItaliaViewsTest(TestCase):
 
 
     # @mock.patch.object(PageIndex, 'search')
-    @pytest.mark.skip(reason="merging code")
+    @pytest.mark.skip(reason="SEARCH")
     def test_docsitalia_api_returns_404_without_results(self, search):
         search.return_value = None
         project = Project.objects.create(
@@ -525,7 +525,7 @@ class DocsItaliaViewsTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     # @mock.patch.object(PageIndex, 'search')
-    @pytest.mark.skip(reason="merging code")
+    @pytest.mark.skip(reason="SEARCH")
     def test_docsitalia_api_returns_results(self, search):
         search.return_value = {}
         project = Project.objects.create(
@@ -537,7 +537,7 @@ class DocsItaliaViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content.decode('utf-8'), {'results': {}})
 
-    @pytest.mark.skip(reason="merging code")
+    @pytest.mark.skip(reason="SEARCH")
     def test_docsitalia_api_active_versions_do_not_return_private_documents(self):
         project = Project.objects.create(
             name='my project',

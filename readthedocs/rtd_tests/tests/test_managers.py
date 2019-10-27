@@ -1,5 +1,3 @@
-import pytest
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django_dynamic_fixture import get
@@ -388,7 +386,6 @@ class TestHTMLFileManager(TestCase):
             commit='1234567890abcdef',
         )
 
-    @pytest.mark.skip(reason="merging code")
     def test_internal_html_file_queryset(self):
         """
         It will exclude pull/merge request Version html files from the queries
@@ -397,7 +394,6 @@ class TestHTMLFileManager(TestCase):
         self.assertNotIn(self.external_html_file, HTMLFile.objects.internal())
         self.assertIn(self.internal_html_file, HTMLFile.objects.internal())
 
-    @pytest.mark.skip(reason="merging code")
     def test_external_html_file_queryset(self):
         """
         It will only include pull/merge request Version html files in the queries.
