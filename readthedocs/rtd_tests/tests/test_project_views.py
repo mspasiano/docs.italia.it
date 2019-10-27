@@ -280,7 +280,7 @@ class TestAdvancedForm(TestBasicsForm):
 class TestImportDemoView(MockBuildTestCase):
     """Test project import demo view."""
 
-    fixtures = ['test_data', 'eric']
+    fixtures = ['eric', 'test_data']
 
     def setUp(self):
         self.client.login(username='eric', password='test')
@@ -615,7 +615,7 @@ class TestBadges(TestCase):
 
 
 class TestTags(TestCase):
-    @skip('merging code')
+    # @skip('merging code')
     def test_project_filtering_work_with_tags_with_space_in_name(self):
         pip = get(Project, slug='pip')
         pip.tags.add('tag with space')

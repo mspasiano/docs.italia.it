@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """Docs italia serializers"""
-from __future__ import absolute_import
 
 from rest_framework import serializers
 # from readthedocs.restapi.serializers import ProjectSerializer
 # todo merge
-from readthedocs.api.v3.serializers import ProjectSerializer
+from readthedocs.api.v2.serializers import ProjectSerializer
 
 
 class DocsItaliaProjectSerializer(ProjectSerializer):

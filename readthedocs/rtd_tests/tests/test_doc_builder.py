@@ -25,7 +25,7 @@ from readthedocs.projects.models import Feature, Project
 @skip('merging code')
 class SphinxBuilderTest(TestCase):
 
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
 
     def setUp(self):
         self.project = Project.objects.get(slug='pip')

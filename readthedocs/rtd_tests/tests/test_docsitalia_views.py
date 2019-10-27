@@ -507,6 +507,7 @@ class DocsItaliaViewsTest(TestCase):
 
     @pytest.mark.skip(reason="merging code")
     def test_docsitalia_api_returns_400_without_project(self):
+        # TODO redo search on merge
         response = self.client.get('/api/v2/docsearch/?q=query&project=projectslug&version=latest')
         self.assertEqual(response.status_code, 400)
 

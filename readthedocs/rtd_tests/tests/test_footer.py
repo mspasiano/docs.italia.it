@@ -17,7 +17,7 @@ from readthedocs.rtd_tests.mocks.paths import fake_paths_by_regex
 
 @skip('merging code')
 class Testmaker(APITestCase):
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
     url = '/api/v2/footer_html/?project=pip&version=latest&page=index&docroot=/'
     factory = APIRequestFactory()
 
@@ -118,7 +118,7 @@ class Testmaker(APITestCase):
 
 @skip('merging code')
 class TestVersionCompareFooter(TestCase):
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
 
     def setUp(self):
         self.pip = Project.objects.get(slug='pip')
@@ -233,7 +233,7 @@ class TestVersionCompareFooter(TestCase):
 
 @skip('merging code')
 class TestFooterPerformance(APITestCase):
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
     url = '/api/v2/footer_html/?project=pip&version=latest&page=index&docroot=/'
     factory = APIRequestFactory()
 

@@ -197,7 +197,7 @@ class PublicProjectMixin(ProjectMixin):
 
 class PrivateProjectMixin(ProjectMixin):
 
-    @skip('merging code')
+    # @skip('merging code')
     def test_private_urls(self):
         from readthedocs.projects.urls.private import urlpatterns
         self._test_url(urlpatterns)

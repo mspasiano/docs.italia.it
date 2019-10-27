@@ -349,7 +349,7 @@ class TestExternalBuildManager(TestBuildManagerBase):
 
 class TestHTMLFileManager(TestCase):
 
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
 
     def setUp(self):
         self.user = User.objects.create(username='test_user', password='test')

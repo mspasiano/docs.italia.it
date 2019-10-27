@@ -139,8 +139,7 @@ class CommunityBaseSettings(Settings):
             'readthedocs.analytics',
             'readthedocs.sphinx_domains',
             'readthedocs.search',
-            # 'docs_italia_convertitore_web',
-
+            'docs_italia_convertitore_web',
 
             # allauth
             'allauth',

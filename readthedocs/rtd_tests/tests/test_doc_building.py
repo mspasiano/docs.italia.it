@@ -14,7 +14,6 @@ import uuid
 
 import mock
 import pytest
-from unittest import skip
 
 from django.test import TestCase, TransactionTestCase
 from django_dynamic_fixture import get
@@ -43,11 +42,12 @@ DUMMY_BUILD_ID = 123
 SAMPLE_UNICODE = 'HérÉ îß sömê ünïçó∂é'
 SAMPLE_UTF8_BYTES = SAMPLE_UNICODE.encode('utf-8')
 
-@skip('merging')
-class TestLocalBuildEnvironment(TestCase):
+
+class TestLocalBuildEnvironment(TransactionTestCase):
 
     """Test execution and exception handling in environment."""
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
+    reset_sequences = True
 
     def setUp(self):
         self.project = Project.objects.get(slug='pip')
@@ -361,12 +361,11 @@ class TestLocalBuildEnvironment(TestCase):
         })
 
 
-@skip('merging')
 class TestDockerBuildEnvironment(TestCase):
 
     """Test docker build environment."""
 
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
 
     def setUp(self):
         self.project = Project.objects.get(slug='pip')
@@ -1441,9 +1440,8 @@ class TestPythonEnvironment(TestCase):
         self.build_env_mock.run.assert_not_called()
 
 
-@skip('merging')
 class AutoWipeEnvironmentBase:
-    fixtures = ['test_data']
+    fixtures = ['eric', 'test_data']
     build_env_class = None
 
     def setUp(self):
