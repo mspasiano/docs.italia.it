@@ -128,7 +128,7 @@ class ProjectMixin(PrivateViewMixin):
     context_object_name = 'project'
 
     def get_queryset(self):
-        return self.model.objects.for_admin_user(self.request.user)
+        return self.model.objects.user_can_admin(self.request.user)
 
 
 class ProjectUpdate(ProjectSpamMixin, ProjectMixin, UpdateView):

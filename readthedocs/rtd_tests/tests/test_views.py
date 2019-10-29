@@ -359,3 +359,73 @@ class TestSearchAnalyticsView(TestCase):
             self.assertEqual(len(body), 23)
             self.assertEqual(body[0][1], 'advertising')
             self.assertEqual(body[-1][1], 'hello world')
+
+
+class TestProjectUpdateView(TestCase):
+    """Tests for project update page."""
+
+    fixtures = ['eric', 'test_data']
+
+    def setUp(self):
+        self.client.login(username='eric', password='test')
+        self.user = User.objects.get(username='eric')
+        self.pip = Project.objects.get(slug='pip')
+        self.project_update_url = reverse('projects_edit', args=[self.pip.slug])
+
+    def test_project_update_queryset(self):
+        resp = self.client.get(self.project_update_url)
+        self.assertEqual(resp.status_code, 200)
+        self.pip.users.clear()
+        resp = self.client.get(self.project_update_url)
+        self.assertEqual(resp.status_code, 404)
+        self.user.is_superuser = True
+        self.user.save()
+        resp = self.client.get(self.project_update_url)
+        self.assertEqual(resp.status_code, 200)
+
+
+class TestProjectAdvancedUpdateView(TestCase):
+    """Tests for project advanved update page."""
+
+    fixtures = ['eric', 'test_data']
+
+    def setUp(self):
+        self.client.login(username='eric', password='test')
+        self.user = User.objects.get(username='eric')
+        self.pip = Project.objects.get(slug='pip')
+        self.project_advanced_update_url = reverse('projects_advanced', args=[self.pip.slug])
+
+    def test_project_advanced_update_queryset(self):
+        resp = self.client.get(self.project_advanced_update_url)
+        self.assertEqual(resp.status_code, 200)
+        self.pip.users.clear()
+        resp = self.client.get(self.project_advanced_update_url)
+        self.assertEqual(resp.status_code, 404)
+        self.user.is_superuser = True
+        self.user.save()
+        resp = self.client.get(self.project_advanced_update_url)
+        self.assertEqual(resp.status_code, 200)
+
+
+class TestWipeVersionView(TestCase):
+    """Tests for wipe version page."""
+
+    fixtures = ['eric', 'test_data']
+
+    def setUp(self):
+        self.client.login(username='eric', password='test')
+        self.user = User.objects.get(username='eric')
+        self.pip = Project.objects.get(slug='pip')
+        self.version = self.pip.versions.order_by('id').first()
+        self.wipe_version_url = reverse('wipe_version', args=[self.pip.slug, self.version.slug])
+
+    def test_wipe_version_queryset(self):
+        resp = self.client.get(self.wipe_version_url)
+        self.assertEqual(resp.status_code, 200)
+        self.pip.users.clear()
+        resp = self.client.get(self.wipe_version_url)
+        self.assertEqual(resp.status_code, 404)
+        self.user.is_superuser = True
+        self.user.save()
+        resp = self.client.get(self.wipe_version_url)
+        self.assertEqual(resp.status_code, 200)
