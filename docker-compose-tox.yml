@@ -10,7 +10,7 @@ services:
       - db
     environment:
       - TRAVIS_DOCSITALIA_DOCKER=1
-    command: tox -e itresolver -- $PYTEST_ARGS
+    command: tox -e py36,itresolver -- $PYTEST_ARGS
     volumes:
       - ".:/app:rw"
       - ".tox:/app/.tox"
