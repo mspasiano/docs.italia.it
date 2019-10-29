@@ -8,7 +8,9 @@ services:
     image: italia/docs_italia_it_test:latest
     depends_on:
       - db
-    command: tox -e docsitalia py36 -- --ds=readthedocs.docsitalia.settings.testdocsitalia_docker $PYTEST_ARGS
+    environment:
+      - TRAVIS_DOCSITALIA_DOCKER=1
+    command: tox -e itresolver -- $PYTEST_ARGS
     volumes:
       - ".:/app:rw"
       - ".tox:/app/.tox"

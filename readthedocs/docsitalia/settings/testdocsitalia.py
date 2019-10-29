@@ -13,16 +13,28 @@ class DocsItaliaTestSettings(CommunityTestSettings):
         }
     }
 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'USER': '',
-            'HOST': '',
-            'PORT': 5432,
-            'PASSWORD': '',
-            'NAME': 'test_docsitalia'
+    if os.environ.get('TRAVIS_DOCSITALIA_DOCKER', False):
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'USER': 'postgres',
+                'HOST': 'db',
+                'PORT': 5432,
+                'PASSWORD': 'postgres',
+                'NAME': 'rtd'
+            }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'USER': '',
+                'HOST': '',
+                'PORT': 5432,
+                'PASSWORD': '',
+                'NAME': 'test_docsitalia'
+            }
+        }
 
     @property
     def INSTALLED_APPS(self):  # noqa
