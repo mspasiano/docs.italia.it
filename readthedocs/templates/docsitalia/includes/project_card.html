@@ -6,7 +6,7 @@
       <div class="card-body">
         <div class="categoryicon-top mb-2">
           <svg class="icon icon-primary">
-            <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-folder' %}"></use>
+            <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-folder"></use>
           </svg>
           <span class="text">{{ project.active_documents.count }} documenti</span>
         </div>

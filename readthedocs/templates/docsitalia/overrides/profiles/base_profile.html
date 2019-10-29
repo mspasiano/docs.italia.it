@@ -33,7 +33,7 @@
           <li class="{% block profile-bar-admin %}{% endblock %}">
             <a href="{% url "profiles_profile_edit" %}">
               <svg class="icon icon-white icon-xs">
-                <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-settings' %}"></use>
+                <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-settings"></use>
               </svg>
               {% trans "Admin" %}
             </a>

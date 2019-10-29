@@ -8,7 +8,7 @@
   {% if provider.id == "github" %}
     <a class="btn btn-icon btn-outline-primary {{ provider.id }}" href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params next=next %}" title="{{ provider.name }}">
       <svg class="icon icon-sm icon-primary">
-        <use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-github' %}"></use>
+        <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-github"></use>
       </svg>
       <span>
         Autenticati con {{ provider.name }}

@@ -22,8 +22,8 @@
         <label for="id_{{ field.name }}">{{ field.label }}</label>
         {% if field.field.widget.input_type == 'password' %}
         <span class="password-icon bg-transparent" aria-hidden="true">
-          <svg class="password-icon-visible icon icon-sm"><use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-password-visible' %}"></use></svg>
-          <svg class="password-icon-invisible icon icon-sm d-none"><use xlink:href="{% static 'vendor/bootstrap-italia/svg/sprite.svg#it-password-invisible' %}"></use></svg>
+          <svg class="password-icon-visible icon icon-sm"><use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-password-visible"></use></svg>
+          <svg class="password-icon-invisible icon icon-sm d-none"><use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-password-invisible"></use></svg>
         </span>
         {% endif %}
       </div>
