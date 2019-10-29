@@ -16,11 +16,11 @@ class DocsItaliaTestSettings(CommunityTestSettings):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'USER': 'docs',
+            'USER': 'postgres',
             'HOST': 'db',
             'PORT': 5432,
-            'PASSWORD': 'docs',
-            'NAME': 'test_rtd'
+            'PASSWORD': 'postgres',
+            'NAME': 'rtd'
         }
     }
 

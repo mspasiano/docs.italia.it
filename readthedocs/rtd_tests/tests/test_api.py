@@ -2123,6 +2123,9 @@ class APIVersionTests(TransactionTestCase):
         pip = Project.objects.get(slug='pip')
         version = pip.versions.get(slug='0.8')
 
+        # because of TransactionTestCase/reset_sequences
+        get(Feature, feature_id=Feature.ALLOW_DEPRECATED_WEBHOOKS, default_true=True)
+
         data = {
             'pk': version.pk,
         }
