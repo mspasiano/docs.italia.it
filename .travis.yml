@@ -46,3 +46,4 @@ branches:
   - master
   - rel # Community release branch
   - relcorp # Corporate release branch
+  - feature/issue-293-upgrade # docsitalia upgrade
