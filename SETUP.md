@@ -28,6 +28,8 @@
 
     **WARNING**: *Gli step successivi sono stati testati con docker in versione `18.09.7` e superiori e docker-compose in versione `1.21.0`. e superiore su sistemi OSX e Ubuntu GNU/Linux*
 
+    **WARNING**: *Se il dump SQL che si sta ripristinando è stato generato da voi in precedenza al punto (8) allora potete poi passare direttamente al punto (9)*
+
     ```bash
     docker-compose build
     ./docker/db_restore.sh /path/to/dump.sql
@@ -60,13 +62,19 @@
 
     **NOTE**: *il link di verifica indirizzo email appare tra i log in console (non viene eseguito alcun invio reale).*
 
-8. Create empty indexes:
+8. Creare un dump del database (opzionale):
+
+    ```bash
+    ./docker/db_dump.sh dump.sql
+    ```
+
+9. Inizializzare gli indici di Elastisearch:
 
     ```bash
     ./docker/create_indices.sh
     ```
 
-9. Collegarsi alla URL http://local.docs.italia.it/dashboard/ e verificare che l'import dei repository funzioni correttamente seguendo i seguenti passaggi:
+10. Collegarsi alla URL http://local.docs.italia.it/dashboard/ e verificare che l'import dei repository funzioni correttamente seguendo i seguenti passaggi:
 
     1. Premere il button **Import a Project**
     2. Premere il button **🔄**
@@ -74,6 +82,6 @@
     4. Premere il button **Builds**
     5. Verificare che la build termini correttamente
 
-10. Verificare che la funzionalità di ricerca funzione visitando ad esempio questa URL http://local.docs.italia.it/search/?q=documento
+11. Verificare che la funzionalità di ricerca funzione visitando ad esempio questa URL http://local.docs.italia.it/search/?q=documento
 
 _* per contattarci, puoi scriverci sul canale `#docs-italia-software` dello [Slack di Developers Italia](https://slack.developers.italia.it/) o aprire una issue su questo repo._
