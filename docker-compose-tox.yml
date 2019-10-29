@@ -19,7 +19,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=docs
       - POSTGRES_USER=docs
-      - POSTGRES_DB=test_rtd
+      - POSTGRES_DB=rtd
 
 volumes:
   tox:
