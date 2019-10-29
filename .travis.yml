@@ -5,6 +5,8 @@ dist: xenial
 matrix:
   include:
     - python: 3.6
+      env: TOXENV=itresolver
+    - python: 3.6
       env: TOXENV=py36,codecov ES_VERSION=6.2.4 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
     - python: 3.6
       env: TOXENV=docs
@@ -46,4 +48,12 @@ branches:
   - master
   - rel # Community release branch
   - relcorp # Corporate release branch
-  - feature/issue-293-upgrade # docsitalia upgrade
+  - /^feature/issue-293.*$/ # docsitalia upgrade
+  - /^italia-.*$/ # general docs italia branches
+
+addons:
+  postgresql: "10"
+  apt:
+    packages:
+    - postgresql-10
+    - postgresql-client-10
