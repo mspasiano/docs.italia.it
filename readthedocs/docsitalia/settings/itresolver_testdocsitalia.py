@@ -6,6 +6,18 @@ from .testdocsitalia import DocsItaliaTestSettings
 
 class DocsItaliaItResolverTestSettings(DocsItaliaTestSettings):
 
+    if os.environ.get('TRAVIS_DOCSITALIA_DOCKER', False):
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'USER': 'docs',
+                'HOST': 'db',
+                'PORT': 5432,
+                'PASSWORD': 'docs',
+                'NAME': 'rtd_itresolver'
+            }
+        }
+
     # Override classes
     CLASS_OVERRIDES = {
         'readthedocs.builds.syncers.Syncer': 'readthedocs.builds.syncers.LocalSyncer',
