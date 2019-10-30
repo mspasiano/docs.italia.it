@@ -10,10 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         git \
         libpq-dev \
-        locales-all \
+        locales \
+        wait-for-it \
     && rm -rf /var/lib/apt/lists/*
 
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' -e 's/# \(it_IT\.UTF-8 .*\)/\1/'  /etc/locale.gen && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=en_US.UTF-8
 
 WORKDIR /app
 
@@ -25,9 +28,6 @@ WORKDIR /app
 
 FROM docs_italia_it_base AS docs_italia_it_test
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        wait-for-it \
-    && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -U pip tox
 
 CMD ["/bin/bash"]
@@ -79,10 +79,6 @@ RUN pip install --no-cache-dir -r /app/requirements/docsitalia-converter.txt
 COPY docker/ /app/docker/
 
 ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        wait-for-it \
-    && rm -rf /var/lib/apt/lists/*
 
 CMD ["/bin/bash"]
 
