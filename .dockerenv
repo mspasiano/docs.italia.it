@@ -39,4 +39,10 @@ DOCS_BASE=/home/documents
 ACCOUNT_HTTP_PROTO=http
 SLUMBER_USERNAME=build
 GITHUB_APP_ID=80df32a4aff546f2f38b
+LANG=en_US.UTF-8
+LC_ALL=en_US.UTF-8
+PYTHONUNBUFFERED=1
 PYTHONDONTWRITEBYTECODE=1
+# this variable has TRAVIS prefix to be passed from tox to pytest without further tox.ini customization
+# to reduce the chance of a conflict
+TRAVIS_DOCSITALIA_DOCKER=1
