@@ -18,7 +18,7 @@
       <h1>
         <span class="project-breadcrumb quiet">
           {% block project-breadcrumb %}
-            <a href="{% url "projects_dashboard" %}">{% trans "Projects" %}</a>&nbsp;&gt;
+            <a href="{% url 'projects_dashboard' as projects_dashboard %}{{ projects_dashboard }}">{% trans "Projects" %}</a>&nbsp;&gt;
           {% endblock %}
         </span>
         <a href="{{ project.get_absolute_url }}">{{ project }}</a>

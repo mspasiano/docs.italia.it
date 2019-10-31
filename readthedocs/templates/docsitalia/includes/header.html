@@ -90,7 +90,7 @@
                               {% include 'docsitalia/includes/user_menu.html' %}
                             {% else %}
                             <li class="nav-item">
-                              <a class="nav-link" href="{% url 'account_login' %}"><span>{% trans "Log In" %}</span></a>
+                              <a class="nav-link" href="{% url 'account_login' as account_login%}{{ account_login }}"><span>{% trans "Log In" %}</span></a>
                             </li>
                             {% endif %}
                           </ul>
