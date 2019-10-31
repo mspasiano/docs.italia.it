@@ -74,6 +74,12 @@
     ./docker/create_indices.sh
     ```
 
+   Nel caso di un'istanza ES esisitente, è possibile cancellare gli indici esistenti con il comando:
+
+    ```bash
+    ./docker/delete_indices.sh
+    ```
+
 10. Collegarsi alla URL http://local.docs.italia.it/dashboard/ e verificare che l'import dei repository funzioni correttamente seguendo i seguenti passaggi:
 
     1. Premere il button **Import a Project**
