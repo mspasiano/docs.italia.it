@@ -16,6 +16,7 @@ from readthedocs.oauth.models import RemoteOrganization, RemoteRepository
 from readthedocs.core.resolver import resolver
 
 from .utils import get_projects_with_builds
+from .monkeypatch import monkey_patch_project_model
 
 
 def update_project_from_metadata(project, metadata):
@@ -282,3 +283,4 @@ class PublisherIntegration(models.Model):
         return (
             _('{0} for {1}')
             .format(self.get_integration_type_display(), self.publisher.name))
+
