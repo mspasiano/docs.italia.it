@@ -10,7 +10,7 @@ from .models import Publisher, PublisherProject
 
 class PublisherAdmin(admin.ModelAdmin):
 
-    """Admin view for :py:class:`Publisher`"""
+    """Admin view for :py:class:`Publisher`."""
 
     form = PublisherAdminForm
     readonly_fields = ('metadata', 'projects_metadata',)
@@ -37,7 +37,7 @@ class PublisherAdmin(admin.ModelAdmin):
 
 class PublisherProjectAdmin(admin.ModelAdmin):
 
-    """Admin view for :py:class:`PublisherProject`"""
+    """Admin view for :py:class:`PublisherProject`."""
 
     list_filter = ('featured', 'active',)
     list_display = ('name', 'publisher', 'documents', 'pub_date',)
@@ -48,7 +48,7 @@ class PublisherProjectAdmin(admin.ModelAdmin):
 
     # pylint: disable=R0201
     def documents(self, obj):
-        """Return the number of linked projects"""
+        """Return the number of linked projects."""
         return obj.projects.count()
     documents.short_description = _('documents')
 

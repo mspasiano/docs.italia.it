@@ -11,7 +11,7 @@ register = template.Library()
 
 @register.filter
 def get_publisher_project(slug):
-    """get a publisher project from the slug"""
+    """get a publisher project from the slug."""
     try:
         return PublisherProject.objects.get(slug=slug)
     except PublisherProject.DoesNotExist:
@@ -20,7 +20,7 @@ def get_publisher_project(slug):
 
 @register.simple_tag(name="doc_url_patched")
 def make_document_url(project, version=None, page=''):
-    """create the full document URL and appends index.html if root"""
+    """create the full document URL and appends index.html if root."""
     if not project:
         return ""
     url = resolve(project=project, version_slug=version, filename=page)

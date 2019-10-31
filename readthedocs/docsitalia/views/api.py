@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Docs italia api"""
+"""Docs italia api."""
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -31,7 +31,7 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
 
     def get_queryset(self):
         """
-        Filter projects by tags, publisher and project passed as query parameters
+        Filter projects by tags, publisher and project passed as query parameters.
 
         e.g. ?tags=tag1,tag2, ?publisher=publisher-slug, ?project=project-slug
 
@@ -50,6 +50,7 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
         return qs
 
     def get_project_for_user_or_404(self, lookup_value):
+        """Returns project for user or 404."""
         lookup_query = {self.lookup_field: lookup_value}
         qs = self.get_queryset()
 
@@ -57,7 +58,7 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
 
     @action(detail=True)
     def active_versions(self, request, **kwargs):
-        """Returns active versions, non private, of a project"""
+        """Returns active versions, non private, of a project."""
         project = self.get_project_for_user_or_404(
             kwargs[self.lookup_field]
         )
@@ -67,8 +68,9 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
         })
 
 
+# TODO redo on merge
 class DocSearch(APIView):
-    # TODO redo on merge
+
     """Search api for documentation builds."""
 
     def _build_es_query(self, query, project_slug, version_slug):  # noqa
@@ -119,7 +121,7 @@ class DocSearch(APIView):
         return body
 
     def get(self, request):
-        """Search API: takes project, version and q as mandatory query strings"""
+        """Search API: takes project, version and q as mandatory query strings."""
         project_slug = self.request.query_params.get('project')
         version_slug = self.request.query_params.get('version')
         query = self.request.query_params.get('q')
@@ -136,7 +138,7 @@ class DocSearch(APIView):
         except (Project.DoesNotExist, Version.DoesNotExist):
             raise ParseError()
 
-        body = self._build_es_query(query, project_slug, version_slug)
+        # body = self._build_es_query(query, project_slug, version_slug)
         # todo merge
         # results = PageIndex().search(body, routing=project_slug)
         results = None

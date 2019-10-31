@@ -8,7 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 
 from readthedocs.builds.models import Version
-from readthedocs.core.utils import broadcast
 from readthedocs.projects.models import Project
 # from readthedocs.projects import tasks
 from readthedocs.oauth.models import RemoteOrganization, RemoteRepository
@@ -20,7 +19,7 @@ from .monkeypatch import monkey_patch_project_model
 
 
 def update_project_from_metadata(project, metadata):
-    """Update a project instance with the validated  project metadata"""
+    """Update a project instance with the validated  project metadata."""
     document = metadata['document']
     project.name = document['name']
     project.description = document['description']
@@ -36,7 +35,7 @@ def update_project_from_metadata(project, metadata):
 class Publisher(models.Model):
 
     """
-    The Publisher is the organization that hosts projects (PublisherProject)
+    The Publisher is the organization that hosts projects (PublisherProject).
 
     The idea is to tie a Publisher to a RemoteOrganization, if we have a
     Publisher instance for a RemoteOrganization we can sync its data as
@@ -90,7 +89,7 @@ class Publisher(models.Model):
         return self.name
 
     def create_projects_from_metadata(self, settings):  # pylint: disable=too-many-locals
-        """Create PublisherProjects from metadata"""
+        """Create PublisherProjects from metadata."""
         slugs = []
         repo_urls_cache = {}
         for project in settings['projects']:
@@ -156,7 +155,7 @@ class Publisher(models.Model):
             new_pub_proj.projects.add(project)
 
     def active_publisher_projects(self):
-        """Active publisher projects with active documents"""
+        """Active publisher projects with active documents."""
         with_public_version = Version.objects.filter(
             privacy_level='public',
             active=True,
@@ -172,15 +171,15 @@ class Publisher(models.Model):
         ).distinct()
 
     def get_absolute_url(self):
-        """Get absolute url for publisher"""
+        """Get absolute url for publisher."""
         return reverse('publisher_detail', args=[self.slug])
 
     def get_canonical_url(self):
-        """Get canonical url for publisher"""
+        """Get canonical url for publisher."""
         return resolver.resolve_docsitalia(self.slug)
 
     def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
-        """Delete Publisher and its organization"""
+        """Delete Publisher and its organization."""
         if self.remote_organization:
             self.remote_organization.delete()
         super(Publisher, self).delete(*args, **kwargs)
@@ -190,7 +189,7 @@ class Publisher(models.Model):
 class PublisherProject(models.Model):
 
     """
-    The PublisherProject is the project that contains documents
+    The PublisherProject is the project that contains documents.
 
     These are created from the organization metadata and created at import time
 
@@ -224,7 +223,7 @@ class PublisherProject(models.Model):
         return self.name
 
     def active_documents(self):
-        """Active documents"""
+        """Active documents."""
         builded_projects = get_projects_with_builds().filter(
             publisherproject=self
         )
@@ -233,21 +232,21 @@ class PublisherProject(models.Model):
         )
 
     def description(self):
-        """Get publisher project description from metadata"""
+        """Get publisher project description from metadata."""
         return self.metadata.get('description', '')
 
     def get_absolute_url(self):
-        """get absolute url for publisher project"""
+        """get absolute url for publisher project."""
         return reverse('publisher_project_detail', args=[self.publisher.slug, self.slug])
 
     def get_canonical_url(self):
-        """get canonical url for publisher project"""
+        """get canonical url for publisher project."""
         return resolver.resolve_docsitalia(self.publisher.slug, self.slug)
 
     def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
-        """delete pb and all its projects and builds"""
+        """delete pb and all its projects and builds."""
         projects = Project.objects.filter(publisherproject=self)
-        versions = Version.objects.filter(project__in=projects)
+        # versions = Version.objects.filter(project__in=projects)
         # TODO clear_html_artifacts?
         # for version in versions:
         #     broadcast(type='app', task=tasks.clear_html_artifacts, args=[version.pk])

@@ -8,7 +8,6 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from requests.exceptions import RequestException
 
-from readthedocs.integrations.models import Integration
 from readthedocs.oauth.services.github import GitHubService
 from readthedocs.oauth.models import RemoteOrganization, RemoteRepository
 

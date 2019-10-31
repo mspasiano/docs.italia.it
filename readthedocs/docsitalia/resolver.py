@@ -1,4 +1,4 @@
-"""Override RTD URL resolver"""
+"""Override RTD URL resolver."""
 
 from django.conf import settings
 
@@ -8,7 +8,7 @@ from readthedocs.core.resolver import ResolverBase
 class ItaliaResolver(ResolverBase):
 
     """
-    Custom path resolver for built documentation
+    Custom path resolver for built documentation.
 
     Resolves to public domain without use of subdomains or /doc/* paths.
     It also takes publisher into account
@@ -18,7 +18,7 @@ class ItaliaResolver(ResolverBase):
                           language=None, private=False, single_version=None,
                           subproject_slug=None, subdomain=None, cname=None):
         """
-        Generates the URL for a document according to its project / publisher
+        Generates the URL for a document according to its project / publisher.
 
         :param project_slug: project (document) slug
         :param filename: filename
@@ -62,7 +62,7 @@ class ItaliaResolver(ResolverBase):
 
     def resolve_domain(self, project, private=None):
         """
-        Resolve the public domain for the given project
+        Resolve the public domain for the given project.
 
         :param project: project (document) instance
         :param private: if document is private
@@ -76,7 +76,7 @@ class ItaliaResolver(ResolverBase):
 
     def resolve(self, project, require_https=False, filename='', private=None, **kwargs):
         """
-        Resolve the complete URL to the provided project (document)
+        Resolve the complete URL to the provided project (document).
 
         :param project: project (document) instance
         :param protocol: http / https protocol
@@ -91,7 +91,7 @@ class ItaliaResolver(ResolverBase):
     @staticmethod
     def resolve_docsitalia(publisher_slug, pb_project_slug=None, protocol='http'):
         """
-        Resolve the complete URL for a publisher or a publisher project
+        Resolve the complete URL for a publisher or a publisher project.
 
         :param publisher_slug: the publisher slug
         :param pb_project_slug: the publisher project slug

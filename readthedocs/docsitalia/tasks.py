@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)  # noqa
 
 @app.task()
 def clear_es_index(projects):
-    """Clearing ES indexes for removed projects"""
+    """Clearing ES indexes for removed projects."""
     projects_str = ', '.join([str(p) for p in projects])
     log.info('Clearing indexes for removed projects: %s', projects_str)
     e_s = Elasticsearch(settings.ES_HOSTS)

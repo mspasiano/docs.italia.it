@@ -21,13 +21,13 @@ RAW_GITHUB_BASE_URL = (
 
 class InvalidMetadata(Exception):
 
-    """Invalid metadata generic exception"""
+    """Invalid metadata generic exception."""
 
     pass
 
 
 def validate_publisher_metadata(org, settings, **kwargs): # noqa
-    """Validate the publisher metadata"""
+    """Validate the publisher metadata."""
     data = load_yaml(settings)
     try:
         publisher = data['publisher']
@@ -50,7 +50,7 @@ def validate_publisher_metadata(org, settings, **kwargs): # noqa
 
 
 def validate_projects_metadata(org, settings, **kwargs): # noqa
-    """Validate the projects metadata"""
+    """Validate the projects metadata."""
     data = load_yaml(settings)
     try:
         projects = data['projects']
@@ -65,7 +65,7 @@ def validate_projects_metadata(org, settings, **kwargs): # noqa
                 # expand the document repository to an url so it's easier to query at
                 # Project import time
                 project['documents'][index] = {
-                    'repository':  document,
+                    'repository': document,
                     'repo_url': '{}/{}'.format(org.url, document)
                 }
             name_for_slug = project.get('short_name', project['name'])
@@ -76,7 +76,7 @@ def validate_projects_metadata(org, settings, **kwargs): # noqa
 
 
 def validate_document_metadata(org, settings, **kwargs): # noqa
-    """Validate the document metadata"""
+    """Validate the document metadata."""
     data = load_yaml(settings)
     try:
         document = data['document']

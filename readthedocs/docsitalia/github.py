@@ -1,4 +1,4 @@
-"""Github related utils"""
+"""Github related utils."""
 
 from __future__ import absolute_import
 
@@ -18,7 +18,7 @@ RAW_GITHUB_BASE_URL = (
 
 
 def get_metadata_from_url(url, session=None):
-    """Gets an url via a requests compatible api"""
+    """Gets an url via a requests compatible api."""
     if not session:
         session = requests
     response = session.get(url)
@@ -26,7 +26,7 @@ def get_metadata_from_url(url, session=None):
 
 
 def parse_metadata(data, org, model, settings):
-    """parse metadata for a specific settings file"""
+    """parse metadata for a specific settings file."""
     if not data:
         msg = 'no {} metadata for {}'.format(settings, model)
         raise InvalidMetadata(msg)
@@ -43,7 +43,7 @@ def parse_metadata(data, org, model, settings):
 
 
 def get_metadata_for_publisher(org, publisher, settings, session=None):
-    """Fetch and validate publisher metadata for a specific settings file"""
+    """Fetch and validate publisher metadata for a specific settings file."""
     url = RAW_GITHUB_BASE_URL.format(
         org=org.slug,
         repo=publisher.config_repo_name,
@@ -53,7 +53,7 @@ def get_metadata_for_publisher(org, publisher, settings, session=None):
 
 
 def get_metadata_for_document(document):
-    """Fetch and validate document metadata"""
+    """Fetch and validate document metadata."""
     # get the repo name
     repo_url = urlparse(document.repo)
     _, org, repo = repo_url.path.split('/')

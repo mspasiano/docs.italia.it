@@ -17,10 +17,10 @@ log = logging.getLogger(__name__) # noqa
 
 class PublisherAdminForm(forms.ModelForm):
 
-    """Form for Publisher Admin"""
+    """Form for Publisher Admin."""
 
     def clean(self):
-        """Check if the metadata is valid at clean time"""
+        """Check if the metadata is valid at clean time."""
         super(PublisherAdminForm, self).clean()
 
         # create the minimal object required for validation. We mock the
