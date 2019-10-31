@@ -74,7 +74,7 @@ class ItaliaResolver(ResolverBase):
             return domain.domain
         return getattr(settings, 'PUBLIC_DOMAIN')
 
-    def resolve(self, project, protocol='http', filename='', private=None, **kwargs):
+    def resolve(self, project, require_https=False, filename='', private=None, **kwargs):
         """
         Resolve the complete URL to the provided project (document)
 
@@ -85,8 +85,8 @@ class ItaliaResolver(ResolverBase):
         :param kwargs: other kwargs
         :return: string
         """
-        protocol = getattr(settings, 'PUBLIC_PROTO', 'https')
-        return super(ItaliaResolver, self).resolve(project, protocol, filename, private, **kwargs)
+        require_https = getattr(settings, 'PUBLIC_DOMAIN_USES_HTTPS', False)
+        return super(ItaliaResolver, self).resolve(project, require_https, filename, private, **kwargs)
 
     @staticmethod
     def resolve_docsitalia(publisher_slug, pb_project_slug=None, protocol='http'):
@@ -98,7 +98,8 @@ class ItaliaResolver(ResolverBase):
         :param protocol: http / https protocol
         """
         domain = getattr(settings, 'PRODUCTION_DOMAIN')
-        protocol = getattr(settings, 'PUBLIC_PROTO', 'https')
+        require_https = getattr(settings, 'PUBLIC_DOMAIN_USES_HTTPS', False)
+        protocol = 'https' if require_https else 'http'
         if pb_project_slug:
             path = u'{}/{}'.format(publisher_slug, pb_project_slug)
         else:

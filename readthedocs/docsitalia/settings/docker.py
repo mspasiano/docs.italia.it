@@ -22,9 +22,8 @@ class DocsItaliaDockerSettings(CommunityBaseSettings):
     USE_SUBDOMAIN = False
     PUBLIC_DOMAIN = os.environ['PUBLIC_DOMAIN']
     PUBLIC_API_URL = os.environ['PUBLIC_API_URL']
-    PUBLIC_PROTO = os.environ['RTD_PROTO']
     GLOBAL_ANALYTICS_CODE = os.environ['GLOBAL_ANALYTICS_CODE']
-    PUBLIC_DOMAIN_USES_HTTPS = PUBLIC_PROTO == 'https'
+    PUBLIC_DOMAIN_USES_HTTPS = os.environ['RTD_PROTO'] == 'https'
 
     # default build versions
     RTD_LATEST = 'bozza'

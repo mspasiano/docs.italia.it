@@ -338,7 +338,7 @@ class DocsItaliaTest(TestCase):
         self.assertEqual(remote_repos.count(), 1)
 
     @patch('django.contrib.messages.api.add_message')
-    @override_settings(PUBLIC_PROTO='https', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_project_custom_resolver(self, add_message):
 
         with patch('readthedocs.projects.models.resolve') as resolve_func:
@@ -373,8 +373,9 @@ class DocsItaliaTest(TestCase):
             resolve_func.return_value = ItaliaResolver().resolve(
                 project=project, version_slug=LATEST, language='en', private=False
             )
+            protocol = 'https' if settings.PUBLIC_DOMAIN_USES_HTTPS else 'http'
             self.assertEqual(project.get_docs_url(), '%s://%s/%s/%s/%s/en/%s/' % (
-                settings.PUBLIC_PROTO, settings.PUBLIC_DOMAIN, publisher.slug,
+                protocol, settings.PUBLIC_DOMAIN, publisher.slug,
                 pub_project.slug, project.slug, LATEST
             ))
 
@@ -788,7 +789,7 @@ class DocsItaliaTest(TestCase):
 
     @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
     @pytest.mark.itresolver
-    @override_settings(PUBLIC_PROTO='http', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_tags(self):
         project = Project.objects.create(
             name='my project',
@@ -837,13 +838,13 @@ class DocsItaliaTest(TestCase):
                   "default_branch": None,
                   "documentation_type": "sphinx",
                   "users": [],
-                  "canonical_url": "http://readthedocs.org/testorg/testproject/myprojectslug/en/latest/",
+                  "canonical_url": "https://readthedocs.org/testorg/testproject/myprojectslug/en/latest/",
                   "publisher": {
-                    "canonical_url": "http://readthedocs.org/testorg",
+                    "canonical_url": "https://readthedocs.org/testorg",
                     "name": "publisher"
                   },
                   "publisher_project": {
-                    "canonical_url": "http://readthedocs.org/testorg/testproject",
+                    "canonical_url": "https://readthedocs.org/testorg/testproject",
                     "name": "Test Project"
                   },
                   "tags": ["ipsum", "lorem"]
@@ -855,7 +856,7 @@ class DocsItaliaTest(TestCase):
 
     @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
     @pytest.mark.itresolver
-    @override_settings(PUBLIC_PROTO='http', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_publisher(self):
         project = Project.objects.create(
             name='my project',
@@ -916,7 +917,7 @@ class DocsItaliaTest(TestCase):
 
     @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
     @pytest.mark.itresolver
-    @override_settings(PUBLIC_PROTO='http', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_publisher_project(self):
         project = Project.objects.create(
             name='my project',
