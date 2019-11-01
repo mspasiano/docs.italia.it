@@ -74,19 +74,22 @@ class ItaliaResolver(ResolverBase):
             return domain.domain
         return getattr(settings, 'PUBLIC_DOMAIN')
 
+    # pylint: disable=arguments-differ
     def resolve(self, project, require_https=False, filename='', private=None, **kwargs):
         """
         Resolve the complete URL to the provided project (document).
 
         :param project: project (document) instance
-        :param protocol: http / https protocol
+        :param require_https: use https protocol
         :param filename: path to the document file
         :param private: if document is private
         :param kwargs: other kwargs
         :return: string
         """
         require_https = getattr(settings, 'PUBLIC_DOMAIN_USES_HTTPS', False)
-        return super(ItaliaResolver, self).resolve(project, require_https, filename, private, **kwargs)
+        return super(ItaliaResolver, self).resolve(
+            project, require_https, filename, private, **kwargs
+        )
 
     @staticmethod
     def resolve_docsitalia(publisher_slug, pb_project_slug=None, protocol='http'):

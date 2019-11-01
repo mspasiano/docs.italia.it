@@ -1,2 +1,2 @@
 -r docsitalia-base.txt
--r deploy.txt
+-r lint.txt

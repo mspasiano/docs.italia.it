@@ -8,7 +8,7 @@ import yaml
 
 from readthedocs.builds.models import Build
 from readthedocs.projects.models import Project
-# from readthedocs.restapi.client import api as apiv2
+from readthedocs.api.v2.client import api as apiv2
 
 
 def load_yaml(txt):
@@ -36,13 +36,11 @@ def get_subprojects(project_pk):
     :param project_pk:
     :return:
     """
-    return
-    # TODO
-    # return (
-    #     apiv2.project(project_pk)
-    #     .subprojects()
-    #     .get()['subprojects']
-    # )
+    return (
+        apiv2.project(project_pk)
+        .subprojects()
+        .get()['subprojects']
+    )
 
 
 def get_projects_with_builds(only_public=True):

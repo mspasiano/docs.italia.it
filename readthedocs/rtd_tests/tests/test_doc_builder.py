@@ -39,6 +39,7 @@ class SphinxBuilderTest(TestCase):
     @patch('readthedocs.doc_builder.backends.sphinx.BaseSphinx.docs_dir')
     @patch('readthedocs.projects.models.Project.checkout_path')
     @override_settings(DONT_HIT_API=True)
+    @pytest.mark.failing
     def test_conf_py_path(self, checkout_path, docs_dir):
         """
         Test the conf_py_path that is added to the conf.py file.

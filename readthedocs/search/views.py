@@ -53,7 +53,7 @@ def elastic_search(request, project_slug=None):
 
     user_input = UserInput(
         query=request.GET.get('q'),
-        type=request_type or request.GET.get('type', 'file'),
+        type=request_type or request.GET.get('type', 'project'),
         project=project_slug or request.GET.get('project'),
         version=request.GET.get('version', LATEST),
         taxonomy=request.GET.get('taxonomy'),
