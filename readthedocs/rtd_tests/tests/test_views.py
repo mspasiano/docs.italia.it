@@ -46,6 +46,7 @@ class Testmaker(TestCase):
                 'python_interpreter': 'python',
                 'documentation_type': 'sphinx',
                 'csrfmiddlewaretoken': '34af7c8a5ba84b84564403a280d9a9be',
+                'tags': '',
             },
             user=user,
         )

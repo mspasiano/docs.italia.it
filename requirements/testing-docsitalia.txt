@@ -2,5 +2,5 @@
 
 psycopg2==2.7.3.2
 requests-mock==1.4.0
-
+django-autocomplete-light==3.4.1
 git+https://github.com/italia/docs-italia-convertitore-web.git@master#egg=docs-italia-convertitore-web

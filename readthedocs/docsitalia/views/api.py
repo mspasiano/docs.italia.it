@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Docs italia api."""
 
+from dal import autocomplete
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -17,6 +18,7 @@ from readthedocs.api.v2.serializers import VersionSerializer
 # TODO merge
 # from readthedocs.search.indexes import PageIndex
 
+from ..models import AllowedTag
 from ..serializers import (
     DocsItaliaProjectSerializer, DocsItaliaProjectAdminSerializer)
 
@@ -160,3 +162,16 @@ class DocSearch(APIView):
             del results['hits']['hits'][i]['_source']
 
         return Response({'results': results})
+
+
+# pylint: disable=too-many-ancestors
+class AllowedTagAutocomplete(autocomplete.Select2QuerySetView):
+
+    """Allowed tag listing for autocomplete purpose."""
+
+    def get_queryset(self):
+        """Filter and order allowed tags."""
+        qs = AllowedTag.objects.filter(enabled=True)
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+        return qs.order_by('name')

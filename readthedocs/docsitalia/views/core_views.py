@@ -119,7 +119,9 @@ class DocumentRedirect(View):
         """Redirect to the canonical URL of the document."""
         try:
             document = self.get_queryset().get(slug=self.kwargs['slug'])
-            return HttpResponseRedirect(document.get_docs_url(lang_slug=self.kwargs.get('lang')))
+            return HttpResponseRedirect(
+                '{}index.html'.format(document.get_docs_url(lang_slug=self.kwargs.get('lang')))
+            )
         except Project.DoesNotExist:
             raise Http404()
 

@@ -50,6 +50,7 @@ class PrivacyTests(TestCase):
                 'python_interpreter': 'python',
                 'description': 'OOHHH AH AH AH KONG SMASH',
                 'documentation_type': 'sphinx',
+                'tags': '',
             },
             user=User.objects.get(username='eric'),
         )

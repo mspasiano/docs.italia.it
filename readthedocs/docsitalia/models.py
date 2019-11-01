@@ -14,6 +14,7 @@ from readthedocs.oauth.models import RemoteOrganization, RemoteRepository
 
 from readthedocs.core.resolver import resolver
 
+from . import tags_vocabulary
 from .utils import get_projects_with_builds
 from .monkeypatch import monkey_patch_project_model
 
@@ -235,6 +236,10 @@ class PublisherProject(models.Model):
         """Get publisher project description from metadata."""
         return self.metadata.get('description', '')
 
+    def short_name(self):
+        """Get publisher project short-name from metadata"""
+        return self.metadata.get('short-name', '')
+
     def get_absolute_url(self):
         """get absolute url for publisher project."""
         return reverse('publisher_project_detail', args=[self.publisher.slug, self.slug])
@@ -283,3 +288,41 @@ class PublisherIntegration(models.Model):
             _('{0} for {1}')
             .format(self.get_integration_type_display(), self.publisher.name))
 
+
+@python_2_unicode_compatible
+class AllowedTag(models.Model):
+
+    """
+    Tags allowed to be used for a document.
+
+    If a document contains a tag that does not belong to this table, it
+    will be removed.
+    """
+
+    BASE_TAGS = tags_vocabulary.BASE_TAGS
+
+    name = models.CharField(_('Name'), max_length=255, unique=True)
+    enabled = models.BooleanField(_('Enabled'), default=True)
+
+    class Meta:
+        verbose_name = _('allowed tag')
+        verbose_name_plural = _('allowed tags')
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        """Save the model instance to the database."""
+        self.clean()
+        return super(AllowedTag, self).save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
+
+    def clean(self):
+        """Perform custom validation."""
+        self.name = self.name.strip().lower()
+        return super(AllowedTag, self).clean()

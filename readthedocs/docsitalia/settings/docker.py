@@ -66,6 +66,8 @@ class DocsItaliaDockerSettings(CommunityBaseSettings):
         # Insert our depends above RTD applications, after guaranteed third
         # party package
         apps.append('readthedocs.docsitalia')
+        apps.append('dal',)
+        apps.append('dal_select2',)
         if os.environ.get('DOCS_CONVERTER_VERSION', False):
             apps.insert(apps.index('rest_framework'), 'docs_italia_convertitore_web')
 

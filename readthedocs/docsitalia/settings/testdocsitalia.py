@@ -40,6 +40,8 @@ class DocsItaliaTestSettings(CommunityTestSettings):
     def INSTALLED_APPS(self):  # noqa
         apps = super().INSTALLED_APPS
         apps.append('readthedocs.docsitalia')
+        apps.append('dal',)
+        apps.append('dal_select2',)
         apps.append('docs_italia_convertitore_web')
         return apps
 

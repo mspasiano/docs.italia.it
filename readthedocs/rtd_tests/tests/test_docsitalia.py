@@ -29,7 +29,7 @@ from readthedocs.docsitalia.metadata import (
     validate_publisher_metadata, validate_projects_metadata,
     validate_document_metadata, InvalidMetadata)
 from readthedocs.docsitalia.models import (
-    Publisher, PublisherProject, PublisherIntegration,
+    AllowedTag, Publisher, PublisherProject, PublisherIntegration,
     update_project_from_metadata)
 from readthedocs.docsitalia.serializers import (
     DocsItaliaProjectSerializer, DocsItaliaProjectAdminSerializer)
@@ -687,6 +687,7 @@ class DocsItaliaTest(TestCase):
           tags:
             - amazing document"""
 
+        AllowedTag.objects.create(name='amazing document', enabled=True)
         project = Project.objects.create(
             name='my project',
             slug='myprojectslug',
@@ -763,6 +764,7 @@ class DocsItaliaTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_on_webhook_github_signal_works(self):
+        AllowedTag.objects.create(name='amazing document', enabled=True)
         project = Project.objects.create(
             name='my project',
             slug='myprojectslug',
@@ -1290,3 +1292,44 @@ class DocsItaliaTest(TestCase):
         self.assertEqual(len(clear_index.mock_calls), 1)
         proj2 = Project.objects.filter(pk=project2.pk)
         self.assertTrue(proj2.exists())
+
+    def test_document_metadata_validation_allows_whitelisted_tags_only(self):
+        AllowedTag.objects.bulk_create(
+            [
+                AllowedTag(name='tag', enabled=True),
+                AllowedTag(name='disabled_tag', enabled=False),
+                AllowedTag(name='tag with spaces', enabled=True),
+            ]
+        )
+        document_metadata = """document:
+  name: Documento
+  description: Lorem ipsum dolor sit amet, consectetur
+  tags:
+    -   tag  # leading spaces
+    - disabled_tag
+    - invalid_tag
+    - TAG WITH SPACES"""
+
+        data = validate_document_metadata(None, document_metadata)
+        self.assertEqual(['tag', 'tag with spaces'], sorted(data['document']['tags']))
+
+
+class AllowedTagAutocompleteTests(TestCase):
+    def test_allowed_tags_listing(self):
+        AllowedTag.objects.all().delete()  # Clean tags created by data migration.
+        enabled_tag = AllowedTag.objects.create(name='tag', enabled=True)
+        AllowedTag.objects.create(name='disabled_tag', enabled=False)
+        response = self.client.get(reverse('allowedtag-autocomplete'))
+        expected = {
+            'results': [
+                {
+                    'id': str(enabled_tag.pk),
+                    'text': 'tag',
+                    'selected_text': 'tag',
+                },
+            ],
+            'pagination': {
+                'more': False,
+            },
+        }
+        self.assertEqual(expected, response.json())

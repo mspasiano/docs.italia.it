@@ -12,13 +12,12 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from readthedocs.builds.models import Build, Version
 from readthedocs.docsitalia.github import InvalidMetadata
-from readthedocs.docsitalia.models import Publisher, PublisherProject
+from readthedocs.docsitalia.models import Publisher, PublisherProject, AllowedTag
 from readthedocs.docsitalia.views.core_views import (
     DocsItaliaHomePage, PublisherIndex, PublisherProjectIndex, PublisherList)
 from readthedocs.oauth.models import RemoteRepository
 from readthedocs.projects.constants import PRIVATE
 from readthedocs.projects.models import Project
-# from readthedocs.search.indexes import PageIndex
 
 
 DOCUMENT_METADATA = """document:
@@ -368,6 +367,7 @@ class DocsItaliaViewsTest(TestCase):
 
     @mock.patch('readthedocs.docsitalia.views.core_views.trigger_build')
     def test_docsitalia_import_update_project_with_valid_metadata(self, trigger_build):
+        AllowedTag.objects.create(name='amazing document', enabled=True)
         self.client.login(username='eric', password='test')
         with requests_mock.Mocker() as rm:
             rm.get(self.document_settings_url, text=DOCUMENT_METADATA)
@@ -493,21 +493,21 @@ class DocsItaliaViewsTest(TestCase):
         naked_no_build_project_lang_url = '%sit/' % naked_no_build_project_url
 
         response = self.client.get(naked_project_url)
-        self.assertRedirects(response, project.get_canonical_url(), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, '{}index.html'.format(project.get_canonical_url()), fetch_redirect_response=False,
+        )
         response = self.client.get(naked_project_lang_url)
-        self.assertRedirects(response, project.get_canonical_url(), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, '{}index.html'.format(project.get_canonical_url()), fetch_redirect_response=False,
+        )
 
         response = self.client.get(naked_no_build_project_url)
         self.assertRedirects(
-            response,
-            no_build_project.get_canonical_url(),
-            fetch_redirect_response=False
+            response, '{}index.html'.format(no_build_project.get_canonical_url()), fetch_redirect_response=False,
         )
         response = self.client.get(naked_no_build_project_lang_url)
         self.assertRedirects(
-            response,
-            no_build_project.get_canonical_url(),
-            fetch_redirect_response=False
+            response, '{}index.html'.format(no_build_project.get_canonical_url()), fetch_redirect_response=False,
         )
 
         response = self.client.get(naked_privateproject_url)
@@ -515,36 +515,9 @@ class DocsItaliaViewsTest(TestCase):
         response = self.client.get(naked_privateproject_lang_url)
         self.assertEqual(response.status_code, 404)
 
-    @pytest.mark.skip(reason="SEARCH")
     def test_docsitalia_api_returns_400_without_project(self):
-        # TODO redo search on merge
-        response = self.client.get('/api/v2/docsearch/?q=query&project=projectslug&version=latest')
-        self.assertEqual(response.status_code, 400)
-
-    # @mock.patch.object(PageIndex, 'search')
-    @pytest.mark.skip(reason="SEARCH")
-    def test_docsitalia_api_returns_404_without_results(self, search):
-        search.return_value = None
-        Project.objects.create(
-            name='my project',
-            slug='projectslug',
-            repo='https://github.com/testorg/myrepourl.git'
-        )
         response = self.client.get('/api/v2/docsearch/?q=query&project=projectslug&version=latest')
         self.assertEqual(response.status_code, 404)
-
-    # @mock.patch.object(PageIndex, 'search')
-    @pytest.mark.skip(reason="SEARCH")
-    def test_docsitalia_api_returns_results(self, search):
-        search.return_value = {}
-        Project.objects.create(
-            name='my project',
-            slug='projectslug',
-            repo='https://github.com/testorg/myrepourl.git'
-        )
-        response = self.client.get('/api/v2/docsearch/?q=query&project=projectslug&version=latest')
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content.decode('utf-8'), {'results': {}})
 
     def test_docsitalia_api_active_versions_do_not_return_private_documents(self):
         project = Project.objects.create(
