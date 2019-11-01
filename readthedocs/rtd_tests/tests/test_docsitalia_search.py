@@ -14,6 +14,7 @@ from readthedocs.search.documents import page_index
 
 
 @pytest.mark.skipif(True, reason='Search not tested yet')
+@pytest.mark.search
 class TestSearch(TestCase):
     fixtures = ['eric', 'test_data']
 

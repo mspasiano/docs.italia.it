@@ -24,6 +24,20 @@ class DocsItaliaTestSettings(CommunityTestSettings):
                 'NAME': 'rtd'
             }
         }
+
+        ES_HOSTS = ['es:9200']
+        ELASTICSEARCH_DSL = {
+            'default': {
+                'hosts': 'es:9200'
+            },
+        }
+    elif os.environ.get('TOX_ENV_NAME', None) == 'migrations':
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': ':memory'
+            }
+        }
     else:
         DATABASES = {
             'default': {
