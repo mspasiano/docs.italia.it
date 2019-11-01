@@ -136,8 +136,8 @@ def elastic_search(request, project_slug=None):
     template_vars.update({
         'results': results,
         'facets': facets,
-        'results_dict': results.to_dict(),
-        'facets_dict': facets.to_dict(),
+        'results_dict': results.to_dict() if results else {},
+        'facets_dict': facets.to_dict() if facets else {},
     })
 
     if project_slug:

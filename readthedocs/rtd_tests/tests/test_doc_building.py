@@ -1185,12 +1185,12 @@ class TestPythonEnvironment(TestCase):
         self.build_env_mock = Mock()
 
         self.base_requirements = [
-            'Pygments',
-            'setuptools',
-            'docutils',
-            'mock',
-            'pillow',
-            'alabaster',
+            'Pygments==2.3.1',
+            'setuptools==41.0.1',
+            'docutils==0.14',
+            'mock==1.0.1',
+            'pillow==5.4.1',
+            'alabaster>=0.7,<0.8,!=0.7.5',
         ]
         self.base_conda_requirements = [
             'mock',
@@ -1198,10 +1198,12 @@ class TestPythonEnvironment(TestCase):
         ]
 
         self.pip_install_args = [
-            mock.ANY,  # python path
+            # 'python',
+            mock.ANY,  # pip path
             '-m',
             'pip',
             'install',
+            # '--use-wheel', not usable in docsitalia
             '--upgrade',
             '--cache-dir',
             mock.ANY,  # cache path
@@ -1227,16 +1229,22 @@ class TestPythonEnvironment(TestCase):
         )
         python_env.install_core_requirements()
         requirements_sphinx = [
-            'commonmark',
-            'recommonmark',
-            'sphinx',
-            'sphinx-rtd-theme',
-            'readthedocs-sphinx-ext',
+            'commonmark==0.8.1',
+            'recommonmark==0.5.0',
+            'sphinx<2',
+            'sphinx-rtd-theme<0.5',
+            'readthedocs-sphinx-ext<1.1',
+            'pyyaml==5.1.2',
+            'git+https://github.com/italia/docs-italia-theme@bootstrap-italia',
         ]
         requirements = self.base_requirements + requirements_sphinx
         args = self.pip_install_args + requirements
-        self.assertEqual(self.build_env_mock.run.call_count, 2)
-        self.assertArgsStartsWith(args, self.build_env_mock.run)
+        # self.assertEqual(self.build_env_mock.run.call_count, 2)
+        # self.assertArgsStartsWith(args, self.build_env_mock.run)
+
+        self.build_env_mock.run.assert_called_once_with(
+            *args, bin_path=mock.ANY, cwd=mock.ANY
+        )
 
     @patch('readthedocs.projects.models.Project.checkout_path')
     def test_install_core_requirements_mkdocs(self, checkout_path):
@@ -1248,14 +1256,15 @@ class TestPythonEnvironment(TestCase):
         )
         python_env.install_core_requirements()
         requirements_mkdocs = [
-            'commonmark',
-            'recommonmark',
-            'mkdocs',
+            'commonmark==0.8.1',
+            'recommonmark==0.5.0',
+            'mkdocs<1.1',
         ]
         requirements = self.base_requirements + requirements_mkdocs
         args = self.pip_install_args + requirements
-        self.assertEqual(self.build_env_mock.run.call_count, 2)
-        self.assertArgsStartsWith(args, self.build_env_mock.run)
+        self.build_env_mock.run.assert_called_once_with(
+            *args, bin_path=mock.ANY, cwd=mock.ANY
+        )
 
     @patch('readthedocs.projects.models.Project.checkout_path')
     def test_install_user_requirements(self, checkout_path):
