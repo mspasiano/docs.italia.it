@@ -10,14 +10,13 @@ import pytest
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.test.utils import override_settings
 from readthedocs.builds.models import Build, Version
 from readthedocs.docsitalia.github import InvalidMetadata
 from readthedocs.docsitalia.models import Publisher, PublisherProject
 from readthedocs.docsitalia.views.core_views import (
     DocsItaliaHomePage, PublisherIndex, PublisherProjectIndex, PublisherList)
 from readthedocs.oauth.models import RemoteRepository
-from readthedocs.projects.constants import PRIVATE, PUBLIC
+from readthedocs.projects.constants import PRIVATE
 from readthedocs.projects.models import Project
 # from readthedocs.search.indexes import PageIndex
 
@@ -31,8 +30,8 @@ DOCUMENT_METADATA = """document:
 
 
 IT_RESOLVER_IN_SETTINGS = (
-        'readthedocs.docsitalia.resolver.ItaliaResolver'
-        in getattr(settings, 'CLASS_OVERRIDES', {}).values()
+    'readthedocs.docsitalia.resolver.ItaliaResolver'
+    in getattr(settings, 'CLASS_OVERRIDES', {}).values()
 )
 
 
@@ -170,7 +169,6 @@ class DocsItaliaViewsTest(TestCase):
         self.assertTrue(qs.exists())
 
     def test_docsitalia_publisher_index_show_publisher_with_active_builds(self):
-        index = PublisherIndex()
 
         publisher = Publisher.objects.create(
             name='Test Org',
@@ -180,7 +178,7 @@ class DocsItaliaViewsTest(TestCase):
             active=True
         )
 
-        inactive_pub_project = PublisherProject.objects.create(
+        PublisherProject.objects.create(
             name='Inactive Project',
             slug='inactivetestproject',
             metadata={
@@ -423,7 +421,7 @@ class DocsItaliaViewsTest(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'docsitalia/import_error.html')
 
-    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
     @pytest.mark.itresolver
     def test_docsitalia_redirect_to_canonical_if_no_version(self):
         publisher = Publisher.objects.create(
@@ -484,8 +482,12 @@ class DocsItaliaViewsTest(TestCase):
         pub_project_no_build.projects.add(no_build_project)
 
         naked_project_url = '/%s/' % '/'.join(project.get_canonical_url().split('/')[3:-3])
-        naked_privateproject_url = '/%s/' % '/'.join(private_project.get_canonical_url().split('/')[3:-3])
-        naked_no_build_project_url = '/%s/' % '/'.join(no_build_project.get_canonical_url().split('/')[3:-3])
+        naked_privateproject_url = '/%s/' % '/'.join(
+            private_project.get_canonical_url().split('/')[3:-3]
+        )
+        naked_no_build_project_url = '/%s/' % '/'.join(
+            no_build_project.get_canonical_url().split('/')[3:-3]
+        )
         naked_project_lang_url = '%sit/' % naked_project_url
         naked_privateproject_lang_url = '%sit/' % naked_privateproject_url
         naked_no_build_project_lang_url = '%sit/' % naked_no_build_project_url
@@ -496,9 +498,17 @@ class DocsItaliaViewsTest(TestCase):
         self.assertRedirects(response, project.get_canonical_url(), fetch_redirect_response=False)
 
         response = self.client.get(naked_no_build_project_url)
-        self.assertRedirects(response, no_build_project.get_canonical_url(), fetch_redirect_response=False)
+        self.assertRedirects(
+            response,
+            no_build_project.get_canonical_url(),
+            fetch_redirect_response=False
+        )
         response = self.client.get(naked_no_build_project_lang_url)
-        self.assertRedirects(response, no_build_project.get_canonical_url(), fetch_redirect_response=False)
+        self.assertRedirects(
+            response,
+            no_build_project.get_canonical_url(),
+            fetch_redirect_response=False
+        )
 
         response = self.client.get(naked_privateproject_url)
         self.assertEqual(response.status_code, 404)
@@ -511,12 +521,11 @@ class DocsItaliaViewsTest(TestCase):
         response = self.client.get('/api/v2/docsearch/?q=query&project=projectslug&version=latest')
         self.assertEqual(response.status_code, 400)
 
-
     # @mock.patch.object(PageIndex, 'search')
     @pytest.mark.skip(reason="SEARCH")
     def test_docsitalia_api_returns_404_without_results(self, search):
         search.return_value = None
-        project = Project.objects.create(
+        Project.objects.create(
             name='my project',
             slug='projectslug',
             repo='https://github.com/testorg/myrepourl.git'
@@ -528,7 +537,7 @@ class DocsItaliaViewsTest(TestCase):
     @pytest.mark.skip(reason="SEARCH")
     def test_docsitalia_api_returns_results(self, search):
         search.return_value = {}
-        project = Project.objects.create(
+        Project.objects.create(
             name='my project',
             slug='projectslug',
             repo='https://github.com/testorg/myrepourl.git'
@@ -537,17 +546,20 @@ class DocsItaliaViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content.decode('utf-8'), {'results': {}})
 
-    @pytest.mark.skip(reason="SEARCH")
     def test_docsitalia_api_active_versions_do_not_return_private_documents(self):
         project = Project.objects.create(
             name='my project',
             slug='projectslug',
             repo='https://github.com/testorg/myrepourl.git'
         )
-        response = self.client.get('/docsitalia/api/document/{}/active_versions/'.format(project.slug))
+        response = self.client.get(
+            '/docsitalia/api/document/{}/active_versions/'.format(project.slug)
+        )
         version = project.versions.first()
         version.privacy_level = PRIVATE
         version.save()
         self.assertTrue(len(response.data['versions']) > 0)
-        response = self.client.get('/docsitalia/api/document/{}/active_versions/'.format(project.slug))
+        response = self.client.get(
+            '/docsitalia/api/document/{}/active_versions/'.format(project.slug)
+        )
         self.assertTrue(len(response.data['versions']) == 0)

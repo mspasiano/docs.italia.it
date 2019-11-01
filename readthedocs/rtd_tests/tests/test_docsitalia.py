@@ -7,7 +7,6 @@ from django.test.utils import override_settings
 from mock import patch
 import pytest
 
-from django import forms
 from django.core.management import call_command
 from django.conf import settings
 from django.db import IntegrityError
@@ -92,7 +91,10 @@ DOCUMENT_METADATA = """document:
   tags:
     - amazing document"""
 
-IT_RESOLVER_IN_SETTINGS = 'readthedocs.docsitalia.resolver.ItaliaResolver' in getattr(settings, 'CLASS_OVERRIDES', {}).values()
+IT_RESOLVER_IN_SETTINGS = (
+    'readthedocs.docsitalia.resolver.ItaliaResolver'
+    in getattr(settings, 'CLASS_OVERRIDES', {}).values()
+)
 
 
 class DocsItaliaTest(TestCase):
@@ -208,7 +210,8 @@ class DocsItaliaTest(TestCase):
         )
         session = requests.Session()
         with patch(
-            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session') as m:
+            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session'
+        ) as m:
             m.return_value = session
             with requests_mock.Mocker() as rm:
                 rm.get('https://api.github.com/user/orgs', json=orgs_json)
@@ -275,7 +278,7 @@ class DocsItaliaTest(TestCase):
             'html_url': 'https://github.com/testorg/project-document-doc',
             'clone_url': 'https://github.com/testorg/project-document-doc.git',
         }]
-        publisher = Publisher.objects.create(
+        Publisher.objects.create(
             name='Test Org',
             slug=org_json['login'],
             metadata={},
@@ -284,7 +287,8 @@ class DocsItaliaTest(TestCase):
         )
         session = requests.Session()
         with patch(
-            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session') as m:
+            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session'
+        ) as m:
             m.return_value = session
             with requests_mock.Mocker() as rm:
                 rm.get('https://api.github.com/user/orgs', json=orgs_json)
@@ -317,7 +321,8 @@ class DocsItaliaTest(TestCase):
         }]
         session = requests.Session()
         with patch(
-            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session') as m:
+            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session'
+        ) as m:
             m.return_value = session
             with requests_mock.Mocker() as rm:
                 rm.get('https://api.github.com/user/orgs', json=orgs_json)
@@ -331,7 +336,10 @@ class DocsItaliaTest(TestCase):
                     'italia-conf/master/projects_settings.yml',
                     text=PROJECTS_METADATA)
                 rm.get('https://api.github.com/orgs/testorg', json=org_json)
-                rm.get('https://api.github.com/orgs/testorg/repos', json=org_repos_json_with_one_doc)
+                rm.get(
+                    'https://api.github.com/orgs/testorg/repos',
+                    json=org_repos_json_with_one_doc
+                )
                 rm.post('https://api.github.com/repos/testorg/italia-conf/hooks', json={})
                 self.service.sync_organizations()
         remote_repos = RemoteRepository.objects.all()
@@ -503,7 +511,7 @@ class DocsItaliaTest(TestCase):
             repo='https://github.com/testorg/myrepourl.git'
         )
         pub_project.projects.add(project)
-        remote = RemoteRepository.objects.create(
+        RemoteRepository.objects.create(
             full_name='remote repo name',
             html_url='https://github.com/testorg/myrepourl',
             project=project,
@@ -787,7 +795,7 @@ class DocsItaliaTest(TestCase):
         template = get_template('doc_builder/conf.py.tmpl')
         self.assertIn('readthedocs/templates/doc_builder/conf.py.tmpl', template.origin.name)
 
-    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
     @pytest.mark.itresolver
     @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_tags(self):
@@ -838,7 +846,10 @@ class DocsItaliaTest(TestCase):
                   "default_branch": None,
                   "documentation_type": "sphinx",
                   "users": [],
-                  "canonical_url": "https://readthedocs.org/testorg/testproject/myprojectslug/en/latest/",
+                  "canonical_url": (
+                      "https://readthedocs.org/testorg/testproject"
+                      "/myprojectslug/en/latest/"
+                    ),
                   "publisher": {
                     "canonical_url": "https://readthedocs.org/testorg",
                     "name": "publisher"
@@ -854,7 +865,7 @@ class DocsItaliaTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
     @pytest.mark.itresolver
     @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_publisher(self):
@@ -915,7 +926,7 @@ class DocsItaliaTest(TestCase):
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['slug'], 'myprojectslug')
 
-    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
     @pytest.mark.itresolver
     @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_publisher_project(self):
