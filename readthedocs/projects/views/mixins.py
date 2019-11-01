@@ -28,7 +28,7 @@ class ProjectRelationMixin:
     project_context_object_name = 'project'
 
     def get_project_queryset(self):
-        return Project.objects.for_admin_user(user=self.request.user)
+        return Project.objects.user_can_admin(user=self.request.user)
 
     def get_project(self):
         if self.project_lookup_url_kwarg not in self.kwargs:

@@ -563,3 +563,33 @@ class DocsItaliaViewsTest(TestCase):
             '/docsitalia/api/document/{}/active_versions/'.format(project.slug)
         )
         self.assertTrue(len(response.data['versions']) == 0)
+
+
+class TestAdminPrivateViews(TestCase):
+    fixtures = ['test_data', 'eric']
+
+    def test_admin_can_see_other_user_project_data(self):
+        pip = Project.objects.get(slug='pip')
+        pip.versions.create_latest()
+        urls = [
+            '/dashboard/pip/version/latest/',
+            '/dashboard/pip/users/',
+            '/dashboard/pip/notifications/',
+            '/dashboard/pip/translations/',
+            '/dashboard/pip/redirects/',
+        ]
+
+        self.client.login(username='eric', password='test')
+        for url in urls:
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+
+        self.client.login(username='super', password='test')
+        for url in urls:
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+
+        self.client.login(username='tester', password='test')
+        for url in urls:
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 404)

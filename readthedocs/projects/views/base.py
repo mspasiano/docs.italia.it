@@ -26,7 +26,7 @@ class ProjectOnboardMixin:
         context = super().get_context_data(**kwargs)
         # If more than 1 project, don't show onboarding at all. This could
         # change in the future, to onboard each user maybe?
-        if Project.objects.for_admin_user(self.request.user).count() > 1:
+        if Project.objects.user_can_admin(self.request.user).count() > 1:
             return context
 
         onboard = {}
@@ -69,7 +69,7 @@ class ProjectAdminMixin:
         if self.project_url_field not in self.kwargs:
             return None
         return get_object_or_404(
-            Project.objects.for_admin_user(user=self.request.user),
+            Project.objects.user_can_admin(user=self.request.user),
             slug=self.kwargs[self.project_url_field],
         )
 
