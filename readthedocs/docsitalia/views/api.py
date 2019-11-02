@@ -67,6 +67,7 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
             'versions': VersionSerializer(versions, many=True).data,
         })
 
+
 # FIXME: This is currently unused - we need to understand if it contains useful code
 # and in this case reimplement according to readthedocs.search.views.elastic_search
 class DocSearch(APIView):
