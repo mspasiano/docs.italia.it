@@ -67,7 +67,8 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
             'versions': VersionSerializer(versions, many=True).data,
         })
 
-
+# FIXME: This is currently unused - we need to understand if it contains useful code
+# and in this case reimplement according to readthedocs.search.views.elastic_search
 class DocSearch(APIView):
 
     """Search api for documentation builds."""
@@ -123,7 +124,6 @@ class DocSearch(APIView):
         """Search API: takes project, version and q as mandatory query strings."""
         from readthedocs.search.faceted_search import PageSearch
 
-        print('CUSTOM VIREW')
         project_slug = self.request.query_params.get('project')
         version_slug = self.request.query_params.get('version')
         query = self.request.query_params.get('q')
