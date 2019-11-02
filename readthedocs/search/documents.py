@@ -65,10 +65,14 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
         )
 
     def get_instances_from_related(self, related_instance):
-        """If related_models is set, define how to retrieve the Car instance(s) from the related model.
+        """
+        If related_models is set, define how to retrieve the instance(s) from the related model.
+
         The related_models option should be used with caution because it can lead in the index
         to the updating of a lot of items.
         """
+        # see https://github.com/PyCQA/pylint/issues/2283
+        # pylint: disable=no-else-return
         if isinstance(related_instance, Publisher):
             return Project.objects.filter(publisherproject__publisher=related_instance)
         elif isinstance(related_instance, PublisherProject):
@@ -165,14 +169,16 @@ class PageDocument(RTDDocTypeMixin, DocType):
         related_models = [PublisherProject, Publisher]
 
     def get_instances_from_related(self, related_instance):
-        """If related_models is set, define how to retrieve the Car instance(s) from the related model.
+        """
+        If related_models is set, define how to retrieve the instance(s) from the related model.
+
         The related_models option should be used with caution because it can lead in the index
         to the updating of a lot of items.
         """
+        # see https://github.com/PyCQA/pylint/issues/2283
+        # pylint: disable=no-else-return
         if isinstance(related_instance, Publisher):
-            return HTMLFile.objects.filter(
-                project__publisherproject__publisher=related_instance
-            )
+            return HTMLFile.objects.filter(project__publisherproject__publisher=related_instance)
         elif isinstance(related_instance, PublisherProject):
             return HTMLFile.objects.filter(project__publisherproject=related_instance)
 
