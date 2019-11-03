@@ -13,6 +13,7 @@ from readthedocs.docsitalia.models import Publisher, PublisherProject
 from readthedocs.search.documents import page_index
 
 
+# FIXME DOCSITALIA: Reimplement search tests according to the new API
 @pytest.mark.skipif(True, reason='Search not tested yet')
 @pytest.mark.search
 @pytest.mark.failing
