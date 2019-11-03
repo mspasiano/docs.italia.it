@@ -145,5 +145,3 @@ docsitalia_urls = [
 groups.append(docsitalia_urls)
 
 urlpatterns = reduce(add, groups)
-
-print(urlpatterns)
