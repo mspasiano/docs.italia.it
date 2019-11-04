@@ -15,4 +15,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """handle command."""
         e_s = Elasticsearch(settings.ES_HOSTS)
-        e_s.indices.delete(index='readthedocs')
+        e_s.indices.delete(index='_all')

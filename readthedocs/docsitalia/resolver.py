@@ -88,7 +88,7 @@ class ItaliaResolver(ResolverBase):
         """
         require_https = getattr(settings, 'PUBLIC_DOMAIN_USES_HTTPS', False)
         return super(ItaliaResolver, self).resolve(
-            project, require_https, filename, private, **kwargs
+            project, require_https=require_https, filename=filename, private=private, **kwargs
         )
 
     @staticmethod

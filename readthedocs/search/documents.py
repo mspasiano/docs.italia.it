@@ -271,7 +271,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
         # Also do not index certain files
         queryset = queryset.internal().filter(
             project__documentation_type__contains='sphinx'
-        ).select_related('version').prefetch_related(
+        ).prefetch_related(
             'project__publisherproject_set__publisher'
         )
 
