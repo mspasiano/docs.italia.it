@@ -312,7 +312,7 @@ class TestPageSearch(object):
             search_params=search_params,
         )
         project_facets = facets['project']
-        resulted_project_facets = [ facet[0] for facet in project_facets ]
+        resulted_project_facets = [facet[0] for facet in project_facets]
 
         # There should be 1 search result as we have filtered
         assert len(results) == 1
