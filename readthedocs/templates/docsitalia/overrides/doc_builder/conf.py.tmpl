@@ -38,11 +38,16 @@ else:
 
 # Support markdown
 def setup(app):
-    app.add_source_parser('.md', CommonMarkParser)
-    app.add_config_value('recommonmark_config', {
-            'enable_eval_rst': True
-        }, True)
-    app.add_transform(AutoStructify)
+    try:
+        if '.md' not in source_parsers:
+            app.add_source_parser('.md', CommonMarkParser)
+            app.add_config_value('recommonmark_config', {
+                    'enable_eval_rst': True
+                }, True)
+            app.add_transform(AutoStructify)
+    except Exception:
+        # md is already registered or not configured no further actions required
+        pass
 
 exclude_patterns = ['readme.md', 'README.md', 'license.md', 'LICENSE.md', 'authors.md', 'AUTHORS.md']
 

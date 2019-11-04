@@ -795,7 +795,7 @@ class DocsItaliaTest(TestCase):
 
     def test_we_use_docsitalia_builder_conf_template(self):
         template = get_template('doc_builder/conf.py.tmpl')
-        self.assertIn('readthedocs/templates/doc_builder/conf.py.tmpl', template.origin.name)
+        self.assertIn('readthedocs/templates/docsitalia/overrides/doc_builder/conf.py.tmpl', template.origin.name)
 
     @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
     @pytest.mark.itresolver
