@@ -35,7 +35,7 @@ $(document).ready(function () {
       <div data-bind="visible: finished()">
         <li>
           {% trans "Completed" %}
-          <span>{{ build.date|date:"N j, Y. P" }}</span>
+          <span>{{ build.date|date:"j N Y G:i" }}</span>
         </li>
 
         <li>
