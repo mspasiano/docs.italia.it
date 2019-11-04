@@ -15,8 +15,6 @@ from readthedocs.projects.models import Project
 from readthedocs.projects.constants import PUBLIC
 from readthedocs.api.v2.views.model_views import ProjectViewSet
 from readthedocs.api.v2.serializers import VersionSerializer
-# TODO merge
-# from readthedocs.search.indexes import PageIndex
 
 from ..models import AllowedTag
 from ..serializers import (
@@ -70,7 +68,8 @@ class DocsItaliaProjectViewSet(ProjectViewSet):  # pylint: disable=too-many-ance
         })
 
 
-# TODO redo on merge
+# FIXME: This is currently unused - we need to understand if it contains useful code
+# and in this case reimplement according to readthedocs.search.views.elastic_search
 class DocSearch(APIView):
 
     """Search api for documentation builds."""
@@ -124,6 +123,8 @@ class DocSearch(APIView):
 
     def get(self, request):
         """Search API: takes project, version and q as mandatory query strings."""
+        from readthedocs.search.faceted_search import PageSearch
+
         project_slug = self.request.query_params.get('project')
         version_slug = self.request.query_params.get('version')
         query = self.request.query_params.get('q')
@@ -140,10 +141,8 @@ class DocSearch(APIView):
         except (Project.DoesNotExist, Version.DoesNotExist):
             raise ParseError()
 
-        # body = self._build_es_query(query, project_slug, version_slug)
-        # todo merge
-        # results = PageIndex().search(body, routing=project_slug)
-        results = None
+        body = self._build_es_query(query, project_slug, version_slug)
+        results = PageSearch(query=body, routing=project_slug)
         if results is None:
             return Response({'error': 'No results found'},
                             status=status.HTTP_404_NOT_FOUND)

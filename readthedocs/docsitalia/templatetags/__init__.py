@@ -1,1 +1,0 @@
-"""Docs Italia Template Tags."""

@@ -4,6 +4,7 @@
 
 FROM python:3.6-slim AS docs_italia_it_base
 
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -76,7 +77,7 @@ CMD ["/bin/bash"]
 FROM docs_italia_it_build AS docs_italia_it_dev
 
 COPY requirements/ /app/requirements/
-RUN pip install --no-cache-dir -r /app/requirements/docsitalia-converter.txt
+RUN pip install --no-cache-dir -r /app/requirements/docsitalia.txt
 COPY docker/ /app/docker/
 
 ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker

@@ -8,15 +8,15 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 
 from readthedocs.builds.models import Version
+from readthedocs.core.utils import broadcast
 from readthedocs.projects.models import Project
-# from readthedocs.projects import tasks
 from readthedocs.oauth.models import RemoteOrganization, RemoteRepository
 
 from readthedocs.core.resolver import resolver
 
 from . import tags_vocabulary
 from .utils import get_projects_with_builds
-from .monkeypatch import monkey_patch_project_model
+from .monkeypatch import monkey_patch_project_model  # NOQA
 
 
 def update_project_from_metadata(project, metadata):
@@ -237,7 +237,7 @@ class PublisherProject(models.Model):
         return self.metadata.get('description', '')
 
     def short_name(self):
-        """Get publisher project short-name from metadata"""
+        """Get publisher project short-name from metadata."""
         return self.metadata.get('short-name', '')
 
     def get_absolute_url(self):
@@ -250,11 +250,12 @@ class PublisherProject(models.Model):
 
     def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """delete pb and all its projects and builds."""
+        from readthedocs.projects import tasks
+
         projects = Project.objects.filter(publisherproject=self)
-        # versions = Version.objects.filter(project__in=projects)
-        # TODO clear_html_artifacts?
-        # for version in versions:
-        #     broadcast(type='app', task=tasks.clear_html_artifacts, args=[version.pk])
+        versions = Version.objects.filter(project__in=projects)
+        for version in versions:
+            broadcast(type='app', task=tasks.remove_build_storage_paths, args=[version.pk])
         projects.delete()
         super(PublisherProject, self).delete(*args, **kwargs)
 

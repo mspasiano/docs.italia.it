@@ -31,13 +31,13 @@ class ProjectQuerySetBase(models.QuerySet):
         return queryset.distinct()
 
     def for_admin_user(self, user):
-        """Projects owned by the user, i.e. where the user is admin"""
+        """Projects owned by the user, i.e. where the user is admin."""
         if user.is_authenticated:
             return self.filter(users__in=[user])
         return self.none()
 
     def user_can_admin(self, user):
-        """Like for_admin_user but allows all projects access to superusers"""
+        """Like for_admin_user but allows all projects access to superusers."""
         if user.is_superuser:
             return self.all()
 

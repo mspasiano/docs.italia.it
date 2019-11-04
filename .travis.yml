@@ -22,9 +22,7 @@ matrix:
 
   allow_failures:
     - python: 3.6
-      env: TOXENV=lint
-      script: tox
-    - python: 3.6
+      # This is fixed upstream - it will be fixed at next upgrade
       env: TOXENV=eslint
 
 cache:

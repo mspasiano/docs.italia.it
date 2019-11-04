@@ -46,7 +46,7 @@ class PublisherProjectAdmin(admin.ModelAdmin):
     delete_selected_confirmation_template = 'docsitalia/admin/' \
         'publisher_project_delete_selected_confirmation_template.html'
 
-    # pylint: disable=R0201
+    # pylint: disable=no-self-use
     def documents(self, obj):
         """Return the number of linked projects."""
         return obj.projects.count()
@@ -55,11 +55,10 @@ class PublisherProjectAdmin(admin.ModelAdmin):
 
 class AllowedTagAdmin(admin.ModelAdmin):
 
-    """Admin view for :py:class:`AllowedTag`"""
+    """Admin view for :py:class:`AllowedTag`."""
 
     list_display = ('name', 'enabled')
     list_filter = ('enabled',)
-
 
 
 admin.site.register(Publisher, PublisherAdmin)

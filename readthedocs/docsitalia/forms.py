@@ -65,6 +65,7 @@ class PublisherAdminForm(forms.ModelForm):
         fields = '__all__'
 
 
+# pylint: disable=too-many-ancestors
 class DocsItaliaUpdateProjectForm(projects_forms.UpdateProjectForm):
     def __init__(self, *args, **kwargs):
         super(DocsItaliaUpdateProjectForm, self).__init__(*args, **kwargs)

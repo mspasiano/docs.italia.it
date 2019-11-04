@@ -36,6 +36,7 @@ class Command(BaseCommand):
             help='Run the rebuild tasks async'
         )
 
+    # pylint: disable=too-many-branches
     def handle(self, *args, **options):
         """handle command."""
         versions = Version.objects.all()

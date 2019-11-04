@@ -174,7 +174,7 @@ class DocsItaliaImport(ImportView):  # pylint: disable=too-many-ancestors
         try:
             remote = RemoteRepository.objects.get(project=project)
         except RemoteRepository.DoesNotExist:
-            log.error('Missing RemoteRepository for project {}'.format(project))
+            log.error('Missing RemoteRepository for project %s', project)
         else:
             pub_projects = PublisherProject.objects.filter(
                 metadata__documents__contains=[{'repo_url': remote.html_url}]
@@ -182,7 +182,7 @@ class DocsItaliaImport(ImportView):  # pylint: disable=too-many-ancestors
             for pub_proj in pub_projects:
                 pub_proj.projects.add(project)
             if not pub_projects:
-                log.error('No PublisherProject found for repo {}'.format(remote.html_url))
+                log.error('No PublisherProject found for repo %s', remote.html_url)
 
         # and finally update the Project model with the metadata
         update_project_from_metadata(project, metadata)
