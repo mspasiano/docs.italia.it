@@ -6,10 +6,11 @@ from __future__ import unicode_literals
 
 import yaml
 
+from requests.exceptions import ConnectionError
+
 from readthedocs.builds.models import Build
 from readthedocs.projects.models import Project
 from readthedocs.api.v2.client import api as apiv2
-from requests.exceptions import ConnectionError
 
 
 def load_yaml(txt):
