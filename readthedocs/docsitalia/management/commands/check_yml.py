@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Command that check local docs italia yml conf file"""
+"""Command that check local docs italia yml conf file."""
 
 from __future__ import absolute_import, print_function, unicode_literals
 
@@ -13,19 +13,19 @@ from readthedocs.docsitalia.github import parse_metadata, get_metadata_from_url
 
 class YmlType(Enum):
 
-    """Enum class for yml file types"""
+    """Enum class for yml file types."""
 
     publisher = 'publisher'
     project = 'project'
     document = 'document'
 
     def __str__(self):
-        """Value of the type instance"""
+        """Value of the type instance."""
         return self.value
 
     @property
     def yml_file(self):
-        """Return the yml file matching the given type"""
+        """Return the yml file matching the given type."""
         return dict(
             publisher='publisher_settings.yml',
             project='projects_settings.yml',
@@ -35,17 +35,17 @@ class YmlType(Enum):
 
 class Command(BaseCommand):
 
-    """Command that check local docs italia yml conf file"""
+    """Command that check local docs italia yml conf file."""
 
     help = 'Check yml file.'
 
     def add_arguments(self, parser):
-        """Add command arguments"""
+        """Add command arguments."""
         parser.add_argument('--yml', required=True)
         parser.add_argument('--type', type=YmlType, choices=list(YmlType), required=True)
 
     def handle(self, *args, **options):
-        """Validate and output yml content"""
+        """Validate and output yml content."""
         file_path = options.get('yml')
         if file_path.startswith('http'):
             data = get_metadata_from_url(file_path)

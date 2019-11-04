@@ -3,7 +3,7 @@ from functools import reduce
 from operator import add
 
 from django.conf import settings
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.conf.urls.static import static
 
 from readthedocs.constants import pattern_opts
@@ -60,5 +60,10 @@ if settings.DEBUG:
             document_root=settings.MEDIA_ROOT,
         ),
     )
+
+docsitalia_urls = [
+    url(r'', include('readthedocs.docsitalia.urls')),
+]
+groups.append(docsitalia_urls)
 
 urlpatterns = reduce(add, groups)

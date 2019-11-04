@@ -1,2 +1,3 @@
 -r deploy.txt
 django-restricted-sessions
+django-autocomplete-light==3.4.1

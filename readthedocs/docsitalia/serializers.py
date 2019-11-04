@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Docs italia serializers"""
+"""Docs italia serializers."""
 
 from rest_framework import serializers
 # from readthedocs.restapi.serializers import ProjectSerializer
@@ -9,7 +9,7 @@ from readthedocs.api.v2.serializers import ProjectSerializer
 
 class DocsItaliaProjectSerializer(ProjectSerializer):
 
-    """DocsItalia custom serializer for Projects"""
+    """DocsItalia custom serializer for Projects."""
 
     publisher = serializers.SerializerMethodField()
     publisher_project = serializers.SerializerMethodField()
@@ -29,7 +29,7 @@ class DocsItaliaProjectSerializer(ProjectSerializer):
 
     @staticmethod
     def get_publisher(obj):
-        """gets the publisher"""
+        """gets the publisher."""
         p_p = obj.publisherproject_set.first()
         if p_p:
             metadata = p_p.publisher.metadata.get('publisher', {})
@@ -40,7 +40,7 @@ class DocsItaliaProjectSerializer(ProjectSerializer):
 
     @staticmethod
     def get_publisher_project(obj):
-        """gets the publisher project"""
+        """gets the publisher project."""
         p_p = obj.publisherproject_set.first()
         if p_p:
             return {
@@ -50,7 +50,7 @@ class DocsItaliaProjectSerializer(ProjectSerializer):
 
     @staticmethod
     def get_tags(obj):
-        """gets the project tags"""
+        """gets the project tags."""
         return obj.tags.slugs()
 
 

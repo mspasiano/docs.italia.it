@@ -5,12 +5,12 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
 from .forms import PublisherAdminForm
-from .models import Publisher, PublisherProject
+from .models import AllowedTag, Publisher, PublisherProject
 
 
 class PublisherAdmin(admin.ModelAdmin):
 
-    """Admin view for :py:class:`Publisher`"""
+    """Admin view for :py:class:`Publisher`."""
 
     form = PublisherAdminForm
     readonly_fields = ('metadata', 'projects_metadata',)
@@ -37,7 +37,7 @@ class PublisherAdmin(admin.ModelAdmin):
 
 class PublisherProjectAdmin(admin.ModelAdmin):
 
-    """Admin view for :py:class:`PublisherProject`"""
+    """Admin view for :py:class:`PublisherProject`."""
 
     list_filter = ('featured', 'active',)
     list_display = ('name', 'publisher', 'documents', 'pub_date',)
@@ -48,10 +48,20 @@ class PublisherProjectAdmin(admin.ModelAdmin):
 
     # pylint: disable=R0201
     def documents(self, obj):
-        """Return the number of linked projects"""
+        """Return the number of linked projects."""
         return obj.projects.count()
     documents.short_description = _('documents')
 
 
+class AllowedTagAdmin(admin.ModelAdmin):
+
+    """Admin view for :py:class:`AllowedTag`"""
+
+    list_display = ('name', 'enabled')
+    list_filter = ('enabled',)
+
+
+
 admin.site.register(Publisher, PublisherAdmin)
 admin.site.register(PublisherProject, PublisherProjectAdmin)
+admin.site.register(AllowedTag, AllowedTagAdmin)

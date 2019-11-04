@@ -3,6 +3,7 @@
 
 from django.utils.text import slugify
 
+from .models import AllowedTag
 from .utils import load_yaml
 
 PUBLISHER_SETTINGS = 'publisher_settings.yml'
@@ -21,13 +22,13 @@ RAW_GITHUB_BASE_URL = (
 
 class InvalidMetadata(Exception):
 
-    """Invalid metadata generic exception"""
+    """Invalid metadata generic exception."""
 
     pass
 
 
 def validate_publisher_metadata(org, settings, **kwargs): # noqa
-    """Validate the publisher metadata"""
+    """Validate the publisher metadata."""
     data = load_yaml(settings)
     try:
         publisher = data['publisher']
@@ -50,7 +51,7 @@ def validate_publisher_metadata(org, settings, **kwargs): # noqa
 
 
 def validate_projects_metadata(org, settings, **kwargs): # noqa
-    """Validate the projects metadata"""
+    """Validate the projects metadata."""
     data = load_yaml(settings)
     try:
         projects = data['projects']
@@ -65,7 +66,7 @@ def validate_projects_metadata(org, settings, **kwargs): # noqa
                 # expand the document repository to an url so it's easier to query at
                 # Project import time
                 project['documents'][index] = {
-                    'repository':  document,
+                    'repository': document,
                     'repo_url': '{}/{}'.format(org.url, document)
                 }
             name_for_slug = project.get('short_name', project['name'])
@@ -76,7 +77,7 @@ def validate_projects_metadata(org, settings, **kwargs): # noqa
 
 
 def validate_document_metadata(org, settings, **kwargs): # noqa
-    """Validate the document metadata"""
+    """Validate the document metadata."""
     data = load_yaml(settings)
     try:
         document = data['document']
@@ -85,6 +86,13 @@ def validate_document_metadata(org, settings, **kwargs): # noqa
                 raise ValueError('Missing required field "%s" in %s' % (field, document))
     except (KeyError, TypeError):
         raise ValueError('General error in parsing document metadata %s' % data)
+    return _remove_invalid_tags(data)
+
+
+def _remove_invalid_tags(data):
+    allowed_tags = set(AllowedTag.objects.filter(enabled=True).values_list('name', flat=True))
+    original_tags = {tag.strip().lower() for tag in data['document']['tags']}
+    data['document']['tags'] = list(original_tags & allowed_tags)
     return data
 
 

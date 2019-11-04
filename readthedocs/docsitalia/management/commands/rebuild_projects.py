@@ -1,4 +1,4 @@
-"""Rebuild documentation for all projects"""
+"""Rebuild documentation for all projects."""
 
 from __future__ import absolute_import
 from django.core.management.base import BaseCommand, CommandError
@@ -13,12 +13,12 @@ from readthedocs.docsitalia.models import Publisher, PublisherProject
 
 class Command(BaseCommand):
 
-    """Rebuild all projects command"""
+    """Rebuild all projects command."""
 
     help = 'Rebuild projects'
 
     def add_arguments(self, parser):
-        """adds arguments"""
+        """adds arguments."""
         parser.add_argument(
             '--publisher', nargs='?', type=str,
             help='A publisher project slug'
@@ -37,7 +37,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        """handle command"""
+        """handle command."""
         versions = Version.objects.all()
         publisher = options['publisher']
         version = options['version']

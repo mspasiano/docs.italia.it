@@ -10,9 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         git \
         libpq-dev \
+        locales \
+        wait-for-it \
     && rm -rf /var/lib/apt/lists/*
 
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' -e 's/# \(it_IT\.UTF-8 .*\)/\1/'  /etc/locale.gen && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=en_US.UTF-8
 
 WORKDIR /app
 
@@ -45,6 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG COMANDI_CONVERSIONE_URL=https://github.com/italia/docs-italia-comandi-conversione/releases/download/v0.6
 ARG PANDOC_FILTERS_URL=https://github.com/italia/docs-italia-pandoc-filters/releases/download/v0.1.4
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSL ${COMANDI_CONVERSIONE_URL}/converti.zip | bsdtar -xf- -C /usr/local/bin \
     && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc-font-to-style.zip | bsdtar -xf- -C /usr/local/bin \
     && curl -sSL ${COMANDI_CONVERSIONE_URL}/pandoc-to-sphinx.zip | bsdtar -xf- -C /usr/local/bin \
@@ -75,10 +80,6 @@ RUN pip install --no-cache-dir -r /app/requirements/docsitalia-converter.txt
 COPY docker/ /app/docker/
 
 ENV DJANGO_SETTINGS_MODULE=readthedocs.docsitalia.settings.docker
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        wait-for-it \
-    && rm -rf /var/lib/apt/lists/*
 
 CMD ["/bin/bash"]
 

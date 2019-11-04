@@ -1,4 +1,4 @@
-"""Removes projects without publisher from the ES index"""
+"""Removes projects without publisher from the ES index."""
 from __future__ import (
     absolute_import, print_function)
 
@@ -16,7 +16,7 @@ from readthedocs.docsitalia.models import PublisherProject
 class Command(BaseCommand):
 
     """
-    Clean ES index:
+    Clean ES index.
 
     Removes projects without publisher or inactive publisher or
     inactive publisher project from the ES index.
@@ -24,7 +24,7 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        """handle command"""
+        """handle command."""
         e_s = Elasticsearch(settings.ES_HOSTS)
         inactive_pp = PublisherProject.objects.filter(
             Q(active=False) | Q(publisher__active=False)

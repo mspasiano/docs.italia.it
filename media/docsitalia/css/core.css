@@ -2,15 +2,6 @@
 
 /* This file is a stripped out version of docs.italia.it/media/css/core.css */
 
-/* Fonts */
-@font-face {
-    font-family: 'FontAwesome';
-    src: url('../../fonts/fontawesome-webfont.eot?v=4.4.0');
-    src: url('../../fonts/fontawesome-webfont.eot?#iefix&v=4.4.0') format('embedded-opentype'), url('../../fonts/fontawesome-webfont.woff?v=4.4.0') format('woff'), url('../../fonts/fontawesome-webfont.ttf?v=4.4.0') format('truetype'), url('../../fonts/fontawesome-webfont.svg?v=4.4.0#fontawesomeregular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-
 /* general layout */
 
 div.wrapper > div.col-major {
@@ -874,59 +865,6 @@ div.project-import-remote li.remote-repo a.remote-repo-view span,
 div.project-import-remote li.remote-repo span.remote-repo-locked span,
 div.project-import-remote button.remote-sync span {
     display: none;
-}
-
-div.project-import-remote li.remote-repo a.remote-repo-import:before {
-    font-family: FontAwesome;
-    font-weight: normal;
-    content: "\f067";
-}
-
-div.project-import-remote li.remote-repo a.remote-repo-view:before {
-    font-family: FontAwesome;
-    font-weight: normal;
-    content: "\f08e";
-}
-
-div.project-import-remote li.remote-repo span.remote-repo-locked:before {
-    font-family: FontAwesome;
-    font-weight: normal;
-    content: "\f023";
-}
-
-div.project-import-remote button.remote-sync:before {
-    font-family: FontAwesome;
-    content: "\f021";
-}
-
-a.socialaccount-provider.github:before {
-    font-family: FontAwesome;
-    content: "\f09b";
-}
-
-a.socialaccount-provider.gitlab:before {
-    font-family: FontAwesome;
-    content: "\f296";
-}
-
-a.socialaccount-provider.bitbucket:before,
-a.socialaccount-provider.bitbucket_oauth2:before {
-    font-family: FontAwesome;
-    content: "\f171";
-}
-
-div.project-import-remote li.remote-repo span.remote-repo-extra-url:before {
-    padding-right: .5em;
-    font-family: FontAwesome;
-    font-size: 1.2em;
-    content: '\f126';
-}
-
-div.project-import-remote li.remote-repo span.remote-repo-extra-locked:before {
-    padding-right: .5em;
-    font-family: FontAwesome;
-    font-size: 1.2em;
-    content: '\f071';
 }
 
 div.project-import-sidebar form.import-manual input {

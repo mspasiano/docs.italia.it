@@ -7,7 +7,6 @@ from django.test.utils import override_settings
 from mock import patch
 import pytest
 
-from django import forms
 from django.core.management import call_command
 from django.conf import settings
 from django.db import IntegrityError
@@ -30,7 +29,7 @@ from readthedocs.docsitalia.metadata import (
     validate_publisher_metadata, validate_projects_metadata,
     validate_document_metadata, InvalidMetadata)
 from readthedocs.docsitalia.models import (
-    Publisher, PublisherProject, PublisherIntegration,
+    AllowedTag, Publisher, PublisherProject, PublisherIntegration,
     update_project_from_metadata)
 from readthedocs.docsitalia.serializers import (
     DocsItaliaProjectSerializer, DocsItaliaProjectAdminSerializer)
@@ -92,7 +91,10 @@ DOCUMENT_METADATA = """document:
   tags:
     - amazing document"""
 
-IT_RESOLVER_IN_SETTINGS = 'readthedocs.docsitalia.resolver.ItaliaResolver' in getattr(settings, 'CLASS_OVERRIDES', {}).values()
+IT_RESOLVER_IN_SETTINGS = (
+    'readthedocs.docsitalia.resolver.ItaliaResolver'
+    in getattr(settings, 'CLASS_OVERRIDES', {}).values()
+)
 
 
 class DocsItaliaTest(TestCase):
@@ -208,7 +210,8 @@ class DocsItaliaTest(TestCase):
         )
         session = requests.Session()
         with patch(
-            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session') as m:
+            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session'
+        ) as m:
             m.return_value = session
             with requests_mock.Mocker() as rm:
                 rm.get('https://api.github.com/user/orgs', json=orgs_json)
@@ -275,7 +278,7 @@ class DocsItaliaTest(TestCase):
             'html_url': 'https://github.com/testorg/project-document-doc',
             'clone_url': 'https://github.com/testorg/project-document-doc.git',
         }]
-        publisher = Publisher.objects.create(
+        Publisher.objects.create(
             name='Test Org',
             slug=org_json['login'],
             metadata={},
@@ -284,7 +287,8 @@ class DocsItaliaTest(TestCase):
         )
         session = requests.Session()
         with patch(
-            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session') as m:
+            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session'
+        ) as m:
             m.return_value = session
             with requests_mock.Mocker() as rm:
                 rm.get('https://api.github.com/user/orgs', json=orgs_json)
@@ -317,7 +321,8 @@ class DocsItaliaTest(TestCase):
         }]
         session = requests.Session()
         with patch(
-            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session') as m:
+            'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService.get_session'
+        ) as m:
             m.return_value = session
             with requests_mock.Mocker() as rm:
                 rm.get('https://api.github.com/user/orgs', json=orgs_json)
@@ -331,14 +336,17 @@ class DocsItaliaTest(TestCase):
                     'italia-conf/master/projects_settings.yml',
                     text=PROJECTS_METADATA)
                 rm.get('https://api.github.com/orgs/testorg', json=org_json)
-                rm.get('https://api.github.com/orgs/testorg/repos', json=org_repos_json_with_one_doc)
+                rm.get(
+                    'https://api.github.com/orgs/testorg/repos',
+                    json=org_repos_json_with_one_doc
+                )
                 rm.post('https://api.github.com/repos/testorg/italia-conf/hooks', json={})
                 self.service.sync_organizations()
         remote_repos = RemoteRepository.objects.all()
         self.assertEqual(remote_repos.count(), 1)
 
     @patch('django.contrib.messages.api.add_message')
-    @override_settings(PUBLIC_PROTO='https', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_project_custom_resolver(self, add_message):
 
         with patch('readthedocs.projects.models.resolve') as resolve_func:
@@ -373,8 +381,9 @@ class DocsItaliaTest(TestCase):
             resolve_func.return_value = ItaliaResolver().resolve(
                 project=project, version_slug=LATEST, language='en', private=False
             )
+            protocol = 'https' if settings.PUBLIC_DOMAIN_USES_HTTPS else 'http'
             self.assertEqual(project.get_docs_url(), '%s://%s/%s/%s/%s/en/%s/' % (
-                settings.PUBLIC_PROTO, settings.PUBLIC_DOMAIN, publisher.slug,
+                protocol, settings.PUBLIC_DOMAIN, publisher.slug,
                 pub_project.slug, project.slug, LATEST
             ))
 
@@ -502,7 +511,7 @@ class DocsItaliaTest(TestCase):
             repo='https://github.com/testorg/myrepourl.git'
         )
         pub_project.projects.add(project)
-        remote = RemoteRepository.objects.create(
+        RemoteRepository.objects.create(
             full_name='remote repo name',
             html_url='https://github.com/testorg/myrepourl',
             project=project,
@@ -678,6 +687,7 @@ class DocsItaliaTest(TestCase):
           tags:
             - amazing document"""
 
+        AllowedTag.objects.create(name='amazing document', enabled=True)
         project = Project.objects.create(
             name='my project',
             slug='myprojectslug',
@@ -754,6 +764,7 @@ class DocsItaliaTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_on_webhook_github_signal_works(self):
+        AllowedTag.objects.create(name='amazing document', enabled=True)
         project = Project.objects.create(
             name='my project',
             slug='myprojectslug',
@@ -786,9 +797,9 @@ class DocsItaliaTest(TestCase):
         template = get_template('doc_builder/conf.py.tmpl')
         self.assertIn('readthedocs/templates/doc_builder/conf.py.tmpl', template.origin.name)
 
-    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
     @pytest.mark.itresolver
-    @override_settings(PUBLIC_PROTO='http', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_tags(self):
         project = Project.objects.create(
             name='my project',
@@ -837,13 +848,16 @@ class DocsItaliaTest(TestCase):
                   "default_branch": None,
                   "documentation_type": "sphinx",
                   "users": [],
-                  "canonical_url": "http://readthedocs.org/testorg/testproject/myprojectslug/en/latest/",
+                  "canonical_url": (
+                      "https://readthedocs.org/testorg/testproject"
+                      "/myprojectslug/en/latest/"
+                    ),
                   "publisher": {
-                    "canonical_url": "http://readthedocs.org/testorg",
+                    "canonical_url": "https://readthedocs.org/testorg",
                     "name": "publisher"
                   },
                   "publisher_project": {
-                    "canonical_url": "http://readthedocs.org/testorg/testproject",
+                    "canonical_url": "https://readthedocs.org/testorg/testproject",
                     "name": "Test Project"
                   },
                   "tags": ["ipsum", "lorem"]
@@ -853,9 +867,9 @@ class DocsItaliaTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
     @pytest.mark.itresolver
-    @override_settings(PUBLIC_PROTO='http', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_publisher(self):
         project = Project.objects.create(
             name='my project',
@@ -914,9 +928,9 @@ class DocsItaliaTest(TestCase):
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['slug'], 'myprojectslug')
 
-    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIEDS in the settings file to work')
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
     @pytest.mark.itresolver
-    @override_settings(PUBLIC_PROTO='http', PUBLIC_DOMAIN='readthedocs.org')
+    @override_settings(PUBLIC_DOMAIN_USES_HTTPS=True, PUBLIC_DOMAIN='readthedocs.org')
     def test_projects_by_tag_api_filter_publisher_project(self):
         project = Project.objects.create(
             name='my project',
@@ -1278,3 +1292,44 @@ class DocsItaliaTest(TestCase):
         self.assertEqual(len(clear_index.mock_calls), 1)
         proj2 = Project.objects.filter(pk=project2.pk)
         self.assertTrue(proj2.exists())
+
+    def test_document_metadata_validation_allows_whitelisted_tags_only(self):
+        AllowedTag.objects.bulk_create(
+            [
+                AllowedTag(name='tag', enabled=True),
+                AllowedTag(name='disabled_tag', enabled=False),
+                AllowedTag(name='tag with spaces', enabled=True),
+            ]
+        )
+        document_metadata = """document:
+  name: Documento
+  description: Lorem ipsum dolor sit amet, consectetur
+  tags:
+    -   tag  # leading spaces
+    - disabled_tag
+    - invalid_tag
+    - TAG WITH SPACES"""
+
+        data = validate_document_metadata(None, document_metadata)
+        self.assertEqual(['tag', 'tag with spaces'], sorted(data['document']['tags']))
+
+
+class AllowedTagAutocompleteTests(TestCase):
+    def test_allowed_tags_listing(self):
+        AllowedTag.objects.all().delete()  # Clean tags created by data migration.
+        enabled_tag = AllowedTag.objects.create(name='tag', enabled=True)
+        AllowedTag.objects.create(name='disabled_tag', enabled=False)
+        response = self.client.get(reverse('allowedtag-autocomplete'))
+        expected = {
+            'results': [
+                {
+                    'id': str(enabled_tag.pk),
+                    'text': 'tag',
+                    'selected_text': 'tag',
+                },
+            ],
+            'pagination': {
+                'more': False,
+            },
+        }
+        self.assertEqual(expected, response.json())

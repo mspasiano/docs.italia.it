@@ -12,7 +12,7 @@ from readthedocs.projects.models import Project
 
 
 def load_yaml(txt):
-    """Helper for yaml parsing"""
+    """Helper for yaml parsing."""
     try:
         return yaml.safe_load(txt)
     except yaml.YAMLError as exc:
@@ -28,7 +28,7 @@ def load_yaml(txt):
 
 def get_subprojects(project_pk):
     """
-    Returns the list of subprojects from a project primary key by using the API
+    Returns the list of subprojects from a project primary key by using the API.
 
     This makes it suitable for using in signals and wherever you don't have access to the
     project context
@@ -46,7 +46,7 @@ def get_subprojects(project_pk):
 
 
 def get_projects_with_builds(only_public=True):
-    """Returns a queryset of Projects with active only public by default builds"""
+    """Returns a queryset of Projects with active only public by default builds."""
     builds = Build.objects.filter(
         success=True,
         state='finished',

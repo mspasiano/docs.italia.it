@@ -38,6 +38,7 @@ from readthedocs.builds.models import Version
 from readthedocs.core.mixins import ListViewWithForm, LoginRequiredMixin
 from readthedocs.core.utils import broadcast, trigger_build
 from readthedocs.core.utils.extend import SettingsOverrideObject
+from readthedocs.docsitalia.forms import DocsItaliaUpdateProjectForm
 from readthedocs.integrations.models import HttpExchange, Integration
 from readthedocs.oauth.services import registry
 from readthedocs.oauth.tasks import attach_webhook
@@ -55,7 +56,6 @@ from readthedocs.projects.forms import (
     ProjectRelationshipForm,
     RedirectForm,
     TranslationForm,
-    UpdateProjectForm,
     UserForm,
     WebHookForm,
 )
@@ -133,7 +133,7 @@ class ProjectMixin(PrivateViewMixin):
 
 class ProjectUpdate(ProjectSpamMixin, ProjectMixin, UpdateView):
 
-    form_class = UpdateProjectForm
+    form_class = DocsItaliaUpdateProjectForm
     success_message = _('Project settings updated')
     template_name = 'projects/project_edit.html'
 

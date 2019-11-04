@@ -35,15 +35,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(forwards_func),
-        migrations.AlterField(
-            model_name='project',
-            name='slug',
-            field=models.SlugField(max_length=63, unique=True, verbose_name='Slug'),
-        ),
-        migrations.AlterField(
-            model_name='project',
-            name='name',
-            field=models.CharField(max_length=63, verbose_name='Name'),
-        ),
+        # disabled to revert changes in 8d2ee29de95690a9cd72d4f2a0b4131a44449928
+        # see note in readthedocs.docsitalia.monkeypatch
+        # migrations.RunPython(forwards_func),
+        # migrations.AlterField(
+        #     model_name='project',
+        #     name='slug',
+        #     field=models.SlugField(max_length=63, unique=True, verbose_name='Slug'),
+        # ),
+        # migrations.AlterField(
+        #     model_name='project',
+        #     name='name',
+        #     field=models.CharField(max_length=63, verbose_name='Name'),
+        # ),
     ]
