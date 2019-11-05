@@ -69,7 +69,8 @@ class BaseBuilder(object):
             shutil.copytree(
                 self.old_artifact_path,
                 self.target,
-                ignore=shutil.ignore_patterns(*self.ignore_patterns)
+                ignore=shutil.ignore_patterns(*self.ignore_patterns),
+                copy_function=shutil.copy
             )
         else:
             log.warning('Not moving docs, because the build dir is unknown.')

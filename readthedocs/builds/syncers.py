@@ -38,7 +38,7 @@ class LocalSyncer(object):
         else:
             if os.path.exists(target):
                 shutil.rmtree(target)
-            shutil.copytree(path, target)
+            shutil.copytree(path, target, copy_function=shutil.copy)
 
 
 class RemoteSyncer(object):
