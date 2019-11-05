@@ -93,6 +93,7 @@ class Command(BaseCommand):
                         )
 
                         # pylint: disable=no-value-for-parameter
+                        # TODO how does it works? it pass version_pk twice and once using version.project_id?
                         tasks.update_docs_task(
                             version.project_id,
                             build_pk=build.pk,
@@ -114,6 +115,7 @@ class Command(BaseCommand):
                         )
 
                         # pylint: disable=no-value-for-parameter
+                        # TODO how does it works? it pass version_pk twice and once using version.project_id?
                         tasks.update_docs_task(
                             version.project_id,
                             build_pk=build.pk,
