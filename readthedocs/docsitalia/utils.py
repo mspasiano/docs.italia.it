@@ -6,6 +6,9 @@ from __future__ import unicode_literals
 
 import yaml
 
+# pylint: disable=redefined-builtin
+from requests.exceptions import ConnectionError
+
 from readthedocs.builds.models import Build
 from readthedocs.projects.models import Project
 from readthedocs.api.v2.client import api as apiv2
@@ -36,11 +39,14 @@ def get_subprojects(project_pk):
     :param project_pk:
     :return:
     """
-    return (
-        apiv2.project(project_pk)
-        .subprojects()
-        .get()['subprojects']
-    )
+    try:
+        return (
+            apiv2.project(project_pk)
+            .subprojects()
+            .get()['subprojects']
+        )
+    except ConnectionError:
+        return []
 
 
 def get_projects_with_builds(only_public=True):
