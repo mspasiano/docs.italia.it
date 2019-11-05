@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import yaml
 
+# pylint: disable=redefined-builtin
 from requests.exceptions import ConnectionError
 
 from readthedocs.builds.models import Build
