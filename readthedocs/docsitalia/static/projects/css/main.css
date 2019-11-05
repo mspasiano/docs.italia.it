@@ -286,10 +286,6 @@ select:hover {
 .icon-type-document:before {
   content: url("../images/document.svg");
 }
-.main-title {
-  margin: 4rem 0 2rem;
-  border-bottom: 1px solid #D8D8D8;
-}
 .project-builds {
   flex: 1 0 auto;
 }
@@ -757,4 +753,18 @@ select:hover {
 }
 .sfs-modal.modal .sfs-modal-tags-container .btn-outline-secondary {
   box-shadow: inset 0 0 0 1px #5f7285;
+}
+.serp-results-info {
+  border-bottom: 1px solid #D8D8D8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+}
+.serp-results-info .serp-results-order select {
+  background: white;
+  box-shadow: none;
+  border: 1px solid #D8D8D8;
+  color: #06c;
+  text-shadow: none;
 }
