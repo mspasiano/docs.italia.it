@@ -1,10 +1,9 @@
 """Rebuild documentation for all projects."""
 
-from __future__ import absolute_import
 from django.core.management.base import BaseCommand, CommandError
 
 from readthedocs.builds.models import Build, Version
-from readthedocs.projects.tasks import UpdateDocsTask
+from readthedocs.projects.tasks import update_docs_task
 from readthedocs.projects.models import Project
 
 
@@ -28,7 +27,7 @@ class Command(BaseCommand):
             help='A Read the docs document slug'
         )
         parser.add_argument(
-            '--version', nargs='?', type=str,
+            '--version-slug', nargs='?', type=str,
             help='A Read the docs version slug'
         )
         parser.add_argument(
@@ -41,7 +40,7 @@ class Command(BaseCommand):
         """handle command."""
         versions = Version.objects.all()
         publisher = options['publisher']
-        version = options['version']
+        version_slug = options['version_slug']
         document = options['document']
         run_async = options['async']
         if publisher:
@@ -58,13 +57,14 @@ class Command(BaseCommand):
                 versions = versions.filter(project=project)
             except Project.DoesNotExist:
                 raise CommandError("Project {} doesn't exist".format(document))
-        if version:
+        if version_slug:
             try:
-                versions = versions.filter(slug=version)
+                versions = versions.filter(slug=version_slug)
             except Project.DoesNotExist:
-                raise CommandError("Project {} doesn't exist".format(document))
+                raise CommandError("Version {} doesn't exist".format(version_slug))
+
         for version in versions:
-            task = UpdateDocsTask()
+            task = update_docs_task
             build = Build.objects.create(
                 project=version.project,
                 version=version,
@@ -72,9 +72,9 @@ class Command(BaseCommand):
                 state='triggered',
             )
             kwargs = dict(
-                pk=version.project.pk, version_pk=version.pk, build_pk=build.pk, search=True
+                version_pk=version.pk, build_pk=build.pk
             )
             if run_async:
-                task.apply_async(kwargs=kwargs)
+                task.apply_async(kwargs=kwargs, queue='docs')
             else:
                 task.run(**kwargs)
