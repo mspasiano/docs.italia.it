@@ -30,8 +30,6 @@ UserInput = collections.namedtuple(
         'language',
         'role_name',
         'index',
-        'publisher',
-        'publisher_project',
     ),
 )
 
@@ -60,8 +58,6 @@ def elastic_search(request, project_slug=None):
         language=request.GET.get('language'),
         role_name=request.GET.get('role_name'),
         index=request.GET.get('index'),
-        publisher=request.GET.get('publisher'),
-        publisher_project=request.GET.get('publisher_project'),
     )
     search_facets = collections.defaultdict(
         lambda: ProjectSearch,
@@ -136,8 +132,6 @@ def elastic_search(request, project_slug=None):
     template_vars.update({
         'results': results,
         'facets': facets,
-        'results_dict': results.to_dict() if results else {},
-        'facets_dict': facets.to_dict() if facets else {},
     })
 
     if project_slug:

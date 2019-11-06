@@ -2,14 +2,12 @@ import logging
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import FacetedSearch, TermsFacet
-from elasticsearch_dsl.faceted_search import FacetedResponse, NestedFacet
+from elasticsearch_dsl.faceted_search import NestedFacet
 from elasticsearch_dsl.query import Bool, SimpleQueryString, Nested, Match
-from elasticsearch_dsl.search import Search
 
 from django.conf import settings
 
 from readthedocs.core.utils.extend import SettingsOverrideObject
-from readthedocs.projects.constants import PRIVATE
 from readthedocs.search.documents import (
     PageDocument,
     ProjectDocument,
@@ -18,10 +16,7 @@ from readthedocs.search.documents import (
 
 log = logging.getLogger(__name__)
 
-ALL_FACETS = [
-    'project', 'version', 'role_name', 'language', 'index', 'publisher',
-    'publisher_project',
-]
+ALL_FACETS = ['project', 'version', 'role_name', 'language', 'index']
 
 
 class RTDFacetedSearch(FacetedSearch):
@@ -75,7 +70,7 @@ class RTDFacetedSearch(FacetedSearch):
 
         for operator in self.operators:
             query_string = SimpleQueryString(
-                query=query, fields=self.fields, default_operator=operator,
+                query=query, fields=self.fields, default_operator=operator
             )
             all_queries.append(query_string)
 
@@ -87,11 +82,7 @@ class RTDFacetedSearch(FacetedSearch):
 
 
 class ProjectSearchBase(RTDFacetedSearch):
-    facets = {
-        'language': TermsFacet(field='language'),
-        'publisher': TermsFacet(field='publisher'),
-        'publisher_project': TermsFacet(field='publisher_project'),
-    }
+    facets = {'language': TermsFacet(field='language')}
     doc_types = [ProjectDocument]
     index = ProjectDocument._doc_type.index
     fields = ('name^10', 'slug^5', 'description')
@@ -106,8 +97,6 @@ class PageSearchBase(RTDFacetedSearch):
             'domains',
             TermsFacet(field='domains.role_name')
         ),
-        'publisher': TermsFacet(field='publisher'),
-        'publisher_project': TermsFacet(field='publisher_project'),
     }
     doc_types = [PageDocument]
     index = PageDocument._doc_type.index
@@ -214,14 +203,6 @@ class PageSearchBase(RTDFacetedSearch):
             query=bool_query
         )
         return nested_query
-
-    def search(self):
-        """Construct the Search object and return a faceted search response."""
-        s = Search(
-            doc_type=self.doc_types, index=self.index, using=self.using,
-            extra={'min_score': getattr(settings, 'ES_SEARCH_FILE_MIN_SCORE', 1)},
-        ).exclude("term", privacy_level=PRIVATE)
-        return s.response_class(FacetedResponse)
 
 
 class PageSearch(SettingsOverrideObject):
