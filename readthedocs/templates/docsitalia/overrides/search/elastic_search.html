@@ -1,6 +1,6 @@
 {% extends "projects/base_project.html" %}
 
-{% load core_tags docs_italia i18n %}
+{% load core_tags docs_italia i18n static %}
 
 {% block title %}
   {% blocktrans with query=query|default:"" %}Search: {{ query }}{% endblocktrans %}
@@ -14,41 +14,51 @@
       <div class="col-12 col-md-4">
         <div class="link-list-wrapper">
           {% if query and results.hits.hits|length > 0 %}
-            <ul class="link-list column-search-filters">
-              <!-- publisher filters -->
-              {% if facets.publisher %}
-                <li><h3 class="pt-2">Amministrazione</h3></li>
+            <!-- publisher filters -->
+            {% if facets.publisher %}
+              <ul class="link-list serp-search-filters">
+                <li class="serp-filter-title">
+                  <svg class="icon icon-secondary icon-sm">
+                    <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-pa"></use>
+                  </svg>
+                  <h3>Amministrazione</h3>
+                </li>
 
                 {% for name, count, selected in facets.publisher %}
-                <li class="list-item large {% if selected %}active{% endif %}">
-                  {% if publisher == name %}
-                    <a href="?{% url_replace request 'publisher' ''  %}">{{ name }}</a>
-                  {% else %}
-                    <a href="?{% url_replace request 'publisher' name  %}">{{ name }} ({{ count }})</a>
-                  {% endif %}
-                </li>
-                {% endfor %}
-
-                <li><span class="divider"></span></li>
-              {% endif %}
-
-              <!-- projects filters -->
-              {% if facets.publisher_project %}
-                <li><h3 class="pt-2">Progetto</h3></li>
-
-                {% for name, count, selected in facets.publisher_project %}
-                  <li class="list-item large {% if selected %}active{% endif %}">
-                    {% if publisher_project == name %}
-                      <a href="?{% url_replace request 'publisher_project' ''  %}">{{ name|get_publisher_project }}</a>
-                    {% else %}
-                      <a href="?{% url_replace request 'publisher_project' name  %}">{{ name|get_publisher_project }} ({{ count }})</a>
-                    {% endif %}
+                  <li>
+                    <a class="p-0 d-inline-block" href="?{% if publisher == name %}{% url_replace request 'publisher' '' %}{% else %}{% url_replace request 'publisher' name %}{% endif %}">
+                      <div class="form-check">
+                        <input id="{{name}}" type="checkbox" {% if selected %}checked="true"{% endif %}>
+                        <label for="{{name}}">{{name}} <span>({{ count }})</span></label>
+                      </div>
+                    </a>
                   </li>
                 {% endfor %}
+              </ul>
+           {% endif %}
 
-                <li><span class="divider"></span></li>
-              {% endif %}
+           <!-- projects filters -->
+           {% if facets.publisher_project %}
+           <ul class="link-list serp-search-filters">
+              <li class="serp-filter-title">
+                <svg class="icon icon-secondary icon-sm">
+                  <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-folder"></use>
+                </svg>
+                <h3>Progetto</h3>
+              </li>
+
+              {% for name, count, selected in facets.publisher_project %}
+                <li>
+                  <a class="p-0 d-inline-block" href="?{% if publisher_project == name %}{% url_replace request 'publisher_project' '' %}{% else %}{% url_replace request 'publisher_project' name %}{% endif %}">
+                    <div class="form-check">
+                      <input id="{{name}}" type="checkbox" {% if selected %}checked="true"{% endif %}>
+                      <label for="{{name}}">{{name|get_publisher_project}} <span>({{ count }})</span></label>
+                    </div>
+                  </a>
+                </li>
+              {% endfor %}
             </ul>
+            {% endif %}
           {% endif %}
         </div>
       </div>
@@ -70,7 +80,7 @@
           <div class="serp-results-order">
             <label for="order-select" class="mr-2">Ordina per</label>
             <select id="order-select" title="Scegli una opzione">
-              <option value="1">Popolarità</option>
+              <option value="1">Rilevanza</option>
               <option value="2">Più recente</option>
               <option value="3">Meno recente</option>
               <option value="4">Ordine alfabetico</option>

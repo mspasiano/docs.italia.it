@@ -1,3 +1,52 @@
+// Filters
+.serp-search-filters {
+  padding: 0;
+  margin-bottom: 35px !important;
+
+  li {
+    list-style: none;
+
+    &.serp-filter-title {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      color: #17324d;
+      text-transform: uppercase;
+
+      svg {
+        fill: #17324d;
+      }
+
+      h3 {
+        margin: 0px;
+        padding: 0px 10px;
+      }
+    }
+
+    a {
+      color: #435a70;
+      text-decoration: none;
+
+      input {
+        pointer-events: none;
+      }
+
+      label {
+        pointer-events: none;
+        margin-bottom: 0px;
+        font-size: 16px !important;
+
+        span {
+          color: #435a70 !important;
+          text-decoration: none !important;
+        }
+      }
+    }
+  }
+}
+
+// Results
 .serp-results-info {
   border-bottom: 1px solid #D8D8D8;
   display: flex;
