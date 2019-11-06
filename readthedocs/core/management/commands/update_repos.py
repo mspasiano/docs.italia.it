@@ -74,6 +74,8 @@ class Command(BaseCommand):
                     log.info('Updating all internal versions for %s', slug)
                     for version in Version.internal.filter(
                             project__slug=slug,
+                            active=True,
+                            uploaded=False,
                     ):
 
                         build = Build.objects.create(

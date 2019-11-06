@@ -26,10 +26,9 @@ class Command(BaseCommand):
             '--document', nargs='?', type=str,
             help='A Read the docs document slug'
         )
-        # argparse.ArgumentError: argument --version: conflicting option string: --version
         parser.add_argument(
-            '--version_slug', nargs='?', type=str,
-            help='A Read the docs version slug', required=True
+            '--version-slug', nargs='?', type=str,
+            help='A Read the docs version slug'
         )
         parser.add_argument(
             '--async', action='store_true', default=False,
@@ -42,7 +41,6 @@ class Command(BaseCommand):
         versions = Version.objects.all()
         publisher = options['publisher']
         version_slug = options['version_slug']
-        print(version_slug)
         document = options['document']
         run_async = options['async']
         if publisher:
@@ -59,10 +57,12 @@ class Command(BaseCommand):
                 versions = versions.filter(project=project)
             except Project.DoesNotExist:
                 raise CommandError("Project {} doesn't exist".format(document))
-        try:
-            versions = versions.filter(slug=version_slug)
-        except Project.DoesNotExist:
-            raise CommandError("Project {} doesn't exist".format(document))
+        if version_slug:
+            try:
+                versions = versions.filter(slug=version_slug)
+            except Project.DoesNotExist:
+                raise CommandError("Version {} doesn't exist".format(version_slug))
+
         for version in versions:
             task = update_docs_task
             build = Build.objects.create(
@@ -71,33 +71,10 @@ class Command(BaseCommand):
                 type='html',
                 state='triggered',
             )
-            # corrected version
-            # in new version of task we are not calling send_external_build_status
-            # if 'commit' is not passed (do we need it?)
-            # and we are not passing search=True (build_docs_search is no more building anything)
             kwargs = dict(
-                version_pk=version.pk, build_pk=build.pk, project=version.project
+                version_pk=version.pk, build_pk=build.pk
             )
             if run_async:
-                task.apply_async(kwargs=kwargs)
+                task.apply_async(kwargs=kwargs, queue='docs')
             else:
                 task.run(**kwargs)
-
-            # versions from update_repos
-            # update_docs_task(
-            #     version.project_id,
-            #     build_pk=build.pk,
-            #     version_pk=version.pk,
-            # )
-
-            # versions from update_repos
-            # update_docs_task(
-            #     version.pk,
-            #     record=False,
-            # )
-
-            # versions from update_repos
-            # update_docs_task(
-            #     version.pk,
-            #     build_pk=build.pk,
-            # )

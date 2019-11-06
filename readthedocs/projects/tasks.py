@@ -320,11 +320,11 @@ class UpdateDocsTaskStep(SyncRepositoryMixin):
             build_env=None,
             python_env=None,
             config=None,
-            force=False, # search=True, localmedia=True
+            force=False,
             build=None,
             project=None,
             version=None,
-            commit=None, # there were not commit in old version
+            commit=None,
             task=None,
     ):
         self.build_env = build_env
@@ -966,26 +966,6 @@ class UpdateDocsTaskStep(SyncRepositoryMixin):
         self.python_env.save_environment_json()
         self.python_env.install_core_requirements()
         self.python_env.install_requirements()
-
-        # old version
-        # with self.project.repo_nonblockinglock(
-        #         version=self.version,
-        #         max_lock_age=getattr(settings, 'REPO_LOCK_SECONDS', 30)):
-        #
-        #     # Check if the python version/build image in the current venv is the
-        #     # same to be used in this build and if it differs, wipe the venv to
-        #     # avoid conflicts.
-        #     if self.python_env.is_obsolete:
-        #         self.python_env.delete_existing_venv_dir()
-        #     else:
-        #         self.python_env.delete_existing_build_dir()
-        #
-        #     self.python_env.setup_base()
-        #     self.python_env.save_environment_json()
-        #     self.python_env.install_core_requirements()
-        #     self.python_env.install_user_requirements()
-        #     self.python_env.install_package()
-
 
     def build_docs(self):
         """
