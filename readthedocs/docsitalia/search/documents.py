@@ -2,11 +2,10 @@ import logging
 
 from django.conf import settings
 from django_elasticsearch_dsl import DocType, Index, fields
-
 from elasticsearch import Elasticsearch
 
+from readthedocs.docsitalia.models import Publisher, PublisherProject
 from readthedocs.projects.models import HTMLFile, Project
-
 
 project_conf = settings.ES_INDEXES['project']
 project_index = Index(project_conf['name'])
@@ -45,21 +44,73 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
 
     modified_model_field = 'modified_date'
 
+    # DocsItalia
+    publisher_project = fields.KeywordField()
+    # publisher is currently used for faceting only, not for queries
+    publisher = fields.KeywordField()
+
     class Meta:
         model = Project
         fields = ('name', 'slug', 'description')
         ignore_signals = True
+        # ensure the Project is reindexed when Publisher or PublisherProject is updated
+        related_models = [PublisherProject, Publisher]
+
+    def get_queryset(self):
+        """Fetch related instances."""
+        return super().get_queryset().prefetch_related(
+            'publisherproject_set__publisher'
+        )
+
+    def get_instances_from_related(self, related_instance):
+        """
+        If related_models is set, define how to retrieve the instance(s) from the related model.
+
+        The related_models option should be used with caution because it can lead in the index
+        to the updating of a lot of items.
+        """
+        # see https://github.com/PyCQA/pylint/issues/2283
+        # pylint: disable=no-else-return
+        if isinstance(related_instance, Publisher):
+            return Project.objects.filter(publisherproject__publisher=related_instance)
+        elif isinstance(related_instance, PublisherProject):
+            return related_instance.projects.all()
+
+    def prepare_publisher_project(self, instance):
+        """Prepare docsitalia publisher project field."""
+        # not using more sophisticated Django methods in order to exploit prefetching
+        try:
+            return instance.publisherproject_set.all()[0].slug
+        except IndexError:
+            return
+
+    def prepare_publisher(self, instance):
+        """Prepare docsitalia publisher field."""
+        # not using more sophisticated Django methods in order to exploit prefetching
+        try:
+            return instance.publisherproject_set.all()[0].publisher.name
+        except IndexError:
+            return
 
     @classmethod
-    def faceted_search(cls, query, user, language=None):
+    def faceted_search(
+            cls, query, user, language=None, publisher=None, publisher_project=None,
+    ):
         from readthedocs.search.faceted_search import ProjectSearch
         kwargs = {
             'user': user,
             'query': query,
         }
 
+        filters = {}
         if language:
-            kwargs['filters'] = {'language': language}
+            filters['language'] = language
+        if publisher:
+            filters['publisher'] = publisher
+        if publisher_project:
+            filters['publisher_project'] = publisher_project
+
+        kwargs['filters'] = filters
 
         return ProjectSearch(**kwargs)
 
@@ -102,10 +153,32 @@ class PageDocument(RTDDocTypeMixin, DocType):
 
     modified_model_field = 'modified_date'
 
+    # DocsItalia
+    publisher_project = fields.KeywordField()
+    # publisher is currently used for faceting only, not for queries
+    publisher = fields.KeywordField()
+    privacy_level = fields.KeywordField(attr='version.privacy_level')
+
     class Meta:
         model = HTMLFile
         fields = ('commit', 'build')
         ignore_signals = True
+        # ensure the Page is reindexed when Publisher or PublisherProject is updated
+        related_models = [PublisherProject, Publisher]
+
+    def get_instances_from_related(self, related_instance):
+        """
+        If related_models is set, define how to retrieve the instance(s) from the related model.
+
+        The related_models option should be used with caution because it can lead in the index
+        to the updating of a lot of items.
+        """
+        # see https://github.com/PyCQA/pylint/issues/2283
+        # pylint: disable=no-else-return
+        if isinstance(related_instance, Publisher):
+            return HTMLFile.objects.filter(project__publisherproject__publisher=related_instance)
+        elif isinstance(related_instance, PublisherProject):
+            return HTMLFile.objects.filter(project__publisherproject=related_instance)
 
     def prepare_domains(self, html_file):
         """Prepares and returns the values for domains field."""
@@ -146,10 +219,26 @@ class PageDocument(RTDDocTypeMixin, DocType):
 
         return all_domains
 
+    def prepare_publisher_project(self, instance):
+        """Prepare docsitalia publisher project field."""
+        # not using more sophisticated Django methods in order to exploit prefetching
+        try:
+            return instance.project.publisherproject_set.all()[0].slug
+        except IndexError:
+            return
+
+    def prepare_publisher(self, instance):
+        """Prepare docsitalia publisher field."""
+        # not using more sophisticated Django methods in order to exploit prefetching
+        try:
+            return instance.project.publisherproject_set.all()[0].publisher.name
+        except IndexError:
+            return
+
     @classmethod
     def faceted_search(
             cls, query, user, projects_list=None, versions_list=None,
-            filter_by_user=True
+            filter_by_user=True, publisher=None, publisher_project=None,
     ):
         from readthedocs.search.faceted_search import PageSearch
         kwargs = {
@@ -163,6 +252,10 @@ class PageDocument(RTDDocTypeMixin, DocType):
             filters['project'] = projects_list
         if versions_list is not None:
             filters['version'] = versions_list
+        if publisher:
+            filters['publisher'] = publisher
+        if publisher_project:
+            filters['publisher_project'] = publisher_project
 
         kwargs['filters'] = filters
 
@@ -176,6 +269,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
         # Also do not index certain files
         queryset = queryset.internal().filter(
             project__documentation_type__contains='sphinx'
+        ).prefetch_related(
+            'project__publisherproject_set__publisher'
         )
 
         # TODO: Make this smarter

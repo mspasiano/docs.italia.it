@@ -36,8 +36,6 @@ docsitalia_urls = [
 
 urlpatterns = [
     url(r'^docsitalia/', include(docsitalia_urls)),
-    # we currently use standard search view
-    # url(r'^api/v2/docsearch/$', api.DocSearch.as_view(), name='doc_search'),
     url(
         r'^api/v2/allowedtag-autocomplete/$',
         api.AllowedTagAutocomplete.as_view(),

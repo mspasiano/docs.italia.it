@@ -50,14 +50,7 @@ class Command(BaseCommand):
 
         if options.get('slugs', []):
             for slug in options['slugs']:
-                if version and version != 'all':
-                    log.info('Updating version %s for %s', version, slug)
-                    for version in Version.objects.filter(
-                            project__slug=slug,
-                            slug=version,
-                    ):
-                        trigger_build(project=version.project, version=version)
-                elif version == 'all':
+                if version == 'all':
                     log.info('Updating all versions for %s', slug)
                     for version in Version.objects.filter(
                             project__slug=slug,
@@ -94,7 +87,6 @@ class Command(BaseCommand):
 
                         # pylint: disable=no-value-for-parameter
                         tasks.update_docs_task(
-                            version.project_id,
                             build_pk=build.pk,
                             version_pk=version.pk,
                         )
@@ -115,10 +107,16 @@ class Command(BaseCommand):
 
                         # pylint: disable=no-value-for-parameter
                         tasks.update_docs_task(
-                            version.project_id,
                             build_pk=build.pk,
                             version_pk=version.pk,
                         )
+                elif version and version != 'all':
+                    log.info('Updating version %s for %s', version, slug)
+                    for version in Version.objects.filter(
+                            project__slug=slug,
+                            slug=version,
+                    ):
+                        trigger_build(project=version.project, version=version)
                 else:
                     p = Project.all_objects.get(slug=slug)
                     log.info('Building %s', p)

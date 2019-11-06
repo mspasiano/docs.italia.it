@@ -2,22 +2,23 @@
 import collections
 import itertools
 import logging
-from operator import attrgetter
 
 from django.shortcuts import get_object_or_404, render
 
 from readthedocs.builds.constants import LATEST
-from readthedocs.projects.models import Project
-from readthedocs.search.faceted_search import (
+from readthedocs.docsitalia.search.faceted_search import (
     ALL_FACETS,
     PageSearch,
     ProjectSearch,
 )
+from readthedocs.projects.models import Project
 from readthedocs.search import utils
 
-
 log = logging.getLogger(__name__)
-LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
+LOG_TEMPLATE = (
+    '(Elastic Search) [%(user)s:%(type)s] '
+    '[%(project)s:%(version)s:%(language)s] %(msg)s'
+)
 
 UserInput = collections.namedtuple(
     'UserInput',
@@ -30,6 +31,8 @@ UserInput = collections.namedtuple(
         'language',
         'role_name',
         'index',
+        'publisher',
+        'publisher_project',
     ),
 )
 
@@ -58,6 +61,8 @@ def elastic_search(request, project_slug=None):
         language=request.GET.get('language'),
         role_name=request.GET.get('role_name'),
         index=request.GET.get('index'),
+        publisher=request.GET.get('publisher'),
+        publisher_project=request.GET.get('publisher_project'),
     )
     search_facets = collections.defaultdict(
         lambda: ProjectSearch,
@@ -132,6 +137,8 @@ def elastic_search(request, project_slug=None):
     template_vars.update({
         'results': results,
         'facets': facets,
+        'results_dict': results.to_dict() if results else {},
+        'facets_dict': facets.to_dict() if facets else {},
     })
 
     if project_slug:

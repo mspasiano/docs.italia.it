@@ -17,7 +17,7 @@ from readthedocs.core.views import (
     server_error_404,
     server_error_500,
 )
-from readthedocs.search import views as search_views
+from readthedocs.docsitalia.search import views as search_views
 from readthedocs.search.api import PageSearchAPIView
 
 
