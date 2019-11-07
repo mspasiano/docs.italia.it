@@ -80,10 +80,10 @@
           <div class="serp-results-order">
             <label for="order-select" class="mr-2">Ordina per</label>
             <select id="order-select" title="Scegli una opzione">
-              <option value="1">Rilevanza</option>
-              <option value="2">Più recente</option>
-              <option value="3">Meno recente</option>
-              <option value="4">Ordine alfabetico</option>
+              <option value="">Rilevanza</option>
+              <option value="date">Più recente</option>
+              <option value="-date">Meno recente</option>
+              <option value="name">Ordine alfabetico</option>
             </select>
             <svg class="serp-results-order-icon icon icon-sm">
               <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-arrow-down-triangle"></use>
@@ -98,7 +98,12 @@
             <ul class="row">
               {% for result in results %}
               <li class="document-card col-12 col-md-4 item p-2 p-md-3">
-                <p class="document-card-header icon-type-document neutral-1-color-a8">{{ result.publisher }}</p>
+                <p class="document-card-header neutral-1-color-a8">
+                  <svg class="icon icon-primary mr-2">
+                    <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-file"></use>
+                  </svg>
+                  {{ result.publisher }}
+                </p>
                 {% if type == "project" %}
                   {# Project #}
                   <h3 class="document-card-title color-inherit">
@@ -116,7 +121,7 @@
                   {# File #}
                   <h3 class="document-card-title color-inherit">
                     {% with result.project|get_project as proj %}
-                    <a href="{% doc_url_patched proj result.version result.full_path %}?highlight={{ query }}">{{ proj }} - {{ result.title|safe }}</a>
+                    <a href="{% doc_url_patched proj result.version result.full_path %}?highlight={{ query }}">{{ result.title|safe }}</a>
                     {% endwith %}
                   </h3>
                   <div class="document-card-description color-inherit">
@@ -176,4 +181,10 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.0/qs.min.js"></script>
+<script src="{{ MEDIA_URL }}javascript/elastic-search.js"></script>
+<!-- <script src="http://localhost:3000/static/elastic-search.js"></script> -->
 {% endblock %}
