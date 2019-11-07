@@ -2,22 +2,24 @@
 import collections
 import itertools
 import logging
-from operator import attrgetter
 
 from django.shortcuts import get_object_or_404, render
 
 from readthedocs.builds.constants import LATEST
 from readthedocs.projects.models import Project
+from readthedocs.search import utils
 from readthedocs.search.faceted_search import (
     ALL_FACETS,
     PageSearch,
     ProjectSearch,
 )
-from readthedocs.search import utils
-
 
 log = logging.getLogger(__name__)
-LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
+LOG_TEMPLATE = (
+    '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
+)
+
+ALL_SORTS = ['name', 'date', '-date']
 
 UserInput = collections.namedtuple(
     'UserInput',
@@ -30,6 +32,9 @@ UserInput = collections.namedtuple(
         'language',
         'role_name',
         'index',
+        'publisher',
+        'publisher_project',
+        'sort',
     ),
 )
 
@@ -58,6 +63,9 @@ def elastic_search(request, project_slug=None):
         language=request.GET.get('language'),
         role_name=request.GET.get('role_name'),
         index=request.GET.get('index'),
+        publisher=request.GET.get('publisher'),
+        publisher_project=request.GET.get('publisher_project'),
+        sort=request.GET.get('sort'),
     )
     search_facets = collections.defaultdict(
         lambda: ProjectSearch,
@@ -72,14 +80,15 @@ def elastic_search(request, project_slug=None):
 
     if user_input.query:
         kwargs = {}
-
+        sorts = [s for s in ALL_SORTS if s == user_input.sort] or ['_score']
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)
             if value:
                 kwargs[avail_facet] = value
 
         search = search_facets[user_input.type](
-            query=user_input.query, user=request.user, **kwargs
+            query=user_input.query, user=request.user,
+            sort=sorts, **kwargs
         )
         results = search[:50].execute()
         facets = results.facets
@@ -132,6 +141,9 @@ def elastic_search(request, project_slug=None):
     template_vars.update({
         'results': results,
         'facets': facets,
+        'results_dict': results.to_dict() if results else {},
+        'facets_dict': facets.to_dict() if facets else {},
+        'sort': sorts[0],
     })
 
     if project_slug:
