@@ -2,11 +2,9 @@
 import collections
 import itertools
 import logging
-from operator import attrgetter
 
 from django.shortcuts import get_object_or_404, render
 
-from readthedocs.builds.constants import LATEST
 from readthedocs.projects.models import Project
 from readthedocs.search.faceted_search import (
     ALL_FACETS,
@@ -19,21 +17,38 @@ from readthedocs.search import utils
 log = logging.getLogger(__name__)
 LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
 
-UserInput = collections.namedtuple(
-    'UserInput',
-    (
-        'query',
-        'type',
-        'project',
-        'version',
-        'taxonomy',
-        'language',
-        'role_name',
-        'index',
-        'publisher',
-        'publisher_project',
-    ),
-)
+
+def _get_user_input_namedtuple(request, request_type, project_slug):
+    UserInput = collections.namedtuple(
+        'UserInput',
+        (
+            'query',
+            'type',
+            'project',
+            'taxonomy',
+            'language',
+            'role_name',
+            'index',
+            'publisher',
+            'publisher_project',
+        ),
+    )
+    user_input_data = {
+        'query': request.GET.get('q'),
+        'type': request_type or request.GET.get('type', 'project'),
+        'project': project_slug or request.GET.get('project'),
+        'taxonomy': request.GET.get('taxonomy'),
+        'language': request.GET.get('language'),
+        'role_name': request.GET.get('role_name'),
+        'index': request.GET.get('index'),
+        'publisher': request.GET.get('index'),
+        'publisher_project': request.GET.get('publisher_project')
+    }
+    if request.GET.get('version'):
+        UserInput = collections.namedtuple('UserInput', UserInput._fields + ('version',))
+        user_input_data['version'] = request.GET.get('version')
+
+    return UserInput(**user_input_data)
 
 
 def elastic_search(request, project_slug=None):
@@ -51,18 +66,8 @@ def elastic_search(request, project_slug=None):
         project_obj = get_object_or_404(queryset, slug=project_slug)
         request_type = request.GET.get('type', 'file')
 
-    user_input = UserInput(
-        query=request.GET.get('q'),
-        type=request_type or request.GET.get('type', 'project'),
-        project=project_slug or request.GET.get('project'),
-        version=request.GET.get('version', LATEST),
-        taxonomy=request.GET.get('taxonomy'),
-        language=request.GET.get('language'),
-        role_name=request.GET.get('role_name'),
-        index=request.GET.get('index'),
-        publisher=request.GET.get('publisher'),
-        publisher_project=request.GET.get('publisher_project'),
-    )
+    user_input = _get_user_input_namedtuple(request, request_type, project_slug)
+
     search_facets = collections.defaultdict(
         lambda: ProjectSearch,
         {
@@ -94,7 +99,7 @@ def elastic_search(request, project_slug=None):
                 'user': request.user,
                 'project': user_input.project or '',
                 'type': user_input.type or '',
-                'version': user_input.version or '',
+                'version': user_input.version if hasattr(user_input, "version") else '',
                 'language': user_input.language or '',
                 'msg': user_input.query or '',
             }
