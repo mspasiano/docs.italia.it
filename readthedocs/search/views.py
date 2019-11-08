@@ -19,7 +19,13 @@ LOG_TEMPLATE = (
     '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
 )
 
-ALL_SORTS = ['name', 'date', '-date']
+RELEVANCE_KEY = 'relevance'
+ALL_SORTS = {
+    RELEVANCE_KEY: {'value': '_score', 'label': 'Rilevanza'},
+    'alphabetical': {'value': 'name', 'label': 'Ordine alfabetico'},
+    'newest': {'value': 'date', 'label': 'Più recente'},
+    'oldest': {'value': '-date', 'label': 'Meno recente'},
+}
 
 UserInput = collections.namedtuple(
     'UserInput',
@@ -77,10 +83,10 @@ def elastic_search(request, project_slug=None):
 
     results = None
     facets = {}
-
+    sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else RELEVANCE_KEY
     if user_input.query:
         kwargs = {}
-        sorts = [s for s in ALL_SORTS if s == user_input.sort] or ['_score']
+        sorts = [ALL_SORTS[sort_key]['value']]
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)
             if value:
@@ -143,7 +149,9 @@ def elastic_search(request, project_slug=None):
         'facets': facets,
         'results_dict': results.to_dict() if results else {},
         'facets_dict': facets.to_dict() if facets else {},
-        'sort': sorts[0],
+        'sorts': {k: {
+            'label': v['label'], 'selected': k == sort_key
+        } for k, v in ALL_SORTS.items()},
     })
 
     if project_slug:
