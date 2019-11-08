@@ -80,10 +80,10 @@
           <div class="serp-results-order">
             <label for="order-select" class="mr-2">Ordina per</label>
             <select id="order-select" title="Scegli una opzione">
-              <option value="">Rilevanza</option>
-              <option value="date">Più recente</option>
-              <option value="-date">Meno recente</option>
-              <option value="name">Ordine alfabetico</option>
+              <option value="" {% if not sort %}selected{% endif %}>Rilevanza</option>
+              <option value="date" {% if sort == 'date' %}selected{% endif %}>Più recente</option>
+              <option value="-date" {% if sort == '-date' %}selected{% endif %}>Meno recente</option>
+              <option value="name" {% if sort == 'name' %}selected{% endif %}>Ordine alfabetico</option>
             </select>
             <svg class="serp-results-order-icon icon icon-sm">
               <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-arrow-down-triangle"></use>
