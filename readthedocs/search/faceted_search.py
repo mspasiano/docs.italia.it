@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 ALL_FACETS = [
     'project', 'version', 'role_name', 'language', 'index', 'publisher',
-    'publisher_project',
+    'publisher_project', 'tags',
 ]
 
 
@@ -86,6 +86,7 @@ class ProjectSearchBase(RTDFacetedSearch):
         'language': TermsFacet(field='language'),
         'publisher': TermsFacet(field='publisher'),
         'publisher_project': TermsFacet(field='publisher_project'),
+        'tags': NestedFacet('tags', TermsFacet(field='tags.name')),
     }
     doc_types = [ProjectDocument]
     index = ProjectDocument._doc_type.index
@@ -103,6 +104,7 @@ class PageSearchBase(RTDFacetedSearch):
         ),
         'publisher': TermsFacet(field='publisher'),
         'publisher_project': TermsFacet(field='publisher_project'),
+        'tags': NestedFacet('tags', TermsFacet(field='tags.name')),
     }
     doc_types = [PageDocument]
     index = PageDocument._doc_type.index
