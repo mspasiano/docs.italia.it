@@ -8,11 +8,11 @@ from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, ListView, View
 
-from readthedocs.core.utils import trigger_build
 from readthedocs.oauth.models import RemoteRepository
 from readthedocs.projects.forms import ProjectBasicsForm, ProjectExtraForm
 from readthedocs.projects.models import Project
 from readthedocs.projects.signals import project_import
+from readthedocs.projects.views.mixins import ProjectImportMixin
 from readthedocs.projects.views.private import ImportView
 
 from ..github import get_metadata_for_document
@@ -126,7 +126,7 @@ class DocumentRedirect(View):
             raise Http404()
 
 
-class DocsItaliaImport(ImportView):  # pylint: disable=too-many-ancestors
+class DocsItaliaImport(ProjectImportMixin, ImportView):  # pylint: disable=too-many-ancestors
 
     """Simplified ImportView for Docs Italia."""
 
@@ -188,5 +188,5 @@ class DocsItaliaImport(ImportView):  # pylint: disable=too-many-ancestors
         update_project_from_metadata(project, metadata)
 
         project_import.send(sender=project, request=self.request)
-        trigger_build(project)
+        self.trigger_initial_build(project, request.user)
         return redirect('projects_detail', project_slug=project.slug)
