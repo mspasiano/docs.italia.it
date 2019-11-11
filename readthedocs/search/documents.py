@@ -48,6 +48,13 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
     publisher_project = fields.KeywordField()
     # publisher is currently used for faceting only, not for queries
     publisher = fields.KeywordField()
+    tags = fields.NestedField(
+        properties={
+            'id': fields.KeywordField(),
+            'name': fields.KeywordField(),
+            'slug': fields.KeywordField(),
+        }
+    )
 
     class Meta:
         model = Project
@@ -160,6 +167,14 @@ class PageDocument(RTDDocTypeMixin, DocType):
     # publisher is currently used for faceting only, not for queries
     publisher = fields.KeywordField()
     privacy_level = fields.KeywordField(attr='version.privacy_level')
+    tags = fields.NestedField(
+        attr='project.tags',
+        properties={
+            'id': fields.KeywordField(),
+            'name': fields.KeywordField(),
+            'slug': fields.KeywordField(),
+        }
+    )
 
     class Meta:
         model = HTMLFile
