@@ -255,7 +255,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
     @classmethod
     def faceted_search(
             cls, query, user, projects_list=None, versions_list=None,
-            filter_by_user=True, publisher=None, publisher_project=None,
+            filter_by_user=True, publisher=None, publisher_project=None, tags=None,
     ):
         from readthedocs.search.faceted_search import PageSearch
         kwargs = {
@@ -273,6 +273,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
             filters['publisher'] = publisher
         if publisher_project:
             filters['publisher_project'] = publisher_project
+        if tags:
+            filters['tags'] = tags
 
         kwargs['filters'] = filters
 
@@ -287,7 +289,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
         queryset = queryset.internal().filter(
             project__documentation_type__contains='sphinx'
         ).prefetch_related(
-            'project__publisherproject_set__publisher'
+            'project__publisherproject_set__publisher', 'project_tags'
         )
 
         # TODO: Make this smarter

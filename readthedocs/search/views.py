@@ -41,6 +41,7 @@ UserInput = collections.namedtuple(
         'publisher',
         'publisher_project',
         'sort',
+        'tags',
     ),
 )
 
@@ -72,6 +73,7 @@ def elastic_search(request, project_slug=None):
         publisher=request.GET.get('publisher'),
         publisher_project=request.GET.get('publisher_project'),
         sort=request.GET.get('sort'),
+        tags=request.GET.get('tags'),
     )
     search_facets = collections.defaultdict(
         lambda: ProjectSearch,
