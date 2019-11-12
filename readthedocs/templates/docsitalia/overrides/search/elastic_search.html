@@ -14,32 +14,34 @@
       <div class="col-12 col-md-4">
         <div class="link-list-wrapper">
           {% if query and results.hits.hits|length > 0 %}
-            <!-- publisher filters -->
-            {% if facets.publisher %}
-              <ul class="link-list serp-search-filters">
-                <li class="serp-filter-title">
-                  <svg class="icon icon-secondary icon-sm">
-                    <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-pa"></use>
-                  </svg>
-                  <h3>Amministrazione</h3>
-                </li>
-
-                {% for name, count, selected in facets.publisher %}
-                  <li>
-                    <a class="p-0 d-inline-block" href="?{% if publisher == name %}{% url_replace request 'publisher' '' %}{% else %}{% url_replace request 'publisher' name %}{% endif %}">
-                      <div class="form-check">
-                        <input id="{{name}}" type="checkbox" {% if selected %}checked="true"{% endif %}>
-                        <label for="{{name}}">{{name}} <span>({{ count }})</span></label>
-                      </div>
-                    </a>
+            {% comment %}
+              <!-- publisher filters -->
+              {% if facets.publisher %}
+                <ul class="link-list serp-search-filters">
+                  <li class="serp-filter-title">
+                    <svg class="icon icon-secondary icon-sm">
+                      <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-pa"></use>
+                    </svg>
+                    <h3>Amministrazione</h3>
                   </li>
-                {% endfor %}
-              </ul>
-           {% endif %}
 
-           <!-- projects filters -->
-           {% if facets.publisher_project %}
-           <ul class="link-list serp-search-filters">
+                  {% for name, count, selected in facets.publisher %}
+                    <li>
+                      <a class="p-0 d-inline-block" href="?{% if publisher == name %}{% url_replace request 'publisher' '' %}{% else %}{% url_replace request 'publisher' name %}{% endif %}">
+                        <div class="form-check">
+                          <input id="{{name}}" type="checkbox" {% if selected %}checked="true"{% endif %}>
+                          <label for="{{name}}">{{name}} <span>({{ count }})</span></label>
+                        </div>
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            {% endcomment %}
+
+            <!-- projects filters -->
+            {% if facets.publisher_project %}
+            <ul class="link-list serp-search-filters">
               <li class="serp-filter-title">
                 <svg class="icon icon-secondary icon-sm">
                   <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-folder"></use>
@@ -53,6 +55,29 @@
                     <div class="form-check">
                       <input id="{{name}}" type="checkbox" {% if selected %}checked="true"{% endif %}>
                       <label for="{{name}}">{{name|get_publisher_project}} <span>({{ count }})</span></label>
+                    </div>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+
+            <!-- tags filters -->
+            {% if facets.publisher_project %}
+            <ul class="link-list serp-search-filters">
+              <li class="serp-filter-title">
+                <svg class="icon icon-secondary icon-sm">
+                  <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-note"></use>
+                </svg>
+                <h3>Tag</h3>
+              </li>
+
+              {% for name, count, selected in facets.tags %}
+                <li>
+                  <a class="p-0 d-inline-block" href="?{% if selected %}{% url_replace request 'tags' '' %}{% else %}{% url_replace request 'tags' name %}{% endif %}">
+                    <div class="form-check">
+                      <input id="{{name}}" type="checkbox" {% if selected %}checked="true"{% endif %}>
+                      <label for="{{name}}">{{name}} <span>({{ count }})</span></label>
                     </div>
                   </a>
                 </li>
