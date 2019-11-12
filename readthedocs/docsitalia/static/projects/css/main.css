@@ -747,7 +747,7 @@ select:hover {
 }
 .serp-search-filters {
   padding: 0;
-  margin-bottom: 35px !important;
+  margin-bottom: 32px !important;
 }
 .serp-search-filters li {
   list-style: none;
@@ -762,11 +762,6 @@ select:hover {
 }
 .serp-search-filters li.serp-filter-title svg {
   fill: #17324d !important;
-  margin-left: 4px;
-}
-.serp-search-filters li.serp-filter-title h3 {
-  margin: 0px;
-  padding: 0px 10px;
 }
 .serp-search-filters li a {
   color: #435a70;
@@ -777,7 +772,6 @@ select:hover {
 }
 .serp-search-filters li a label {
   pointer-events: none;
-  margin-bottom: 0px;
   font-size: 16px !important;
 }
 .serp-search-filters li a label span {
@@ -802,8 +796,8 @@ select:hover {
   color: #06c;
   text-shadow: none;
   font-size: 16px;
-  line-height: 1.3;
-  padding: 5px 25px 5px 8px;
+  line-height: 1.4;
+  padding: 4px 32px 4px 8px;
   margin: 0;
   -moz-appearance: none;
   -webkit-appearance: none;
@@ -826,6 +820,5 @@ select:hover {
   position: absolute;
   right: 3px;
   top: 3px;
-  fill: #06c;
   pointer-events: none;
 }
