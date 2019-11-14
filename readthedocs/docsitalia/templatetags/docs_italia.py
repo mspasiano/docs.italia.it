@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from django import template
 from readthedocs.core.resolver import resolve
+from taggit.models import Tag
 
 from ..models import PublisherProject
 
@@ -15,6 +16,15 @@ def get_publisher_project(slug):
     try:
         return PublisherProject.objects.get(slug=slug)
     except PublisherProject.DoesNotExist:
+        return None
+
+
+@register.filter
+def get_project_tag(slug):
+    """get tag from the slug."""
+    try:
+        return Tag.objects.get(slug=slug)
+    except Tag.DoesNotExist:
         return None
 
 

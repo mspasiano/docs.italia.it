@@ -49,12 +49,12 @@
                 <h3 class="px-2 m-0">Progetto</h3>
               </li>
 
-              {% for name, count, selected in facets.publisher_project %}
+              {% for slug, count, selected in facets.publisher_project %}
                 <li>
-                  <a class="p-0 d-inline-block" href="?{% if publisher_project == name %}{% url_replace request 'publisher_project' '' %}{% else %}{% url_replace request 'publisher_project' name %}{% endif %}">
+                  <a class="p-0 d-inline-block" href="?{% if publisher_project == slug %}{% url_replace request 'publisher_project' '' %}{% else %}{% url_replace request 'publisher_project' slug %}{% endif %}">
                     <div class="form-check">
-                      <input id="{{name}}" type="checkbox" {% if selected %}checked{% endif %}>
-                      <label for="{{name}}" class="mb-0">{{name|get_publisher_project}} <span>({{ count }})</span></label>
+                      <input id="{{slug}}" type="checkbox" {% if selected %}checked{% endif %}>
+                      <label for="{{slug}}" class="mb-0">{{slug|get_publisher_project}} <span>({{ count }})</span></label>
                     </div>
                   </a>
                 </li>
@@ -74,10 +74,10 @@
 
               {% for slug, count, selected in facets.tags %}
                 <li>
-                  <a class="p-0 d-inline-block" href="?{% if selected %}{% url_replace request 'tags' '' %}{% else %}{% url_replace request 'tags' name %}{% endif %}">
+                  <a class="p-0 d-inline-block" href="?{% if selected %}{% url_replace request 'tags' '' %}{% else %}{% url_replace request 'tags' slug %}{% endif %}">
                     <div class="form-check">
                       <input id="{{slug}}" type="checkbox" {% if selected %}checked{% endif %}>
-                      <label for="{{slug}}" class="mb-0">{{slug}} <span>({{ count }})</span></label>
+                      <label for="{{slug}}" class="mb-0">{{slug|get_project_tag}} <span>({{ count }})</span></label>
                     </div>
                   </a>
                 </li>
