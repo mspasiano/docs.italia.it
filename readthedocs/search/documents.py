@@ -292,8 +292,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
         queryset = queryset.internal().filter(
             project__documentation_type__contains='sphinx'
         ).prefetch_related(
-            'project__publisherproject_set__publisher',
-            'project_tags'
+            'project__tags',
+            'project__publisherproject_set__publisher'
         )
 
         # TODO: Make this smarter

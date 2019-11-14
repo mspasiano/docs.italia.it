@@ -15,6 +15,7 @@ from readthedocs.search.documents import (
     ProjectDocument,
 )
 
+
 log = logging.getLogger(__name__)
 
 ALL_FACETS = [

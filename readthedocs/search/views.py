@@ -15,6 +15,7 @@ from readthedocs.search.faceted_search import (
 )
 from readthedocs.search import utils
 
+
 log = logging.getLogger(__name__)
 LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
 
