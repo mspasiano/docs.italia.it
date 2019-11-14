@@ -11,6 +11,7 @@ from django.views.generic.base import RedirectView, TemplateView
 
 from readthedocs.core.urls import core_urls, deprecated_urls, docs_urls
 from readthedocs.core.views import (
+    HomepageView,
     SupportView,
     do_not_track,
     server_error_404,

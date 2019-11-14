@@ -2,22 +2,21 @@
 import collections
 import itertools
 import logging
+from operator import attrgetter
 
 from django.shortcuts import get_object_or_404, render
 
 from readthedocs.builds.constants import LATEST
 from readthedocs.projects.models import Project
-from readthedocs.search import utils
 from readthedocs.search.faceted_search import (
     ALL_FACETS,
     PageSearch,
     ProjectSearch,
 )
+from readthedocs.search import utils
 
 log = logging.getLogger(__name__)
-LOG_TEMPLATE = (
-    '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
-)
+LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
 
 RELEVANCE_KEY = 'relevance'
 ALL_SORTS = {
@@ -86,17 +85,18 @@ def elastic_search(request, project_slug=None):
     results = None
     facets = {}
     sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else RELEVANCE_KEY
+
     if user_input.query:
         kwargs = {}
         sorts = [ALL_SORTS[sort_key]['value']]
+
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)
             if value:
                 kwargs[avail_facet] = value
 
         search = search_facets[user_input.type](
-            query=user_input.query, user=request.user,
-            sort=sorts, **kwargs
+            query=user_input.query, user=request.user, sort=sorts, **kwargs
         )
         results = search[:50].execute()
         facets = results.facets

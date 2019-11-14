@@ -2,10 +2,12 @@ import logging
 
 from django.conf import settings
 from django_elasticsearch_dsl import DocType, Index, fields
+
 from elasticsearch import Elasticsearch
 
 from readthedocs.docsitalia.models import Publisher, PublisherProject
 from readthedocs.projects.models import HTMLFile, Project
+
 
 project_conf = settings.ES_INDEXES['project']
 project_index = Index(project_conf['name'])
@@ -255,7 +257,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
     @classmethod
     def faceted_search(
             cls, query, user, projects_list=None, versions_list=None,
-            filter_by_user=True, publisher=None, publisher_project=None, tags=None,
+            filter_by_user=True, publisher=None, publisher_project=None,
+            tags=None,
     ):
         from readthedocs.search.faceted_search import PageSearch
         kwargs = {
@@ -289,7 +292,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
         queryset = queryset.internal().filter(
             project__documentation_type__contains='sphinx'
         ).prefetch_related(
-            'project__publisherproject_set__publisher', 'project_tags'
+            'project__publisherproject_set__publisher',
+            'project_tags'
         )
 
         # TODO: Make this smarter

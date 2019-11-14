@@ -1,15 +1,19 @@
 import logging
 
-from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import FacetedSearch, TermsFacet
 from elasticsearch_dsl.faceted_search import FacetedResponse, NestedFacet
-from elasticsearch_dsl.query import Bool, Nested, SimpleQueryString
+from elasticsearch_dsl.query import Bool, SimpleQueryString, Nested, Match
 from elasticsearch_dsl.search import Search
+
+from django.conf import settings
 
 from readthedocs.core.utils.extend import SettingsOverrideObject
 from readthedocs.projects.constants import PRIVATE
-from readthedocs.search.documents import PageDocument, ProjectDocument
+from readthedocs.search.documents import (
+    PageDocument,
+    ProjectDocument,
+)
 
 log = logging.getLogger(__name__)
 
