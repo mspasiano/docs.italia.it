@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 import requests
 import requests_mock
+from django.http import Http404
 from django.test.utils import override_settings
 
 from mock import patch
@@ -17,8 +18,10 @@ from django.template.loader import get_template
 from django.utils import six
 from rest_framework.response import Response
 
-from readthedocs.builds.constants import LATEST
+from readthedocs.builds.constants import LATEST, STABLE
+from readthedocs.builds.models import Version
 from readthedocs.core.signals import webhook_github
+from readthedocs.core.views.serve import serve_docs
 from readthedocs.docsitalia.resolver import ItaliaResolver
 from readthedocs.oauth.models import RemoteOrganization, RemoteRepository
 from readthedocs.projects.models import Project
@@ -33,7 +36,7 @@ from readthedocs.docsitalia.models import (
     update_project_from_metadata)
 from readthedocs.docsitalia.serializers import (
     DocsItaliaProjectSerializer, DocsItaliaProjectAdminSerializer)
-
+from readthedocs.rtd_tests.base import RequestFactoryTestMixin
 
 PUBLISHER_METADATA = """publisher:
   name: Ministero della Documentazione Pubblica
@@ -661,7 +664,6 @@ class DocsItaliaTest(TestCase):
         with self.assertRaises(ValueError):
             validate_document_metadata(None, 'name: Documento')
 
-    # todo
     def test_project_root_is_served_by_docsitalia(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
@@ -844,7 +846,7 @@ class DocsItaliaTest(TestCase):
                   "programming_language": "words",
                   "repo": "https://github.com/testorg/myrepourl.git",
                   "repo_type": "git",
-                  "default_version": "latest",
+                  "default_version": "bozza",
                   "default_branch": None,
                   "documentation_type": "sphinx",
                   "users": [],
@@ -1333,3 +1335,160 @@ class AllowedTagAutocompleteTests(TestCase):
             },
         }
         self.assertEqual(expected, response.json())
+
+
+class DocsItaliaInternationalSlugTest(RequestFactoryTestMixin, TestCase):
+    fixtures = ['eric', 'test_data']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=1)
+        self.service = DocsItaliaGithubService(user=self.user, account=None)
+        self.factory = RequestFactory()
+
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
+    @pytest.mark.itresolver
+    def test_custom_international_url(self):
+        publisher = Publisher.objects.create(
+            name='Test Org',
+            slug='testorg',
+            metadata={},
+            projects_metadata={},
+            active=True
+        )
+
+        pub_project = PublisherProject.objects.create(
+            name='Test Project',
+            slug='testproject',
+            metadata={
+                'documents': [
+                    'https://github.com/testorg/myrepourl',
+                    'https://github.com/testorg/anotherrepourl',
+                ]
+            },
+            publisher=publisher,
+            active=True
+        )
+
+        project = Project.objects.create(
+            name='my project',
+            slug='myprojectslug',
+            repo='https://github.com/testorg/myrepourl.git',
+            language='it'
+        )
+        pub_project.projects.add(project)
+
+        italian_default_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/it/bozza/'
+        self.assertEqual(project.get_docs_url(), italian_default_url)
+
+
+        italian_stable_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/it/stabile/'
+        self.assertEqual(project.get_docs_url(version_slug=STABLE), italian_stable_url)
+
+        project.language = 'en'
+        project.save()
+
+        international_default_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/en/latest/'
+        self.assertEqual(project.get_docs_url(), international_default_url)
+
+        international_stable_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/en/stable/'
+        self.assertEqual(project.get_docs_url(version_slug=STABLE), international_stable_url)
+
+        self.assertEqual(project.get_docs_url(lang_slug='it'), italian_default_url)
+        self.assertEqual(project.get_docs_url(version_slug=STABLE, lang_slug='it'), italian_stable_url)
+
+    @pytest.mark.skipif(not IT_RESOLVER_IN_SETTINGS, reason='Require CLASS_OVERRIDES in settings')
+    @pytest.mark.itresolver
+    def test_international_url_serving(self):
+        with patch('readthedocs.core.views.serve._serve_symlink_docs') as serve_mock:
+            publisher = Publisher.objects.create(
+                name='Test Org',
+                slug='testorg',
+                metadata={},
+                projects_metadata={},
+                active=True
+            )
+
+            pub_project = PublisherProject.objects.create(
+                name='Test Project',
+                slug='testproject',
+                metadata={
+                    'documents': [
+                        'https://github.com/testorg/myrepourl',
+                        'https://github.com/testorg/anotherrepourl',
+                    ]
+                },
+                publisher=publisher,
+                active=True
+            )
+
+            project = Project.objects.create(
+                name='my project',
+                slug='myprojectslug',
+                repo='https://github.com/testorg/myrepourl.git',
+                language='it'
+            )
+            pub_project.projects.add(project)
+
+            Version.objects.create(
+                uploaded=False,
+                built=True,
+                project=project,
+                active=True,
+                slug='stabile'
+            )
+
+            # try to get 'bozza' version with 'latest' slug for not italian language version
+            lang_slug = 'en'
+            version_slug = 'latest'
+            request = self.request('/testorg/testproject/myprojectslug/en/latest/', user=self.user)
+            serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
+
+            serve_mock.assert_called_with(
+                request,
+                filename='/testorg/testproject/myprojectslug/en/bozza/',
+                privacy_level='public',
+                project=project
+            )
+
+            # same version slug but with italian language should raise an exception
+            lang_slug = 'it'
+            with self.assertRaises(Http404):
+                serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
+
+            # italian version slug
+            version_slug = 'bozza'
+            serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
+            serve_mock.assert_called_with(
+                request,
+                filename='/testorg/testproject/myprojectslug/it/bozza/',
+                privacy_level='public',
+                project=project
+            )
+
+            # stable / stabile
+            lang_slug = 'en'
+            version_slug = 'stable'
+            request = self.request('/testorg/testproject/myprojectslug/en/stable/', user=self.user)
+            serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
+
+            serve_mock.assert_called_with(
+                request,
+                filename='/testorg/testproject/myprojectslug/en/stabile/',
+                privacy_level='public',
+                project=project
+            )
+
+            # same version slug but with italian language should raise an exception
+            lang_slug = 'it'
+            with self.assertRaises(Http404):
+                serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
+
+            # italian version slug
+            version_slug = 'stabile'
+            serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
+            serve_mock.assert_called_with(
+                request,
+                filename='/testorg/testproject/myprojectslug/it/stabile/',
+                privacy_level='public',
+                project=project
+            )

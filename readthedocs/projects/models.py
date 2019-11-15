@@ -502,6 +502,10 @@ class Project(models.Model):
 
         Always use http for now, to avoid content warnings.
         """
+        from readthedocs.docsitalia.utils import get_international_version_slug
+        # get readable international slug name if language is not italian
+        version_slug = get_international_version_slug(self, lang_slug, version_slug)
+
         return resolve(
             project=self,
             version_slug=version_slug,

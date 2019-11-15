@@ -25,6 +25,9 @@ class DocsItaliaItResolverTestSettings(DocsItaliaTestSettings):
         'readthedocs.oauth.services.GitHubService': 'readthedocs.docsitalia.oauth.services.github.DocsItaliaGithubService',  # noqa
     }
 
+    RTD_LATEST = 'bozza'
+    RTD_STABLE = 'stabile'
+
 
 DocsItaliaItResolverTestSettings.load_settings(__name__)
 

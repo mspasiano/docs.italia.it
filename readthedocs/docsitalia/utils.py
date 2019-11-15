@@ -9,6 +9,9 @@ import yaml
 # pylint: disable=redefined-builtin
 from requests.exceptions import ConnectionError
 
+from django.conf import settings
+
+from readthedocs.builds.constants import LATEST, STABLE
 from readthedocs.builds.models import Build
 from readthedocs.projects.models import Project
 from readthedocs.api.v2.client import api as apiv2
@@ -66,3 +69,28 @@ def get_projects_with_builds(only_public=True):
     return Project.objects.filter(
         pk__in=filtered_projects
     )
+
+
+def get_international_version_slug(project, lang_slug, version_slug):
+    """For readability of urls we are changing slug names if language is not Italian."""
+    lang_slug = lang_slug or project.language
+    version_slug = version_slug or project.get_default_version()
+    if lang_slug != 'it':
+        if version_slug == STABLE:
+            return getattr(settings, 'RTD_STABLE_EN', 'stable')
+        if version_slug == LATEST:
+            return getattr(settings, 'RTD_LATEST_EN', 'latest')
+    return version_slug
+
+
+def get_real_version_slug(lang_slug, version_slug):
+    """Get the real slug names from international version."""
+    if lang_slug != 'it':
+        rtd_stable_en = getattr(settings, 'RTD_STABLE_EN', 'stable')
+        rtd_latest_en = getattr(settings, 'RTD_LATEST_EN', 'latest')
+
+        if version_slug == rtd_stable_en:
+            version_slug = STABLE
+        if version_slug == rtd_latest_en:
+            version_slug = LATEST
+    return version_slug
