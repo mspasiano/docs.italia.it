@@ -68,6 +68,7 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
     def get_queryset(self):
         """Fetch related instances."""
         return super().get_queryset().prefetch_related(
+            'tags',
             'publisherproject_set__publisher'
         )
 
@@ -103,7 +104,8 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
 
     @classmethod
     def faceted_search(
-            cls, query, user, language=None, publisher=None, publisher_project=None,
+            cls, query, user, language=None,
+            publisher=None, publisher_project=None, tags=None
     ):
         from readthedocs.search.faceted_search import ProjectSearch
         kwargs = {
@@ -118,6 +120,8 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
             filters['publisher'] = publisher
         if publisher_project:
             filters['publisher_project'] = publisher_project
+        if tags:
+            filters['tags'] = tags
 
         kwargs['filters'] = filters
 
@@ -257,8 +261,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
     @classmethod
     def faceted_search(
             cls, query, user, projects_list=None, versions_list=None,
-            filter_by_user=True, publisher=None, publisher_project=None,
-            tags=None,
+            filter_by_user=True, publisher=None, publisher_project=None, tags=None,
     ):
         from readthedocs.search.faceted_search import PageSearch
         kwargs = {
