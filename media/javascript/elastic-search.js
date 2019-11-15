@@ -11,6 +11,7 @@ $(document).ready(function () {
       delete params.sort
     }
 
-    window.location.href = window.location.origin + window.location.pathname + '?' + Qs.stringify(params)
+    var stringifiedParams = Qs.stringify(params, { arrayFormat: 'repeat' })
+    window.location.href = window.location.origin + window.location.pathname + '?' + stringifiedParams
   })
 })
