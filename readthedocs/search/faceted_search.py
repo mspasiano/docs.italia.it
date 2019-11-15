@@ -19,8 +19,8 @@ from readthedocs.search.documents import (
 log = logging.getLogger(__name__)
 
 ALL_FACETS = [
-    'project', 'version', 'role_name', 'language', 'index', 'publisher',
-    'publisher_project', 'tags',
+    'project', 'version', 'role_name', 'language', 'index',
+    'publisher', 'publisher_project', 'tags',
 ]
 
 
@@ -75,7 +75,7 @@ class RTDFacetedSearch(FacetedSearch):
 
         for operator in self.operators:
             query_string = SimpleQueryString(
-                query=query, fields=self.fields, default_operator=operator,
+                query=query, fields=self.fields, default_operator=operator
             )
             all_queries.append(query_string)
 

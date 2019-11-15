@@ -89,7 +89,7 @@ def elastic_search(request, project_slug=None):
 
     if user_input.query:
         kwargs = {}
-        sorts = [ALL_SORTS[sort_key]['value']]
+        kwargs['sort'] = [ALL_SORTS[sort_key]['value']]
 
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)
@@ -97,7 +97,7 @@ def elastic_search(request, project_slug=None):
                 kwargs[avail_facet] = value
 
         search = search_facets[user_input.type](
-            query=user_input.query, user=request.user, sort=sorts, **kwargs
+            query=user_input.query, user=request.user, **kwargs
         )
         results = search[:50].execute()
         facets = results.facets

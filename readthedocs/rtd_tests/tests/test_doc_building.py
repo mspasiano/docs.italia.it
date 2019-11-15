@@ -14,7 +14,6 @@ import uuid
 
 import mock
 import pytest
-
 from django.test import TestCase, TransactionTestCase
 from django_dynamic_fixture import get
 from docker.errors import APIError as DockerAPIError
