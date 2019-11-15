@@ -71,9 +71,9 @@ def elastic_search(request, project_slug=None):
         role_name=request.GET.get('role_name'),
         index=request.GET.get('index'),
         publisher=request.GET.get('publisher'),
-        publisher_project=request.GET.get('publisher_project'),
+        publisher_project=request.GET.getlist('publisher_project'),
         sort=request.GET.get('sort'),
-        tags=request.GET.get('tags'),
+        tags=request.GET.getlist('tags'),
     )
     search_facets = collections.defaultdict(
         lambda: ProjectSearch,
@@ -118,6 +118,11 @@ def elastic_search(request, project_slug=None):
     for avail_facet in ALL_FACETS:
         value = getattr(user_input, avail_facet, None)
         if not value or avail_facet not in facets:
+            continue
+        if isinstance(value, list):
+            for v in value:
+                if v not in [val[0] for val in facets[avail_facet]]:
+                    facets[avail_facet].insert(0, (v, 0, True))
             continue
         if value not in [val[0] for val in facets[avail_facet]]:
             facets[avail_facet].insert(0, (value, 0, True))

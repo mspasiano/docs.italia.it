@@ -27,7 +27,7 @@
 
                   {% for name, count, selected in facets.publisher %}
                     <li>
-                      <a class="p-0 d-inline-block" href="?{% if publisher == name %}{% url_replace request 'publisher' '' %}{% else %}{% url_replace request 'publisher' name %}{% endif %}">
+                      <a class="p-0 d-inline-block" href="?{% if selected %}{% url_replace_pop request 'publisher' name %}{% else %}{% url_replace_append request 'publisher' name %}{% endif %}">
                         <div class="form-check">
                           <input id="{{name}}" type="checkbox" {% if selected %}checked{% endif %}>
                           <label for="{{name}}" class="mb-0">{{name}} <span>({{ count }})</span></label>
@@ -51,7 +51,7 @@
 
               {% for slug, count, selected in facets.publisher_project %}
                 <li>
-                  <a class="p-0 d-inline-block" href="?{% if publisher_project == slug %}{% url_replace request 'publisher_project' '' %}{% else %}{% url_replace request 'publisher_project' slug %}{% endif %}">
+                  <a class="p-0 d-inline-block" href="?{% if selected %}{% url_replace_pop request 'publisher_project' slug %}{% else %}{% url_replace_append request 'publisher_project' slug %}{% endif %}">
                     <div class="form-check">
                       <input id="{{slug}}" type="checkbox" {% if selected %}checked{% endif %}>
                       <label for="{{slug}}" class="mb-0">{{slug|get_publisher_project}} <span>({{ count }})</span></label>
@@ -74,7 +74,7 @@
 
               {% for slug, count, selected in facets.tags %}
                 <li>
-                  <a class="p-0 d-inline-block" href="?{% if selected %}{% url_replace request 'tags' '' %}{% else %}{% url_replace request 'tags' slug %}{% endif %}">
+                  <a class="p-0 d-inline-block" href="?{% if selected %}{% url_replace_pop request 'tags' slug %}{% else %}{% url_replace_append request 'tags' slug %}{% endif %}">
                     <div class="form-check">
                       <input id="{{slug}}" type="checkbox" {% if selected %}checked{% endif %}>
                       <label for="{{slug}}" class="mb-0">{{slug|get_project_tag}} <span>({{ count }})</span></label>
