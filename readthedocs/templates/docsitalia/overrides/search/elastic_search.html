@@ -95,10 +95,10 @@
 
         <div class="serp-results-info mt-5 pb-2">
           <p class="mb-0">
-            {% if results|length == 1 %}
-              <strong>{{results|length}} risultato</strong>
+            {% if page|length == 1 %}
+              <strong>{{page|length}} risultato</strong>
             {% else %}
-              <strong>{{results|length}} risultati</strong>
+              <strong>{{page|length}} risultati</strong>
             {% endif %}
           </p>
 
@@ -120,7 +120,7 @@
           <div class="module">
 
             <ul class="row">
-              {% for result in results %}
+              {% for result in page %}
               <li class="document-card col-12 col-md-4 item p-2 p-md-3">
                 <p class="document-card-header neutral-1-color-a8">
                   <svg class="icon icon-primary mr-2">
@@ -183,19 +183,19 @@
 
           {% if page.has_previous or page.has_next %}
           <!-- BEGIN search pagination -->
-          <!-- <div class="pagination">
+          <div class="pagination">
             {% if page.has_previous %}
-            <a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">&laquo; {% trans "Previous" %}</a>
+            <a href="?{% url_replace request 'page' page.previous_page_number %}">&laquo; {% trans "Previous" %}</a>
             {% else %}
             <span class="disabled">&laquo; {% trans "Previous" %}</span>
             {% endif %}
 
             {% if page.has_next %}
-            <a class="next" href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% trans "Next" %} &raquo;</a>
+            <a class="next" href="?{% url_replace request 'page' page.next_page_number %}">{% trans "Next" %} &raquo;</a>
             {% else %}
             <span class="next disabled">{% trans "Next" %} &raquo;</span>
             {% endif %}
-          </div> -->
+          </div>
           <!-- END search pagination -->
           {% endif %}
         {% else %}
