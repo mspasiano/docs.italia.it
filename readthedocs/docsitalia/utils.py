@@ -73,24 +73,29 @@ def get_projects_with_builds(only_public=True):
 
 def get_international_version_slug(project, lang_slug, version_slug):
     """For readability of urls we are changing slug names if language is not Italian."""
-    lang_slug = lang_slug or project.language
-    version_slug = version_slug or project.get_default_version()
-    if lang_slug != 'it':
-        if version_slug == STABLE:
-            return getattr(settings, 'RTD_STABLE_EN', 'stable')
-        if version_slug == LATEST:
-            return getattr(settings, 'RTD_LATEST_EN', 'latest')
+    try:
+        lang_slug = lang_slug or project.language
+        version_slug = version_slug or project.get_default_version()
+        if lang_slug != 'it':
+            if version_slug == STABLE:
+                return settings.RTD_STABLE_EN
+            if version_slug == LATEST:
+                return settings.RTD_LATEST_EN
+    except AttributeError:
+        # this means custom versions are not set and we fallback to unchanged behavior
+        pass
     return version_slug
 
 
 def get_real_version_slug(lang_slug, version_slug):
     """Get the real slug names from international version."""
-    if lang_slug != 'it':
-        rtd_stable_en = getattr(settings, 'RTD_STABLE_EN', 'stable')
-        rtd_latest_en = getattr(settings, 'RTD_LATEST_EN', 'latest')
-
-        if version_slug == rtd_stable_en:
-            version_slug = STABLE
-        if version_slug == rtd_latest_en:
-            version_slug = LATEST
+    try:
+        if lang_slug != 'it':
+            if version_slug == settings.RTD_STABLE_EN:
+                version_slug = STABLE
+            if version_slug == settings.RTD_LATEST_EN:
+                version_slug = LATEST
+    except AttributeError:
+        # this means custom versions are not set and we fallback to unchanged behavior
+        pass
     return version_slug
