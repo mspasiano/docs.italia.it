@@ -42,7 +42,7 @@ def make_document_url(project, version=None, page=''):
 @register.simple_tag
 def url_replace_append(request, field, value):
     """
-    Append a value to the GET dictionary and teturn it urlencoded.
+    Append a value to the GET dictionary and return it urlencoded.
     """
     dict_ = request.GET.copy()
     dict_.appendlist(field, value)
@@ -52,7 +52,7 @@ def url_replace_append(request, field, value):
 @register.simple_tag
 def url_replace_pop(request, field, value):
     """
-    Remove a value from the GET dictionary and teturn it urlencoded.
+    Remove a value from the GET dictionary and return it urlencoded.
     """
     dict_ = request.GET.copy()
     list_ = dict_.pop(field)
