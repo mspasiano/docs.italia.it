@@ -149,6 +149,15 @@ class DocsItaliaDockerSettings(CommunityBaseSettings):
             'hosts': ES_HOSTS
         },
     }
+
+    @property
+    def ES_INDEXES(self):  # noqa - avoid pep8 N802
+        es_indexes = super().ES_INDEXES
+        for index_conf in es_indexes.values():
+            index_conf['analyzer'] = 'italian'
+
+        return es_indexes
+
     # RTD settings
     # This goes together with FILE_SYNCER setting
     # eg: FILE_SINCER = 'readthedocs.builds.syncers.*' (likely RemoteSyncer)
