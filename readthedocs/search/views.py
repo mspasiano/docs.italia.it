@@ -20,7 +20,7 @@ from readthedocs.search import utils
 log = logging.getLogger(__name__)
 LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
 
-PAGE_SIZE = 9
+PAGE_SIZE = 12
 RELEVANCE_KEY = 'relevance'
 ALL_SORTS = {
     RELEVANCE_KEY: {'value': '_score', 'label': 'Rilevanza'},
