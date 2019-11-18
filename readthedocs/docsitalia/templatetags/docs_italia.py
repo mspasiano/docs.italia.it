@@ -1,11 +1,12 @@
 """Template tags for docs italia app."""
-from __future__ import absolute_import
 
 from django import template
-from readthedocs.core.resolver import resolve
 from taggit.models import Tag
 
+from readthedocs.core.resolver import resolve
+
 from ..models import PublisherProject
+
 
 register = template.Library()
 
@@ -21,7 +22,7 @@ def get_publisher_project(slug):
 
 @register.filter
 def get_project_tag(slug):
-    """get tag from the slug."""
+    """Get tag from the slug."""
     try:
         return Tag.objects.get(slug=slug)
     except Tag.DoesNotExist:
@@ -30,7 +31,7 @@ def get_project_tag(slug):
 
 @register.simple_tag(name="doc_url_patched")
 def make_document_url(project, version=None, page=''):
-    """create the full document URL and appends index.html if root."""
+    """Create the full document URL and appends index.html if root."""
     if not project:
         return ""
     url = resolve(project=project, version_slug=version, filename=page)
@@ -41,9 +42,7 @@ def make_document_url(project, version=None, page=''):
 
 @register.simple_tag
 def url_replace_append(request, field, value):
-    """
-    Append a value to the GET dictionary and return it urlencoded.
-    """
+    """Append a value to the GET dictionary and return it urlencoded."""
     dict_ = request.GET.copy()
     dict_.appendlist(field, value)
     return dict_.urlencode()
@@ -51,9 +50,7 @@ def url_replace_append(request, field, value):
 
 @register.simple_tag
 def url_replace_pop(request, field, value):
-    """
-    Remove a value from the GET dictionary and return it urlencoded.
-    """
+    """Remove a value from the GET dictionary and return it urlencoded."""
     dict_ = request.GET.copy()
     list_ = dict_.pop(field)
     dict_.setlist(field, [v for v in list_ if v != value])
