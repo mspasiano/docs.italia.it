@@ -183,7 +183,7 @@
 
           {% if page.has_previous or page.has_next %}
           <!-- BEGIN search pagination -->
-          <div class="pagination">
+          <!-- <div class="pagination">
             {% if page.has_previous %}
             <a href="?{% url_replace request 'page' page.previous_page_number %}">&laquo; {% trans "Previous" %}</a>
             {% else %}
@@ -195,7 +195,7 @@
             {% else %}
             <span class="next disabled">{% trans "Next" %} &raquo;</span>
             {% endif %}
-          </div>
+          </div> -->
           <!-- END search pagination -->
           {% endif %}
         {% else %}
