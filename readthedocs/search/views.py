@@ -51,8 +51,16 @@ UserInput = collections.namedtuple(
 
 class ESPaginator(Paginator):
     def __init__(self, response, *args, **kwargs):
-        super().__init__(list(response), *args, **kwargs)
-        self._count = response.hits.total
+        try:
+            object_list = list(response)
+        except TypeError:
+            object_list = list()
+            _count = 0
+        else:
+            _count = response.hits.total
+        finally:
+            super().__init__(object_list, *args, **kwargs)
+            self._count = _count
 
     def page(self, number):
         number = self.validate_number(number)
