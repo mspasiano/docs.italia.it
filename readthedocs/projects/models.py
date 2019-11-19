@@ -502,7 +502,6 @@ class Project(models.Model):
 
         Always use http for now, to avoid content warnings.
         """
-
         return resolve(
             project=self,
             version_slug=version_slug,
