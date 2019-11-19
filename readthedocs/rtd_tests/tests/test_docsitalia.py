@@ -806,7 +806,8 @@ class DocsItaliaTest(TestCase):
         project = Project.objects.create(
             name='my project',
             slug='myprojectslug',
-            repo='https://github.com/testorg/myrepourl.git'
+            repo='https://github.com/testorg/myrepourl.git',
+            language='it'
         )
         project.tags.add('lorem', 'ipsum')
         publisher = Publisher.objects.create(
@@ -842,7 +843,7 @@ class DocsItaliaTest(TestCase):
                   "name": "my project",
                   "slug": "myprojectslug",
                   "description": "",
-                  "language": "en",
+                  "language": "it",
                   "programming_language": "words",
                   "repo": "https://github.com/testorg/myrepourl.git",
                   "repo_type": "git",
@@ -852,7 +853,7 @@ class DocsItaliaTest(TestCase):
                   "users": [],
                   "canonical_url": (
                       "https://readthedocs.org/testorg/testproject"
-                      "/myprojectslug/en/latest/"
+                      "/myprojectslug/it/bozza/"
                     ),
                   "publisher": {
                     "canonical_url": "https://readthedocs.org/testorg",
@@ -1377,20 +1378,20 @@ class DocsItaliaInternationalSlugTest(RequestFactoryTestMixin, TestCase):
         )
         pub_project.projects.add(project)
 
-        italian_default_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/it/bozza/'
+        italian_default_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/it/%s/' % LATEST
         self.assertEqual(project.get_docs_url(), italian_default_url)
 
 
-        italian_stable_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/it/stabile/'
+        italian_stable_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/it/%s/' % STABLE
         self.assertEqual(project.get_docs_url(version_slug=STABLE), italian_stable_url)
 
         project.language = 'en'
         project.save()
 
-        international_default_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/en/latest/'
+        international_default_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/en/%s/' % settings.RTD_LATEST_EN
         self.assertEqual(project.get_docs_url(), international_default_url)
 
-        international_stable_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/en/stable/'
+        international_stable_url = 'http://readthedocs.org/testorg/testproject/myprojectslug/en/%s/' % settings.RTD_STABLE_EN
         self.assertEqual(project.get_docs_url(version_slug=STABLE), international_stable_url)
 
         self.assertEqual(project.get_docs_url(lang_slug='it'), italian_default_url)
@@ -1434,18 +1435,18 @@ class DocsItaliaInternationalSlugTest(RequestFactoryTestMixin, TestCase):
                 built=True,
                 project=project,
                 active=True,
-                slug='stabile'
+                slug=STABLE
             )
 
-            # try to get 'bozza' version with 'latest' slug for not italian language version
+            # try to get 'bozza' version with 'draft' slug for not italian language version
             lang_slug = 'en'
-            version_slug = 'latest'
-            request = self.request('/testorg/testproject/myprojectslug/en/latest/', user=self.user)
+            version_slug = settings.RTD_LATEST_EN
+            request = self.request('/testorg/testproject/myprojectslug/en/%s/' % settings.RTD_LATEST_EN, user=self.user)
             serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
 
             serve_mock.assert_called_with(
                 request,
-                filename='/testorg/testproject/myprojectslug/en/bozza/',
+                filename='/testorg/testproject/myprojectslug/en/%s/' % LATEST,
                 privacy_level='public',
                 project=project
             )
@@ -1456,11 +1457,11 @@ class DocsItaliaInternationalSlugTest(RequestFactoryTestMixin, TestCase):
                 serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
 
             # italian version slug
-            version_slug = 'bozza'
+            version_slug = LATEST
             serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
             serve_mock.assert_called_with(
                 request,
-                filename='/testorg/testproject/myprojectslug/it/bozza/',
+                filename='/testorg/testproject/myprojectslug/it/%s/' % LATEST,
                 privacy_level='public',
                 project=project
             )
@@ -1484,11 +1485,11 @@ class DocsItaliaInternationalSlugTest(RequestFactoryTestMixin, TestCase):
                 serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
 
             # italian version slug
-            version_slug = 'stabile'
+            version_slug = STABLE
             serve_docs(request, project=project, lang_slug=lang_slug, version_slug=version_slug)
             serve_mock.assert_called_with(
                 request,
-                filename='/testorg/testproject/myprojectslug/it/stabile/',
+                filename='/testorg/testproject/myprojectslug/it/%s/' % STABLE,
                 privacy_level='public',
                 project=project
             )
