@@ -7,7 +7,7 @@ from operator import attrgetter
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 
-from readthedocs.builds.constants import LATEST
+from readthedocs.builds.constants import LATEST, STABLE
 from readthedocs.projects.models import Project
 from readthedocs.search.faceted_search import (
     ALL_FACETS,
@@ -199,6 +199,7 @@ def elastic_search(request, project_slug=None):
         'sorts': {k: {
             'label': v['label'], 'selected': k == sort_key
         } for k, v in ALL_SORTS.items()},
+        'allowed_versions': (LATEST, STABLE),
     })
 
     if project_slug:
