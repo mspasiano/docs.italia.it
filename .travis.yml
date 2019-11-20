@@ -57,6 +57,7 @@ branches:
   - /^dev/.*$/ # docsitalia dev branch
   - /^production/.*$/ # docsitalia production branch
   - /^italia-.*$/ # general docs italia branches
+  - /^feature/.*$/ # docsitalia feature branch
 
 addons:
   postgresql: "10"

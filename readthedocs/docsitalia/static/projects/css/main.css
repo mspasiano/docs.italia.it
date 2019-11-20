@@ -192,16 +192,6 @@ select:hover {
   line-height: 1.3;
   float: left;
 }
-.column-search-filters {
-  padding: 0;
-}
-.column-search-filters li {
-  list-style: none;
-}
-.column-search-filters li.active {
-  font-weight: 500;
-  color: #004080;
-}
 .results-filter select {
   border: 1px solid #E5E5E5;
   background-color: #fff;
@@ -285,10 +275,6 @@ select:hover {
 }
 .icon-type-document:before {
   content: url("../images/document.svg");
-}
-.main-title {
-  margin: 4rem 0 2rem;
-  border-bottom: 1px solid #D8D8D8;
 }
 .project-builds {
   flex: 1 0 auto;
@@ -558,7 +544,8 @@ select:hover {
   width: 2rem;
   background: linear-gradient(to right, rgba(255, 255, 255, 0), #ffffff 50%);
 }
-.document-card-description span, .document-card-description em {
+.document-card-description span,
+.document-card-description em {
   background: #bffffd;
   font-weight: 700;
 }
@@ -674,4 +661,164 @@ select:hover {
 }
 .publish .publish-article:last-child:after {
   display: none;
+}
+.sfs-modal-button {
+  background: transparent;
+  border: none;
+  color: white;
+}
+.sfs-modal-button span {
+  display: none;
+  font-size: 16px;
+}
+@media (min-width: 576px) {
+  .sfs-modal-button span {
+    display: block;
+    margin-bottom: 1px;
+  }
+}
+.sfs-modal-button .sfs-modal-button-icon-bg {
+  background: transparent;
+  border-radius: 44px;
+  height: auto;
+  width: auto;
+  margin-left: 0px;
+}
+@media (min-width: 576px) {
+  .sfs-modal-button .sfs-modal-button-icon-bg {
+    background: white;
+    height: 44px;
+    width: 44px;
+    margin-left: 10px;
+  }
+}
+.sfs-modal-button .sfs-modal-button-icon-bg .icon-primary {
+  fill: white !important;
+}
+@media (min-width: 576px) {
+  .sfs-modal-button .sfs-modal-button-icon-bg .icon-primary {
+    fill: #06c !important;
+  }
+}
+.sfs-modal.modal {
+  height: 100%;
+  height: calc(100% - 48px);
+  top: 48px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  border: none;
+  background: white;
+  border-radius: 0px;
+  padding: 0px;
+  z-index: 1072;
+}
+@media (min-width: 576px) {
+  .sfs-modal.modal {
+    height: calc(100% - 54px);
+    top: 54px;
+  }
+}
+@media (min-width: 992px) {
+  .sfs-modal.modal {
+    height: calc(100% - 48px);
+    top: 48px;
+  }
+}
+.sfs-modal.modal .modal-dialog {
+  background: white;
+  margin: 0px;
+  max-width: none;
+  height: 100%;
+}
+.sfs-modal.modal .modal-dialog .modal-content {
+  min-height: 100%;
+  box-shadow: none;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete {
+  padding-left: 65px;
+}
+.sfs-modal.modal .sfs-modal-tags-container .sfs-btn-tag {
+  margin-right: 5px;
+  margin-bottom: 10px;
+}
+.sfs-modal.modal .sfs-modal-tags-container .btn-outline-secondary {
+  box-shadow: inset 0 0 0 1px #5f7285;
+}
+.serp-search-filters {
+  padding: 0;
+  margin-bottom: 32px !important;
+}
+.serp-search-filters li {
+  list-style: none;
+}
+.serp-search-filters li.serp-filter-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  color: #17324d;
+  text-transform: uppercase;
+}
+.serp-search-filters li.serp-filter-title svg {
+  fill: #17324d !important;
+}
+.serp-search-filters li a {
+  color: #435a70;
+  text-decoration: none;
+}
+.serp-search-filters li a input {
+  pointer-events: none;
+}
+.serp-search-filters li a label {
+  pointer-events: none;
+  font-size: 16px !important;
+}
+.serp-search-filters li a label span {
+  color: #435a70 !important;
+  text-decoration: none !important;
+}
+.serp-results-info {
+  border-bottom: 1px solid #D8D8D8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+}
+.serp-results-info .serp-results-order {
+  position: relative;
+}
+.serp-results-info .serp-results-order select {
+  background: #fff;
+  box-shadow: none;
+  border: 1px solid #D8D8D8;
+  border-radius: 6px;
+  color: #06c;
+  text-shadow: none;
+  font-size: 16px;
+  line-height: 1.4;
+  padding: 4px 32px 4px 8px;
+  margin: 0;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.serp-results-info .serp-results-order select::-ms-expand {
+  display: none;
+}
+.serp-results-info .serp-results-order select:hover {
+  border-color: #888;
+}
+.serp-results-info .serp-results-order select:focus {
+  outline: none;
+}
+.serp-results-info .serp-results-order select option {
+  color: #222;
+  font-weight: normal;
+}
+.serp-results-info .serp-results-order .serp-results-order-icon {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  pointer-events: none;
 }

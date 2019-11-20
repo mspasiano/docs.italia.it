@@ -2,7 +2,6 @@ import os
 
 import django_dynamic_fixture as fixture
 import mock
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponse
