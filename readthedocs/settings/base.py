@@ -140,6 +140,7 @@ class CommunityBaseSettings(Settings):
             'readthedocs.sphinx_domains',
             'readthedocs.search',
 
+
             # allauth
             'allauth',
             'allauth.account',

@@ -1339,3 +1339,7 @@ div.module.project-subprojects div.subproject-meta {
     font-size: .9em;
     font-style: italic;
 }
+
+.card .categoryicon-top {
+    align-items: flex-start;
+}
