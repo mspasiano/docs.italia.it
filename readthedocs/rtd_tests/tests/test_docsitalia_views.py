@@ -352,7 +352,7 @@ class DocsItaliaViewsTest(TestCase):
         project = Project.objects.filter(name=project_name)
         self.assertFalse(project.exists())
 
-    @mock.patch('readthedocs.docsitalia.views.core_views.trigger_build')
+    @mock.patch('readthedocs.docsitalia.views.core_views.DocsItaliaImport.trigger_initial_build')
     def test_docsitalia_import_redirect_to_project_detail_with_valid_metadata(self, trigger_build):
         self.client.login(username='eric', password='test')
         with requests_mock.Mocker() as rm:
@@ -365,7 +365,7 @@ class DocsItaliaViewsTest(TestCase):
         redirect_url = reverse('projects_detail', kwargs={'project_slug': 'altro-progetto'})
         self.assertRedirects(response, redirect_url)
 
-    @mock.patch('readthedocs.docsitalia.views.core_views.trigger_build')
+    @mock.patch('readthedocs.docsitalia.views.core_views.DocsItaliaImport.trigger_initial_build')
     def test_docsitalia_import_update_project_with_valid_metadata(self, trigger_build):
         AllowedTag.objects.create(name='amazing document', enabled=True)
         self.client.login(username='eric', password='test')
@@ -380,7 +380,7 @@ class DocsItaliaViewsTest(TestCase):
         self.assertEqual(project_tags, ['amazing-document'])
         self.assertEqual(project.language, 'it')
 
-    @mock.patch('readthedocs.docsitalia.views.core_views.trigger_build')
+    @mock.patch('readthedocs.docsitalia.views.core_views.DocsItaliaImport.trigger_initial_build')
     def test_docsitalia_import_connect_project_with_publisher_project(self, trigger_build):
         publisher = Publisher.objects.create(
             name='Test Org',
@@ -408,7 +408,7 @@ class DocsItaliaViewsTest(TestCase):
                 '/docsitalia/dashboard/import/', data=self.import_project_data)
         self.assertEqual(pub_project.projects.count(), 1)
 
-    @mock.patch('readthedocs.docsitalia.views.core_views.trigger_build')
+    @mock.patch('readthedocs.docsitalia.views.core_views.DocsItaliaImport.trigger_initial_build')
     def test_docsitalia_import_render_error_for_invalid_fields(self, trigger_build):
         self.client.login(username='eric', password='test')
         with requests_mock.Mocker() as rm:
