@@ -13,8 +13,8 @@ dei publisher projects
       <div class="container">
         <div class="mb-2">{% include 'docsitalia/includes/breadcrumb.html' %}</div>
         <div class="d-flex flex-row">
-          {% if publisher.metadata.publisher.logo %}
-            <img class="d-block mr-4" style="max-width: 100px" src="{{publisher.metadata.publisher.logo}}" alt='{{ object }} logo'>
+          {% if publisher.metadata.publisher.logo_url %}
+            <img class="d-block mr-4" style="max-width: 100px" src="{{publisher.metadata.publisher.logo_url}}" alt='{{ object }} logo'>
           {% endif %}
           <div class="d-flex flex-column align-items-start justify-content-center">
             <h1 class="mb-0">{{ object }}</h1>
