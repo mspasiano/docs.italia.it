@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 
+from readthedocs.builds.constants import LATEST
 from ..migrations_schema_utils import AlterField
 
 
@@ -18,7 +19,7 @@ class Migration(migrations.Migration):
             app_label='projects',
             model_name='project',
             name='default_version',
-            field=models.CharField(default='bozza', help_text='The version of your project that / redirects to',
+            field=models.CharField(default=LATEST, help_text='The version of your project that / redirects to',
                                    max_length=255, verbose_name='Default version'),
         ),
     ]

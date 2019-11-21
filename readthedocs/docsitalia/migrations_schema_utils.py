@@ -1,6 +1,5 @@
 """
-Contain migrations utilities that allows to create migrations targeted to an application other than the one
-the migration file is created.
+Contain migrations utilities that allows to create migrations targeted to external applications.
 
 In this context yhis is useful to patch upstream models from within the docsitalia app.
 
@@ -11,9 +10,8 @@ from django.db import migrations
 
 
 class AddField(migrations.AddField):
-    """
-    Adds app_label parameter to AddField migration to allow migrating other apps fields
-    """
+
+    """Adds app_label parameter to AddField migration to allow migrating other apps fields."""
 
     def __init__(self, *args, **kwargs):
         if 'app_label' in kwargs:
@@ -35,9 +33,8 @@ class AddField(migrations.AddField):
 
 
 class AlterField(migrations.AlterField):
-    """
-    Adds app_label parameter to AlterField migration to allow migrating other apps fields
-    """
+
+    """Adds app_label parameter to AlterField migration to allow migrating other apps fields."""
 
     def __init__(self, *args, **kwargs):
         if 'app_label' in kwargs:
@@ -59,9 +56,8 @@ class AlterField(migrations.AlterField):
 
 
 class RemoveField(migrations.RemoveField):
-    """
-    Adds app_label parameter to RemoveField migration to allow migrating other apps fields
-    """
+
+    """Adds app_label parameter to RemoveField migration to allow migrating other apps fields."""
 
     def __init__(self, *args, **kwargs):
         if 'app_label' in kwargs:
