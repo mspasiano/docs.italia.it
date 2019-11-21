@@ -16,6 +16,8 @@ from readthedocs.builds.models import Build
 from readthedocs.projects.models import Project
 from readthedocs.api.v2.client import api as apiv2
 
+from . import LANG_IT
+
 
 def load_yaml(txt):
     """Helper for yaml parsing."""
@@ -76,7 +78,7 @@ def get_international_version_slug(project, lang_slug, version_slug):
     try:
         lang_slug = lang_slug or project.language
         version_slug = version_slug or project.get_default_version()
-        if lang_slug != 'it':
+        if lang_slug != LANG_IT:
             if version_slug == STABLE:
                 return settings.RTD_STABLE_EN
             if version_slug == LATEST:
@@ -90,7 +92,7 @@ def get_international_version_slug(project, lang_slug, version_slug):
 def get_real_version_slug(lang_slug, version_slug):
     """Get the real slug names from international version."""
     try:
-        if lang_slug != 'it':
+        if lang_slug != LANG_IT:
             if version_slug == settings.RTD_STABLE_EN:
                 version_slug = STABLE
             if version_slug == settings.RTD_LATEST_EN:

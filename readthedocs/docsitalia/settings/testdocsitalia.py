@@ -7,7 +7,6 @@ from readthedocs.settings.test import CommunityTestSettings
 class DocsItaliaTestSettings(CommunityTestSettings):
     ES_SEARCH_FILE_MIN_SCORE = 0  # Neeeded for RTD compat tests
 
-
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
