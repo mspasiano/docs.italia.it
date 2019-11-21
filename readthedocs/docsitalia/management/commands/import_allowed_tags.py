@@ -1,6 +1,4 @@
-"""
-Command to sync allowed tags
-"""
+"""Command to sync allowed tags."""
 from django.core.management.base import BaseCommand
 
 from readthedocs.docsitalia.models import AllowedTag
