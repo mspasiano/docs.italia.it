@@ -32,10 +32,10 @@ class DocsItaliaGithubService(GitHubService):
         signal_processor = dsl_app.signal_processor
         # this is a rather brutal way to handle this, but I cannot find a better solution
         # when syncing the orgs, we repeatedly save the publisher, which is linked to
-        # the PageDocument and ProjectDocument. As django-elasticsearch-dsl is configured in autosync
-        # this triggers the ES update for all the linked documents, and with large organizations (namely: `italia`)
-        # this can yield a significant delay and unnecessary load. Completely silencing the signals during this process
-        # it's the only option we have
+        # the PageDocument and ProjectDocument. As django-elasticsearch-dsl is configured in
+        # autosync this triggers the ES update for all the linked documents, and with large
+        # organizations (namely: `italia`) this can yield a significant delay and unnecessary load.
+        # Completely silencing the signals during this process it's the only option I have found.
         signal_processor.teardown()
         try:
             orgs = self.paginate('https://api.github.com/user/orgs')
