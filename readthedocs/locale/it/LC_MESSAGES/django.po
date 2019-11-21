@@ -1704,10 +1704,10 @@ msgstr ""
 #: templates/account/email/email_confirmation_message.html:15
 #: templates/account/email/email_confirmation_message.txt:10
 msgid ""
-"If you did not sign up for an account with Read the Docs, you can disregard "
+"If you did not sign up for an account with Docs Italia, you can disregard "
 "this email."
 msgstr ""
-"Se non ti sei registrato per un account su Read the Docs, puoi non "
+"Se non ti sei registrato per un account su Docs Italia, puoi non "
 "considerare questa email."
 
 #: templates/account/email/email_confirmation_subject.txt:3
