@@ -27,9 +27,9 @@
       </div>
     {% endfor %}
     {% if redirect_field_value %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />{% endif %}
-    <div class="py-4">
+    <div class="py-4 signup_buttons">
       <button class="btn btn-primary" type="submit">{% trans "Sign Up" %}</button>
-      <span class="px-3">oppure</span>
+      <span class="px-3 my-3 my-md-0">oppure</span>
       {% include "socialaccount/snippets/provider_list.html" with process="login" next="" verbiage="Sign up with" %}
     </div>
 
