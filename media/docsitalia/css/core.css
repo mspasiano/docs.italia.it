@@ -1344,6 +1344,32 @@ div.module.project-subprojects div.subproject-meta {
     align-items: flex-start;
 }
 
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group small.form-text {
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    #content ul.errorlist {
+        margin: 0;
+        padding: 0 .5rem;
+    }
+
+    .signup_buttons,
+    .login_buttons {
+        text-align: center;
+    }
+
+    .signup_buttons span,
+    .login_buttons span {
+        display: block;
+        width: 100%;
+    }
+}
+
 @media screen and (min-width: 768px) and (max-width: 991.98px) {
   .document-card:nth-child(3n):before {
     display: block;
