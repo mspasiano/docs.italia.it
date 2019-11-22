@@ -120,7 +120,9 @@ class DocumentRedirect(View):
         try:
             document = self.get_queryset().get(slug=self.kwargs['slug'])
             return HttpResponseRedirect(
-                '{}index.html'.format(document.get_docs_url(lang_slug=self.kwargs.get('lang')))
+                '{}index.html'.format(document.get_docs_url(
+                    lang_slug=self.kwargs.get('lang'), version_slug=self.kwargs.get('version')
+                ))
             )
         except Project.DoesNotExist:
             raise Http404()

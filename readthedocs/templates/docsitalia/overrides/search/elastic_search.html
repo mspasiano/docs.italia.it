@@ -39,6 +39,31 @@
               {% endif %}
             {% endcomment %}
 
+            <!-- version filters -->
+            {% if facets.version %}
+            <ul class="link-list serp-search-filters">
+              <li class="serp-filter-title">
+                <svg class="icon icon-secondary icon-sm ml-1">
+                  <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-check-circle"></use>
+                </svg>
+                <h3 class="px-2 m-0">Versione</h3>
+              </li>
+
+              {% for slug, count, selected in facets.version %}
+                {% if slug in allowed_versions %}
+                  <li>
+                    <a class="p-0 d-inline-block" href="?{% if selected %}{% url_replace request 'version' '' %}{% else %}{% url_replace request 'version' slug %}{% endif %}">
+                      <div class="form-check">
+                        <input id="{{slug}}" type="checkbox" {% if selected %}checked{% endif %}>
+                        <label for="{{slug}}" class="mb-0">{{slug|title}} <span>({{ count }})</span></label>
+                      </div>
+                    </a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+            {% endif %}
+
             <!-- projects filters -->
             {% if facets.publisher_project %}
             <ul class="link-list serp-search-filters">
@@ -121,7 +146,7 @@
 
             <ul class="row">
               {% for result in page %}
-              <li class="document-card col-12 col-md-4 item p-2 p-md-3">
+              <li class="document-card col-12 col-md-6 col-lg-4 item p-2 p-md-3">
                 <p class="document-card-header neutral-1-color-a8">
                   <svg class="icon icon-primary mr-2">
                     <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-file"></use>
