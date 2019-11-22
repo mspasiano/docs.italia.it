@@ -1344,7 +1344,6 @@ div.module.project-subprojects div.subproject-meta {
     align-items: flex-start;
 }
 
-
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -1369,4 +1368,10 @@ div.module.project-subprojects div.subproject-meta {
         display: block;
         width: 100%;
     }
+}
+
+@media screen and (min-width: 768px) and (max-width: 991.98px) {
+  .document-card:nth-child(3n):before {
+    display: block;
+  }
 }

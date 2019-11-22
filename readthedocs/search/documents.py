@@ -138,15 +138,15 @@ class PageDocument(RTDDocTypeMixin, DocType):
     full_path = fields.KeywordField(attr='path')
 
     # Searchable content
-    title = fields.TextField(attr='processed_json.title')
+    title = fields.TextField(attr='processed_json.title', analyzer='italian')
     name = fields.KeywordField(attr='processed_json.title')
     date = fields.DateField(attr='modified_date')
     sections = fields.NestedField(
         attr='processed_json.sections',
         properties={
             'id': fields.KeywordField(),
-            'title': fields.TextField(),
-            'content': fields.TextField(),
+            'title': fields.TextField(analyzer='italian'),
+            'content': fields.TextField(analyzer='italian'),
         }
     )
     domains = fields.NestedField(
