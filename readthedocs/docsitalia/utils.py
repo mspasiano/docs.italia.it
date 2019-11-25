@@ -90,7 +90,12 @@ def get_international_version_slug(project, lang_slug, version_slug):
 
 
 def get_real_version_slug(lang_slug, version_slug):
-    """Get the real slug names from international version."""
+    """
+    If language is not Italian - get real slug name from international one.
+
+    International versions (RTD_STABLE_EN/RTD_LATEST_EN) are provided only for readability purpose,
+    only STABLE/LATEST are stored in DB.
+    """
     try:
         if lang_slug != LANG_IT:
             if version_slug == settings.RTD_STABLE_EN:
