@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from readthedocs.builds.models import Build, Version
 from readthedocs.docsitalia.github import InvalidMetadata
-from readthedocs.docsitalia.models import Publisher, PublisherProject, AllowedTag
+from readthedocs.docsitalia.models import Publisher, PublisherProject, AllowedTag, ProjectOrder
 from readthedocs.docsitalia.views.core_views import (
     DocsItaliaHomePage, PublisherIndex, PublisherProjectIndex, PublisherList)
 from readthedocs.oauth.models import RemoteRepository
@@ -123,7 +123,7 @@ class DocsItaliaViewsTest(TestCase):
         # no build is passed, so no project even if it is public
         version.privacy_level = 'public'
         version.save()
-        qs = hp.get_queryset().values_list('pk')
+        qs = hp.get_queryset().values_list('pk', flat=True)
         self.assertFalse(qs.exists())
 
         # let's create a build, but it is only triggered
@@ -145,7 +145,7 @@ class DocsItaliaViewsTest(TestCase):
         # build is finally passed, so we have our project in homepage
         build.success = True
         build.save()
-        self.assertTrue(list(qs), [project.pk])
+        self.assertEqual(list(qs), [project.pk])
 
     def test_docsitalia_publisher_index_get_queryset_filter_active(self):
         index = PublisherIndex()
@@ -536,6 +536,124 @@ class DocsItaliaViewsTest(TestCase):
             '/docsitalia/api/document/{}/active_versions/'.format(project.slug)
         )
         self.assertTrue(len(response.data['versions']) == 0)
+
+    def test_docsitalia_homepage_order_projects(self):
+        hp = DocsItaliaHomePage()
+
+        project = Project.objects.create(
+            name='my project',
+            slug='projectslug',
+            repo='https://github.com/testorg/myrepourl.git'
+        )
+
+        publisher = Publisher.objects.create(
+            name='Test Org',
+            slug='testorg',
+            metadata={},
+            projects_metadata={},
+            active=True
+        )
+        pub_project = PublisherProject.objects.create(
+            name='Test Project',
+            slug='testproject',
+            metadata={
+                'documents': [
+                    'https://github.com/testorg/myrepourl',
+                    'https://github.com/testorg/anotherrepourl',
+                ]
+            },
+            publisher=publisher,
+            active=True
+        )
+        pub_project.projects.add(project)
+
+        version = Version.objects.filter(privacy_level='public').first()
+
+        Build.objects.create(
+            project=project,
+            version=version,
+            type='html',
+            state='finished',
+            success=True
+        )
+
+        project2 = Project.objects.create(
+            name='my project 2',
+            slug='projectslug2',
+            repo='https://github.com/testorg/myrepourl.git'
+        )
+        pub_project.projects.add(project2)
+
+        version2 = Version.objects.filter(project=project2).first()
+
+        Build.objects.create(
+            project=project2,
+            version=version2,
+            type='html',
+            state='finished',
+            success=True
+        )
+
+        qs = hp.get_queryset()
+
+        # order by modified date descending
+        self.assertEqual(list(qs), [project2, project])
+
+        project.description = 'new descr'
+        project.save()
+
+        qs = hp.get_queryset()
+        self.assertEqual(list(qs), [project, project2])
+
+        project3 = Project.objects.create(
+            name='my project 3',
+            slug='projectslug3',
+            repo='https://github.com/testorg/myrepourl.git'
+        )
+        pub_project.projects.add(project3)
+
+        version3 = Version.objects.filter(project=project3).first()
+
+        Build.objects.create(
+            project=project3,
+            version=version3,
+            type='html',
+            state='finished',
+            success=True
+        )
+
+        qs = hp.get_queryset()
+        self.assertEqual(list(qs), [project3, project, project2])
+
+        # add ProjectOrder
+        ProjectOrder.objects.create(
+            project=project2,
+            order=0
+        )
+
+        qs = hp.get_queryset()
+        self.assertEqual(list(qs), [project2, project3, project])
+
+        # project with ProjectOrder got priority greater than others,
+        # so even Project with order=100 is earlier than Project without ProjectOrder
+        ProjectOrder.objects.create(
+            project=project,
+            order=100
+        )
+
+        qs = hp.get_queryset()
+        self.assertEqual(list(qs), [project2, project, project3])
+
+        # test Projects with same order should be ordered by modified date
+        # order is not unique for convenience purpose
+        ProjectOrder.objects.create(
+            project=project3,
+            order=0
+        )
+
+        qs = hp.get_queryset()
+        self.assertEqual(list(qs), [project2, project3, project])
+
 
 
 class TestAdminPrivateViews(TestCase):

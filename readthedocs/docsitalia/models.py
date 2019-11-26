@@ -327,3 +327,16 @@ class AllowedTag(models.Model):
         """Perform custom validation."""
         self.name = self.name.strip().lower()
         return super(AllowedTag, self).clean()
+
+
+class ProjectOrder(models.Model):
+    project = models.OneToOneField(Project, verbose_name=_('Projects'), on_delete=models.CASCADE)
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        verbose_name = _('project order')
+        verbose_name_plural = _('projects order')
+        ordering = ('order',)
+
+    def __str__(self):
+        return '{} - {}'.format(self.order, self.project.name)

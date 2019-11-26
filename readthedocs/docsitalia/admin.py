@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
 from .forms import PublisherAdminForm
-from .models import AllowedTag, Publisher, PublisherProject
+from .models import AllowedTag, Publisher, PublisherProject, ProjectOrder
 
 
 class PublisherAdmin(admin.ModelAdmin):
@@ -61,6 +61,11 @@ class AllowedTagAdmin(admin.ModelAdmin):
     list_filter = ('enabled',)
 
 
+class ProjectOrderAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(ProjectOrder, ProjectOrderAdmin)
 admin.site.register(Publisher, PublisherAdmin)
 admin.site.register(PublisherProject, PublisherProjectAdmin)
 admin.site.register(AllowedTag, AllowedTagAdmin)

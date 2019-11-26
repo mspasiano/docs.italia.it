@@ -3,6 +3,7 @@
 
 import logging
 
+from django.db.models import Case, When
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
@@ -17,7 +18,7 @@ from readthedocs.projects.views.private import ImportView
 
 from ..github import get_metadata_for_document
 from ..metadata import InvalidMetadata
-from ..models import PublisherProject, Publisher, update_project_from_metadata
+from ..models import PublisherProject, Publisher, ProjectOrder, update_project_from_metadata
 from ..utils import get_projects_with_builds
 
 log = logging.getLogger(__name__)  # noqa
@@ -39,17 +40,30 @@ class DocsItaliaHomePage(ListView):  # pylint: disable=too-many-ancestors
         - PublisherProject is active
         - document (Project) has a public build
         - Build is success and finished
+
+        Ordering by:
+        - ProjectOrder model values
+        - modified_date descending
+        - pub_date descending
         """
         active_pub_projects = PublisherProject.objects.filter(
             active=True,
             publisher__active=True
         )
         qs = get_projects_with_builds()
+
+        order_by_list = ['-modified_date', '-pub_date']
+
+        projects_priority_list = ProjectOrder.objects.all().values_list('project', flat=True)
+        if projects_priority_list:
+            project_priority_order = Case(
+                *[When(id=pk, then=pos) for pos, pk in enumerate(projects_priority_list)]
+            )
+            order_by_list.insert(0, project_priority_order)
+
         return qs.filter(
             publisherproject__in=active_pub_projects
-        ).order_by(
-            '-modified_date', '-pub_date'
-        )[:24]
+        ).order_by(*order_by_list)[:24]
 
 
 class PublisherList(ListView):  # pylint: disable=too-many-ancestors
