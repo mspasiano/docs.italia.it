@@ -8,9 +8,12 @@ from readthedocs.search.faceted_search import PageSearch
 
 
 class SearchSerializer(serializers.Serializer):
-    title = serializers.CharField()
     link = serializers.SerializerMethodField()
-    highlight = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
+    kind = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return "documento"
 
     def get_link(self, obj):
         try:
@@ -18,11 +21,11 @@ class SearchSerializer(serializers.Serializer):
         except (AttributeError, KeyError, TypeError):
             return ""
 
-    def get_highlight(self, obj):
+    def get_text(self, obj):
         try:
             return obj.meta.highlight.title[0]
         except (AttributeError, IndexError):
-            return ""
+            return obj.title
 
 
 class SearchAPIView(generics.ListAPIView):
