@@ -251,7 +251,7 @@ gulp.task('dev', function (done) {
                 build_app_sources(application, false)
                     .pipe(es.wait(function (err, body) {
                         gulp_util.log('Collecting static files');
-                        run('docker-compose run web python manage.py collectstatic --noinput').exec('');
+                        run('./manage.py collectstatic --noinput').exec('');
                     }));
             });
         }))
