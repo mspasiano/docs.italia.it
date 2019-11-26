@@ -4,6 +4,7 @@
  */
 
 var debounceInputTiming = 300
+var minCharacters = 3
 var params = {
   filter: 'all',
   search: ''
@@ -11,20 +12,82 @@ var params = {
 
 var pendingRequest = null
 var fetchResultsFromApi = function () {
-  // TODO: Fetch here results from API
   if (pendingRequest) pendingRequest.abort('Canceled from user')
 
-  // console.log('Fetch API with those params', params)
+  if (params.search.length < minCharacters) {
+    return hideResults()
+  }
 
-  pendingRequest = $.ajax('https://jsonplaceholder.typicode.com/users')
+  pendingRequest = $.ajax({
+    url: '/api/v2/search/',
+    type: 'GET',
+    data: {
+      q: params.search
+    }
+  })
     .done(function (response) {
-      // console.log('response', response)
+      showResults(response.results)
     })
     .fail(function (error) {
       if (error.statusText !== 'Canceled from user') {
-        console.log('fetchResultsFromApi error:', error)
+        hideResults()
       }
     })
+}
+
+var createSearchMoreItemList = function () {
+  var link = '/search/?q=' + params.search + '&type=file'
+  var title = 'Ricerca libera per "' + params.search + '"'
+
+  return (
+    '<li class="autocomplete-list-freesearch">' +
+      '<a class="ml-1" href="' + link + '">' +
+        '<svg class="icon icon-xs icon-primary search-icon">' +
+          '<use xlink:href="/media/static/vendor/bootstrap-italia/svg/sprite.svg#it-search"></use>' +
+        '</svg>' +
+        '<span class="autocomplete-list-text">' +
+          '<span>' + title + '</span>' +
+        '</span>' +
+        '<svg class="icon icon-xs icon-primary right-arrow-icon">' +
+          '<use xlink:href="/media/static/vendor/bootstrap-italia/svg/sprite.svg#it-arrow-right"></use>' +
+        '</svg>' +
+      '</a>' +
+    '</li>'
+  )
+}
+
+var createItemList = function (item) {
+  if (!item) return ''
+
+  var regex = new RegExp(params.search, 'g')
+  var title = item.title.replace(regex, '<mark>' + params.search + '</mark>')
+  var link = item.link
+
+  return (
+    '<li>' +
+      '<a href="' + link + '">' +
+        '<svg class="icon icon-sm">' +
+          '<use xlink:href="/media/static/vendor/bootstrap-italia/svg/sprite.svg#it-file"></use>' +
+        '</svg>' +
+        '<span class="autocomplete-list-text">' +
+          title + ' <em>Documento</em>' +
+        '</span>' +
+      '</a>' +
+    '</li>'
+  )
+}
+
+var showResults = function (results) {
+  var elementsList = results.map(createItemList)
+  elementsList.push(createSearchMoreItemList())
+  $('#autocompleteListSearchFullScreen').html(elementsList)
+  $('#autocompleteListSearchFullScreen').show()
+  $('#autocompleteFilters').hide()
+}
+
+var hideResults = function () {
+  $('#autocompleteListSearchFullScreen').hide()
+  $('#autocompleteFilters').show()
 }
 
 $(document).ready(function () {
@@ -56,13 +119,27 @@ $(document).ready(function () {
 
   // Event triggered on close modal animation finished
   modal.on('hidden.bs.modal', function () {
-
+    input.val('')
+    hideResults()
   })
 
   input.on('paste keyup', debounce(function () {
     params.search = $(this).val()
     fetchResultsFromApi()
   }, debounceInputTiming))
+
+  var testListener = function (e) {
+    if (!$(e.target).parents('.autocomplete-wrapper-big').length) {
+      hideResults()
+      window.removeEventListener('click', testListener)
+    }
+  }
+
+  input.on('focus', function () {
+    params.search = $(this).val()
+    fetchResultsFromApi()
+    window.addEventListener('click', testListener)
+  })
 
   tagButtons.on('click', function () {
     var filter = $(this).attr('data-filter')

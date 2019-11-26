@@ -665,7 +665,7 @@ select:hover {
 .sfs-modal-button {
   background: transparent;
   border: none;
-  color: white;
+  color: #fff;
 }
 .sfs-modal-button span {
   display: none;
@@ -686,14 +686,14 @@ select:hover {
 }
 @media (min-width: 576px) {
   .sfs-modal-button .sfs-modal-button-icon-bg {
-    background: white;
+    background: #fff;
     height: 44px;
     width: 44px;
     margin-left: 10px;
   }
 }
 .sfs-modal-button .sfs-modal-button-icon-bg .icon-primary {
-  fill: white !important;
+  fill: #fff !important;
 }
 @media (min-width: 576px) {
   .sfs-modal-button .sfs-modal-button-icon-bg .icon-primary {
@@ -708,7 +708,7 @@ select:hover {
   left: 0px;
   right: 0px;
   border: none;
-  background: white;
+  background: #fff;
   border-radius: 0px;
   padding: 0px;
   z-index: 1072;
@@ -726,7 +726,7 @@ select:hover {
   }
 }
 .sfs-modal.modal .modal-dialog {
-  background: white;
+  background: #fff;
   margin: 0px;
   max-width: none;
   height: 100%;
@@ -737,6 +737,20 @@ select:hover {
 }
 .sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete {
   padding-left: 65px;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list {
+  z-index: 1;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list .autocomplete-list-freesearch a {
+  font-size: 16px;
+  font-weight: 600;
+  color: #06c;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list .autocomplete-list-freesearch a .search-icon {
+  margin-top: 2px;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list .autocomplete-list-freesearch a .right-arrow-icon {
+  margin-top: 4px;
 }
 .sfs-modal.modal .sfs-modal-tags-container .sfs-btn-tag {
   margin-right: 5px;
