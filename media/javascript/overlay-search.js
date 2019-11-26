@@ -22,7 +22,8 @@ var fetchResultsFromApi = function () {
     url: '/api/v2/search/',
     type: 'GET',
     data: {
-      q: params.search
+      q: params.search,
+      kind: params.filter
     }
   })
     .done(function (response) {
@@ -59,18 +60,23 @@ var createSearchMoreItemList = function () {
 var createItemList = function (item) {
   if (!item) return ''
 
-  var regex = new RegExp(params.search, 'g')
-  var title = item.title.replace(regex, '<mark>' + params.search + '</mark>')
+  var title = item.text.replace('<span>', '<mark>').replace('</span>', '</mark>')
   var link = item.link
+  var icon = 'it-file'
+  var type = (item.kind || '').toUpperCase()
+
+  if (item.kind === 'documento') icon = 'it-file'
+  else if (item.kind === 'progetto') icon = 'it-folder'
+  else if (item.kind === 'amministrazione') icon = 'it-pa'
 
   return (
     '<li>' +
       '<a href="' + link + '">' +
         '<svg class="icon icon-sm">' +
-          '<use xlink:href="/media/static/vendor/bootstrap-italia/svg/sprite.svg#it-file"></use>' +
+          '<use xlink:href="/media/static/vendor/bootstrap-italia/svg/sprite.svg#' + icon + '"></use>' +
         '</svg>' +
         '<span class="autocomplete-list-text">' +
-          title + ' <em>Documento</em>' +
+          title + ' <em>' + type + '</em>' +
         '</span>' +
       '</a>' +
     '</li>'
@@ -155,7 +161,7 @@ $(document).ready(function () {
       if (icon) icon.setAttribute('class', isActive ? 'icon icon-white' : 'icon icon-secondary')
     })
 
-    fetchResultsFromApi()
+    // fetchResultsFromApi()
   })
 })
 

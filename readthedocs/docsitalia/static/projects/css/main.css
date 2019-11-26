@@ -747,10 +747,10 @@ select:hover {
   color: #06c;
 }
 .sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list .autocomplete-list-freesearch a .search-icon {
-  margin-top: 2px;
+  margin-top: 1px;
 }
 .sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list .autocomplete-list-freesearch a .right-arrow-icon {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .sfs-modal.modal .sfs-modal-tags-container .sfs-btn-tag {
   margin-right: 5px;
