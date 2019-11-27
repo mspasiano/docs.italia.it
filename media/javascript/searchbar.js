@@ -18,7 +18,7 @@ var fetchSearchbarResultsFromApi = function () {
     }
   })
     .done(function (response) {
-      showSearchbarResults(response.results)
+      showSearchbarResults(response)
     })
     .fail(function (error) {
       if (error.statusText !== 'Canceled from user') {
