@@ -6,7 +6,7 @@
 var debounceInputTiming = 300
 var minCharacters = 3
 var params = {
-  filter: 'all',
+  filter: '',
   search: ''
 }
 
@@ -18,13 +18,13 @@ var fetchResultsFromApi = function () {
     return hideResults()
   }
 
+  var dataParams = { q: params.search }
+  if (params.filter) dataParams.kind = params.filter
+
   pendingRequest = $.ajax({
     url: '/api/v2/search/',
     type: 'GET',
-    data: {
-      q: params.search,
-      kind: params.filter
-    }
+    data: dataParams
   })
     .done(function (response) {
       showResults(response.results)
