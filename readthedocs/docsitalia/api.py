@@ -10,7 +10,7 @@ from readthedocs.projects.models import Project
 from readthedocs.search.faceted_search import PageSearch
 
 
-class SearchSerializer(serializers.Serializer):  # pylint: disable=W0223
+class SearchSerializer(serializers.Serializer):  # pylint: disable=abstract-method
 
     """Serializer with basic information for search endpoint."""
 
@@ -52,10 +52,13 @@ class SearchAPIView(generics.ListAPIView):
         # Validate all the required params are there
         self.validate_query_params()
         query = self.request.query_params.get('q', '')
-        kwargs = {'filter_by_user': False, 'filters': {}}
-        kwargs['filters']['version'] = self.request.query_params.get('version', LATEST)
-        user = self.request.user
-        return PageSearch(query=query, user=user, **kwargs)[0:10]
+        kwargs = {
+            'filter_by_user': False,
+            'filters': {
+                'version': self.request.query_params.get('version', LATEST)
+            }
+        }
+        return PageSearch(query=query, user=self.request.user, **kwargs)[0:10]
 
     def validate_query_params(self):
         """
