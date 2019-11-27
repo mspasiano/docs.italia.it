@@ -31,28 +31,30 @@
           <!-- Input -->
           <div class="row">
             <div class="col-12">
-              <div class="form-group autocomplete-wrapper-big">
-                <input
-                  type="search"
-                  class="autocomplete"
-                  placeholder="Cerca progetti, documenti o per tag"
-                  id="autocompleteSearchFullScreen"
-                  name="autocompleteSearchFullScreen">
-                <span class="autocomplete-icon" aria-hidden="true">
-                  <svg class="icon icon-sm">
-                    <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-search"></use>
-                  </svg>
-                </span>
-                <ul class="autocomplete-list" id="autocompleteListSearchFullScreen"></ul>
-                <label for="autocompleteSearchFullScreen" class="sr-only">Cerca nel sito</label>
-              </div>
+              <form id="autocompleteSearchForm">
+                <div class="form-group autocomplete-wrapper-big">
+                  <input
+                    type="search"
+                    class="autocomplete"
+                    placeholder="Cerca progetti, documenti o per tag"
+                    id="autocompleteSearchFullScreen"
+                    name="autocompleteSearchFullScreen">
+                  <span class="autocomplete-icon" aria-hidden="true">
+                    <svg class="icon icon-sm">
+                      <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-search"></use>
+                    </svg>
+                  </span>
+                  <ul class="autocomplete-list" id="autocompleteListSearchFullScreen"></ul>
+                  <label for="autocompleteSearchFullScreen" class="sr-only">Cerca nel sito</label>
+                </div>
+              </form>
             </div>
           </div>
 
           <!-- Filters -->
           <div id="autocompleteFilters" class="row">
             <div class="col-12 sfs-modal-tags-container">
-              <button type="button" class="btn btn-xs sfs-btn-tag btn-primary" data-filter="all">Tutto</button>
+              <button type="button" class="btn btn-xs sfs-btn-tag btn-primary" data-filter="">Tutto</button>
               <button type="button" class="btn btn-xs sfs-btn-tag btn-icon btn-outline-secondary" data-filter="progetto">
                 <svg class="icon icon-secondary">
                   <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-folder"></use>

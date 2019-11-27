@@ -6,7 +6,7 @@
 var debounceInputTiming = 300
 var minCharacters = 3
 var params = {
-  filter: 'all',
+  filter: '',
   search: ''
 }
 
@@ -18,13 +18,13 @@ var fetchResultsFromApi = function () {
     return hideResults()
   }
 
+  var dataParams = { q: params.search }
+  if (params.filter) dataParams.kind = params.filter
+
   pendingRequest = $.ajax({
     url: '/api/v2/search/',
     type: 'GET',
-    data: {
-      q: params.search,
-      kind: params.filter
-    }
+    data: dataParams
   })
     .done(function (response) {
       showResults(response.results)
@@ -96,7 +96,15 @@ var hideResults = function () {
   $('#autocompleteFilters').show()
 }
 
+var BlurEventListener = function (e) {
+  if (!$(e.target).parents('.autocomplete-wrapper-big').length) {
+    hideResults()
+    window.removeEventListener('click', BlurEventListener)
+  }
+}
+
 $(document).ready(function () {
+  var form = $('#autocompleteSearchForm')
   var modal = $('#modalSearchFullScreen')
   var input = $('#autocompleteSearchFullScreen')
   var tagButtons = $('.sfs-btn-tag')
@@ -129,22 +137,24 @@ $(document).ready(function () {
     hideResults()
   })
 
+  // Prevent form submit with ENTER key
+  form.on('submit', function (e) {
+    e.preventDefault()
+
+    if (params.search.length) {
+      window.location.href = '/search/?q=' + params.search + '&type=file'
+    }
+  })
+
   input.on('paste keyup', debounce(function () {
     params.search = $(this).val()
     fetchResultsFromApi()
   }, debounceInputTiming))
 
-  var testListener = function (e) {
-    if (!$(e.target).parents('.autocomplete-wrapper-big').length) {
-      hideResults()
-      window.removeEventListener('click', testListener)
-    }
-  }
-
   input.on('focus', function () {
     params.search = $(this).val()
     fetchResultsFromApi()
-    window.addEventListener('click', testListener)
+    window.addEventListener('click', BlurEventListener)
   })
 
   tagButtons.on('click', function () {
