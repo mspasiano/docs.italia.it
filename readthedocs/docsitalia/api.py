@@ -1,8 +1,11 @@
+"""Api for the docsitalia app."""
+
 from rest_framework import generics, serializers
 from rest_framework.exceptions import ValidationError
 
 from readthedocs.builds.constants import LATEST
 from readthedocs.builds.models import Version
+from readthedocs.search.documents import PageDocument
 from readthedocs.projects.models import Project
 from readthedocs.search.faceted_search import PageSearch
 
@@ -12,8 +15,11 @@ class SearchSerializer(serializers.Serializer):
     text = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
 
-    def get_kind(self, obj):
-        return "documento"
+    def get_kind(self, obj):  # pylint: disable=no-self-use
+        if isinstance(obj, PageDocument):
+            return "documento"
+        else:
+            return ""
 
     def get_link(self, obj):
         try:
@@ -21,7 +27,7 @@ class SearchSerializer(serializers.Serializer):
         except (AttributeError, KeyError, TypeError):
             return ""
 
-    def get_text(self, obj):
+    def get_text(self, obj):  # pylint: disable=no-self-use
         try:
             return obj.meta.highlight.title[0]
         except (AttributeError, IndexError):
@@ -29,6 +35,7 @@ class SearchSerializer(serializers.Serializer):
 
 
 class SearchAPIView(generics.ListAPIView):
+
     """Main entry point to perform a search using Elasticsearch."""
 
     serializer_class = SearchSerializer
