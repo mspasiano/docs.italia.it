@@ -10,16 +10,16 @@ from readthedocs.projects.models import Project
 from readthedocs.search.faceted_search import PageSearch
 
 
-class SearchSerializer(serializers.Serializer):
+class SearchSerializer(serializers.Serializer):  # pylint: disable=W0223
+
+    """Serializer with basic information for search endpoint."""
+
     link = serializers.SerializerMethodField()
     text = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
 
     def get_kind(self, obj):  # pylint: disable=no-self-use
-        if isinstance(obj, PageDocument):
-            return "documento"
-        else:
-            return ""
+        return "documento" if isinstance(obj, PageDocument) else ""
 
     def get_link(self, obj):
         try:
@@ -38,6 +38,7 @@ class SearchAPIView(generics.ListAPIView):
 
     """Main entry point to perform a search using Elasticsearch."""
 
+    pagination_class = None
     serializer_class = SearchSerializer
 
     def get_queryset(self):
@@ -54,7 +55,7 @@ class SearchAPIView(generics.ListAPIView):
         kwargs = {'filter_by_user': False, 'filters': {}}
         kwargs['filters']['version'] = self.request.query_params.get('version', LATEST)
         user = self.request.user
-        return PageSearch(query=query, user=user, **kwargs)
+        return PageSearch(query=query, user=user, **kwargs)[0:10]
 
     def validate_query_params(self):
         """
