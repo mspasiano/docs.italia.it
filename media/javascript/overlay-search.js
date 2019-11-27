@@ -27,7 +27,7 @@ var fetchResultsFromApi = function () {
     data: dataParams
   })
     .done(function (response) {
-      showResults(response.results)
+      showResults(response)
     })
     .fail(function (error) {
       if (error.statusText !== 'Canceled from user') {
