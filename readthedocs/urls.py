@@ -27,6 +27,7 @@ handler404 = server_error_404
 handler500 = server_error_500
 
 basic_urls = [
+    # url(r'^$', HomepageView.as_view(), name='homepage'),
     url(r'^support/', SupportView.as_view(), name='support'),
     url(r'^security/', TemplateView.as_view(template_name='security.html')),
     url(

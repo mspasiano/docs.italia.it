@@ -4,9 +4,10 @@ import itertools
 import logging
 from operator import attrgetter
 
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 
-from readthedocs.builds.constants import LATEST
+from readthedocs.builds.constants import LATEST, STABLE
 from readthedocs.projects.models import Project
 from readthedocs.search.faceted_search import (
     ALL_FACETS,
@@ -18,6 +19,15 @@ from readthedocs.search import utils
 
 log = logging.getLogger(__name__)
 LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
+
+PAGE_SIZE = 12
+RELEVANCE_KEY = 'relevance'
+ALL_SORTS = {
+    RELEVANCE_KEY: {'value': '_score', 'label': 'Rilevanza'},
+    'alphabetical': {'value': 'name', 'label': 'Ordine alfabetico'},
+    'newest': {'value': 'date', 'label': 'Più recente'},
+    'oldest': {'value': '-date', 'label': 'Meno recente'},
+}
 
 UserInput = collections.namedtuple(
     'UserInput',
@@ -32,8 +42,33 @@ UserInput = collections.namedtuple(
         'index',
         'publisher',
         'publisher_project',
+        'sort',
+        'tags',
+        'page',
     ),
 )
+
+
+class ESPaginator(Paginator):
+    def __init__(self, response, *args, **kwargs):
+        try:
+            object_list = list(response)
+        except TypeError:
+            object_list = list()
+            _count = 0
+        else:
+            _count = response.hits.total
+        finally:
+            super().__init__(object_list, *args, **kwargs)
+            self._count = _count
+
+    def page(self, number):
+        number = self.validate_number(number)
+        return self._get_page(self.object_list, number, self)
+
+    @property
+    def count(self):
+        return self._count
 
 
 def elastic_search(request, project_slug=None):
@@ -61,7 +96,10 @@ def elastic_search(request, project_slug=None):
         role_name=request.GET.get('role_name'),
         index=request.GET.get('index'),
         publisher=request.GET.get('publisher'),
-        publisher_project=request.GET.get('publisher_project'),
+        publisher_project=request.GET.getlist('publisher_project'),
+        sort=request.GET.get('sort'),
+        tags=request.GET.getlist('tags'),
+        page=request.GET.get('page'),
     )
     search_facets = collections.defaultdict(
         lambda: ProjectSearch,
@@ -73,9 +111,17 @@ def elastic_search(request, project_slug=None):
 
     results = None
     facets = {}
+    sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else RELEVANCE_KEY
+    try:
+        page_int = int(user_input.page)
+    except (TypeError, ValueError):
+        page_int = 1
+    page_start = (page_int - 1) * PAGE_SIZE
+    page_end = page_start + PAGE_SIZE
 
     if user_input.query:
         kwargs = {}
+        kwargs['sort'] = [ALL_SORTS[sort_key]['value']]
 
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)
@@ -85,7 +131,10 @@ def elastic_search(request, project_slug=None):
         search = search_facets[user_input.type](
             query=user_input.query, user=request.user, **kwargs
         )
-        results = search[:50].execute()
+        results = search[page_start:page_end].execute()
+        if not results:
+            page_int = 1
+            results = search[0:PAGE_SIZE].execute()
         facets = results.facets
 
         log.info(
@@ -104,6 +153,11 @@ def elastic_search(request, project_slug=None):
     for avail_facet in ALL_FACETS:
         value = getattr(user_input, avail_facet, None)
         if not value or avail_facet not in facets:
+            continue
+        if isinstance(value, list):
+            for v in value:
+                if v not in [val[0] for val in facets[avail_facet]]:
+                    facets[avail_facet].insert(0, (v, 0, True))
             continue
         if value not in [val[0] for val in facets[avail_facet]]:
             facets[avail_facet].insert(0, (value, 0, True))
@@ -132,12 +186,20 @@ def elastic_search(request, project_slug=None):
         log.debug('Search results: %s', results.to_dict())
         log.debug('Search facets: %s', results.facets.to_dict())
 
+    paginator = ESPaginator(results, PAGE_SIZE)
+    page = paginator.page(page_int)
+
     template_vars = user_input._asdict()
     template_vars.update({
         'results': results,
+        'page': page,
         'facets': facets,
         'results_dict': results.to_dict() if results else {},
         'facets_dict': facets.to_dict() if facets else {},
+        'sorts': {k: {
+            'label': v['label'], 'selected': k == sort_key
+        } for k, v in ALL_SORTS.items()},
+        'allowed_versions': (LATEST, STABLE),
     })
 
     if project_slug:

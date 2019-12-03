@@ -174,7 +174,9 @@ class DocsItaliaTest(TestCase):
         self.assertTrue(publisher.remote_organization)
         self.assertEqual(publisher.remote_organization.pk, org.pk)
 
-    def test_sync_organizations_works(self):
+    @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
+    @patch('readthedocs.search.documents.PageDocument.prepare_publisher')
+    def test_sync_organizations_works(self, prepare_publisher):
         orgs_json = [
             {'url': 'https://api.github.com/orgs/testorg'},
         ]
@@ -237,6 +239,7 @@ class DocsItaliaTest(TestCase):
 
         remote_repos = RemoteRepository.objects.all()
         self.assertEqual(remote_repos.count(), 1)
+        prepare_publisher.assert_not_called()
 
     def test_sync_organizations_when_repos_are_deleted(self):
         PROJECTS_METADATA_WITH_2_DOCS = """projects:

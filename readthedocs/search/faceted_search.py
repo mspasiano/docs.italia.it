@@ -19,8 +19,8 @@ from readthedocs.search.documents import (
 log = logging.getLogger(__name__)
 
 ALL_FACETS = [
-    'project', 'version', 'role_name', 'language', 'index', 'publisher',
-    'publisher_project',
+    'project', 'version', 'role_name', 'language', 'index',
+    'publisher', 'publisher_project', 'tags',
 ]
 
 
@@ -75,7 +75,7 @@ class RTDFacetedSearch(FacetedSearch):
 
         for operator in self.operators:
             query_string = SimpleQueryString(
-                query=query, fields=self.fields, default_operator=operator,
+                query=query, fields=self.fields, default_operator=operator
             )
             all_queries.append(query_string)
 
@@ -91,6 +91,7 @@ class ProjectSearchBase(RTDFacetedSearch):
         'language': TermsFacet(field='language'),
         'publisher': TermsFacet(field='publisher'),
         'publisher_project': TermsFacet(field='publisher_project'),
+        'tags': NestedFacet('tags', TermsFacet(field='tags.name')),
     }
     doc_types = [ProjectDocument]
     index = ProjectDocument._doc_type.index
@@ -108,6 +109,7 @@ class PageSearchBase(RTDFacetedSearch):
         ),
         'publisher': TermsFacet(field='publisher'),
         'publisher_project': TermsFacet(field='publisher_project'),
+        'tags': NestedFacet('tags', TermsFacet(field='tags.name')),
     }
     doc_types = [PageDocument]
     index = PageDocument._doc_type.index
