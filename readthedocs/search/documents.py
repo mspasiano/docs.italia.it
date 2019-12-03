@@ -122,7 +122,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
 
     # Metadata
     project = fields.KeywordField(attr='project.slug')
-    version = fields.KeywordField(attr='version.slug')
+    version = fields.KeywordField()
     path = fields.KeywordField(attr='processed_json.path')
     full_path = fields.KeywordField(attr='path')
 
@@ -232,10 +232,19 @@ class PageDocument(RTDDocTypeMixin, DocType):
     def prepare_publisher(self, instance):
         """Prepare docsitalia publisher field."""
         # not using more sophisticated Django methods in order to exploit prefetching
+        print('===== UPDATE ====', instance.version.slug)
         try:
             return instance.project.publisherproject_set.all()[0].publisher.name
         except IndexError:
             return
+
+    def prepare_version(self, instance):
+        """Prepare docsitalia publisher field."""
+        # not using more sophisticated Django methods in order to exploit prefetching
+        if instance.version.slug == instance.project.default_version:
+            return "default"
+        else:
+            return instance.version.slug
 
     @classmethod
     def faceted_search(
