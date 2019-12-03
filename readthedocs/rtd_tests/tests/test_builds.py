@@ -3,7 +3,6 @@ import datetime
 import os
 
 import mock
-
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 from django_dynamic_fixture import fixture, get

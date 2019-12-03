@@ -56,6 +56,7 @@ from readthedocs.projects.forms import (
     ProjectRelationshipForm,
     RedirectForm,
     TranslationForm,
+    UpdateProjectForm,
     UserForm,
     WebHookForm,
 )

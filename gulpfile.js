@@ -49,6 +49,7 @@ var sources = {
         'js/import.js': {},
         'css/import.less': {},
         'css/admin.less': {},
+        'css/main.less': {},
     },
     gold: {'js/gold.js': {}},
     donate: {'js/donate.js': {}}
@@ -250,7 +251,7 @@ gulp.task('dev', function (done) {
                 build_app_sources(application, false)
                     .pipe(es.wait(function (err, body) {
                         gulp_util.log('Collecting static files');
-                        run('./manage.py collectstatic --noinput').exec('');
+                        run('docker-compose run web python manage.py collectstatic --noinput').exec('');
                     }));
             });
         }))

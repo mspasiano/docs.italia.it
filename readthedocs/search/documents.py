@@ -50,6 +50,13 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
     publisher_project = fields.KeywordField()
     # publisher is currently used for faceting only, not for queries
     publisher = fields.KeywordField()
+    tags = fields.NestedField(
+        properties={
+            'id': fields.KeywordField(),
+            'name': fields.KeywordField(),
+            'slug': fields.KeywordField(),
+        }
+    )
 
     class Meta:
         model = Project
@@ -61,6 +68,7 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
     def get_queryset(self):
         """Fetch related instances."""
         return super().get_queryset().prefetch_related(
+            'tags',
             'publisherproject_set__publisher'
         )
 
@@ -96,7 +104,8 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
 
     @classmethod
     def faceted_search(
-            cls, query, user, language=None, publisher=None, publisher_project=None,
+            cls, query, user, language=None,
+            publisher=None, publisher_project=None, tags=None
     ):
         from readthedocs.search.faceted_search import ProjectSearch
         kwargs = {
@@ -111,6 +120,8 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
             filters['publisher'] = publisher
         if publisher_project:
             filters['publisher_project'] = publisher_project
+        if tags:
+            filters['tags'] = tags
 
         kwargs['filters'] = filters
 
@@ -128,6 +139,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
 
     # Searchable content
     title = fields.TextField(attr='processed_json.title', analyzer='italian')
+    name = fields.KeywordField(attr='processed_json.title')
+    date = fields.DateField(attr='modified_date')
     sections = fields.NestedField(
         attr='processed_json.sections',
         properties={
@@ -160,6 +173,14 @@ class PageDocument(RTDDocTypeMixin, DocType):
     # publisher is currently used for faceting only, not for queries
     publisher = fields.KeywordField()
     privacy_level = fields.KeywordField(attr='version.privacy_level')
+    tags = fields.NestedField(
+        attr='project.tags',
+        properties={
+            'id': fields.KeywordField(),
+            'name': fields.KeywordField(),
+            'slug': fields.KeywordField(),
+        }
+    )
 
     class Meta:
         model = HTMLFile
@@ -240,7 +261,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
     @classmethod
     def faceted_search(
             cls, query, user, projects_list=None, versions_list=None,
-            filter_by_user=True, publisher=None, publisher_project=None,
+            filter_by_user=True, publisher=None, publisher_project=None, tags=None,
     ):
         from readthedocs.search.faceted_search import PageSearch
         kwargs = {
@@ -258,6 +279,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
             filters['publisher'] = publisher
         if publisher_project:
             filters['publisher_project'] = publisher_project
+        if tags:
+            filters['tags'] = tags
 
         kwargs['filters'] = filters
 
@@ -272,6 +295,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
         queryset = queryset.internal().filter(
             project__documentation_type__contains='sphinx'
         ).prefetch_related(
+            'project__tags',
             'project__publisherproject_set__publisher'
         )
 
