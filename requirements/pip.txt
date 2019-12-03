@@ -1,101 +1,117 @@
 # Base packages
-pip==10.0.0
+pip==19.2.3
 appdirs==1.4.3
-virtualenv==15.2.0
-docutils==0.14
-Sphinx==1.7.4
+virtualenv==16.7.5
 
-# 0.3.0 breaks sidebar
-# https://github.com/rtfd/sphinx_rtd_theme/issues/610
-sphinx_rtd_theme==0.2.5b1
+django==1.11.24  # pyup: <1.12
+django-extensions==2.2.1
+django_polymorphic==2.1.2
 
-Pygments==2.2.0
+djangorestframework==3.10.3
 
-# latest compatible version with our code
-# https://github.com/rtfd/readthedocs.org/pull/2916#discussion_r172991757
-mkdocs==0.15.0
-Markdown==2.6.11
+# For intersphinx during builds
+# Use <2.x until we fix some issues in our theme.
+# Some things are not rendering properly and sidebar shows titles in gray.
+Sphinx==1.8.5  # pyup: <2.0.0
 
-django==1.9.13
-six==1.11.0
-future==0.16.0
-readthedocs-build<2.1
+# Filtering for the REST API
+django-filter==2.2.0
 
-# django-tastypie 0.13.x and 0.14.0 are not compatible with our code
-django-tastypie==0.13.0
+drf-flex-fields==0.6.1
+drf-extensions==0.5.0
 
-django-guardian==1.4.9
-django-extensions==2.0.6
-
-# djangorestframework 3.7.x drops support for django 1.9.x
-djangorestframework==3.6.4
-
-django-vanilla-views==1.0.5
+django-vanilla-views==1.0.6
 jsonfield==2.0.2
 
-requests==2.18.4
+requests==2.22.0
+requests-toolbelt==0.9.1
 slumber==0.7.1
-lxml==4.2.1
-defusedxml==0.5.0
+pyyaml==5.1.2
+Pygments==2.4.2
 
 # Basic tools
-redis==2.10.6
-celery==4.1.0
-kombu==4.1.0
+# Redis 3.x has an incompatible change and fails
+# https://stackoverflow.com/questions/53331405/django-compress-error-invalid-input-of-type-cachekey
+# https://github.com/sebleier/django-redis-cache/pull/162
+redis==2.10.6  # pyup: ignore
+# Kombu >4.3 requires redis>=3.2
+kombu==4.3.0  # pyup: ignore
+# Celery 4.2 is incompatible with our code
+# when ALWAYS_EAGER = True
+celery==4.1.1  # pyup: ignore
 
-# django-allauth 0.33.0 dropped support for Django 1.9
-# https://django-allauth.readthedocs.io/en/latest/release-notes.html#backwards-incompatible-changes
-django-allauth==0.32.0
+django-allauth==0.40.0
 
-dnspython==1.15.0
-
-# VCS
-httplib2==0.11.3
-GitPython==2.1.9
+GitPython==3.0.2
 
 # Search
-elasticsearch==5.5.2
+elasticsearch==6.4.0  # pyup: <7.0.0
+
+
+# elasticsearch-dsl==6.3.1 produces this error
+#   File "/home/travis/build/rtfd/readthedocs.org/.tox/py36/lib/python3.6/site-packages/django_elasticsearch_dsl/documents.py", line 8, in <module>
+#     from elasticsearch_dsl.document import DocTypeMeta as DSLDocTypeMeta
+# ImportError: cannot import name 'DocTypeMeta'
+#
+# Commit 97e3f75 adds the NestedFacet
+git+https://github.com/elastic/elasticsearch-dsl-py@97e3f756a8cacd1c863d3ced3d17abcafbb0f85e#egg=elasticsearch-dsl==6.1.1
+
+# django-elasticsearch-dsl==6.4.1 produces this error
+#   File "/home/travis/build/readthedocs/readthedocs.org/.tox/py36/lib/python3.6/site-packages/django_elasticsearch_dsl/__init__.py", line 3, in <module>
+#     from .documents import DocType  # noqa
+#   File "/home/travis/build/readthedocs/readthedocs.org/.tox/py36/lib/python3.6/site-packages/django_elasticsearch_dsl/documents.py", line 7, in <module>
+#     from elasticsearch_dsl import Document as DSLDocument
+# ImportError: cannot import name 'Document'
+django-elasticsearch-dsl==0.5.1  # pyup: ignore
 pyquery==1.4.0
+
+# lxml is used by pyquery
+# defusedxml is recommended when using lxml
+lxml==4.4.1
+defusedxml==0.6.0
 
 # Utils
 django-gravatar2==1.4.2
-pytz==2018.4
-beautifulsoup4==4.6.0
+pytz==2019.2
 Unipath==1.1
 django-kombu==0.9.4
-mimeparse==0.1.3
-mock==2.0.0
+mock==3.0.5
+stripe==2.35.1
 
-# stripe 1.20.2 is the latest compatible with our code base (otherwise
-# gold/tests/test_forms.py fails)
-stripe==1.20.2
+# unicode-slugify==0.1.5 is not released on PyPI yet
+git+https://github.com/mozilla/unicode-slugify@b696c37#egg=unicode-slugify==0.1.5
 
 django-formtools==2.1
+django-crispy-forms==1.7.2
 
-# docker is pinned to 3.1.3 because we found some strange behavior
-# related to timeouts on EXEC with 3.2.1 that's not present with 3.1.3
-# https://github.com/rtfd/readthedocs.org/issues/3999
-docker==3.1.3
+docker==4.0.2
 
 django-textclassifier==1.0
-django-annoying==0.10.4
+# django-textclassifier doesn't have pinned versions
+# if there is an update they could break our code
+nltk==3.4.5
+textblob==0.15.3
+
+django-annoying==0.10.5
 django-messages-extends==0.6.0
 djangorestframework-jsonp==1.0.2
-django-taggit==0.22.2
-dj-pagination==2.3.2
-
-# Docs
-sphinxcontrib-httpdomain==1.6.1
-
-# commonmark 0.5.5 is the latest version compatible with our docs, the
-# newer ones make `tox -e docs` to fail
-commonmark==0.5.5
-
-recommonmark==0.4.0
+django-taggit==1.1.0
+dj-pagination==2.4.0
 
 # Version comparison stuff
-packaging==17.1
+packaging==19.1
 
 # Commenting stuff
-django-cors-middleware==1.3.1
-nilsimsa==0.3.8
+django-cors-middleware==1.4.0
+
+# User agent parsing - used for analytics purposes
+user-agents==2.0
+
+# Utilities used to upload build media to cloud storage
+django-storages==1.7.1  # pyup: <1.8
+
+# Required only in development and linting
+django-debug-toolbar==2.0
+
+# Git dependencies
+git+https://github.com/italia/docs-italia-convertitore-web.git@master#egg=docs-italia-convertitore-web

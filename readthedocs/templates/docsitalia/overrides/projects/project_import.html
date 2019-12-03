@@ -58,8 +58,11 @@
     <div class="col-major project-import-remote">
 
       <button
-          data-bind="click: sync_projects, visible: !is_syncing()"
-          class="btn remote-sync">
+        data-bind="click: sync_projects, visible: !is_syncing()"
+        class="btn remote-sync">
+        <svg class="icon icon-sm align-top">
+          <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-exchange-circle"></use>
+        </svg>
         <span>{% trans "Refresh your accounts" %}</span>
       </button>
       <span
@@ -123,8 +126,11 @@
                         class="remote-repo-extra remote-repo-extra-url">
                     </span>
                     <span
-                        data-bind="visible: is_locked()"
-                        class="remote-repo-extra remote-repo-extra-locked">
+                      data-bind="visible: is_locked()"
+                      class="remote-repo-extra remote-repo-extra-locked">
+                      <svg class="icon icon-xs icon-secondary align-middle">
+                        <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-warning-circle"></use>
+                      </svg>
                       {% trans "This repository requires admin access to import" %}
                     </span>
                   </div>
@@ -134,6 +140,9 @@
                         data-bind="visible: is_locked()"
                         style="display: none;">
                       <span class="remote-repo-locked">
+                        <svg class="icon icon-sm align-top">
+                          <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-locked"></use>
+                        </svg>
                         <span>{% trans "Locked" %}</span>
                       </span>
                     </li>
@@ -141,17 +150,23 @@
                         data-bind="visible: match() && !is_locked(), with: match"
                         style="display: none;">
                       <a
-                          data-bind="attr: {href: url}"
-                          class="remote-repo-view"
-                          title="{% trans "This repository has already been imported" %}">
+                        data-bind="attr: {href: url}"
+                        class="remote-repo-view"
+                        title="{% trans "This repository has already been imported" %}">
+                        <svg class="icon icon-sm align-top">
+                          <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-external-link"></use>
+                        </svg>
                         <span>{% blocktrans context "verb, action to see in detail" %}"View"{% endblocktrans %}</span>
                       </a>
                     </li>
                     <li data-bind="visible: !match() && !is_locked()" style="display: none;">
                       <a
-                          href="#"
-                          data-bind="click: import_repo"
-                          class="remote-repo-import">
+                        href="#"
+                        data-bind="click: import_repo"
+                        class="remote-repo-import">
+                        <svg class="icon icon-sm icon-white align-top">
+                          <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-plus"></use>
+                        </svg>
                         <span>{% trans "Add" %}</span>
                       </a>
                     </li>

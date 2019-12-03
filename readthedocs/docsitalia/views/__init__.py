@@ -1,1 +1,1 @@
-"""Docs Italia Views"""
+"""Docs Italia Views."""

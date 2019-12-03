@@ -22,21 +22,19 @@
 {% block nav-browse %}class="active"{% endblock %}
 
 {% block content-header %}
-<h1 class="main-title py-2 neutral-1-color">
 {% if person %}
     {% if tag %}
-        {% blocktrans with person.username as username and tag.name as tag %}Projects by {{ username }} tagged with {{ tag }}{% endblocktrans %}
+        <h1>{% blocktrans with person.username as username and tag.name as tag %}Projects by {{ username }} tagged with {{ tag }}{% endblocktrans %}</h1>
     {% else %}
-        {% blocktrans with person.username as username %}Projects by {{ username }}{% endblocktrans %}
+        <h1>{% blocktrans with person.username as username %}Projects by {{ username }}{% endblocktrans %}</h1>
     {% endif %}
 {% else %}
     {% if tag %}
-        {% blocktrans with tag.name as tag %}Projects tagged with {{ tag }}{% endblocktrans %}
+        <h1>{% blocktrans with tag.name as tag %}Projects tagged with {{ tag }}{% endblocktrans %}</h1>
     {% else %}
-        {% trans "Projects" %}
+        <h1>{% trans "Projects" %}</h1>
     {% endif %}
 {% endif %}
-</h1>
 {% endblock %}
 
 {% block content %}
@@ -51,10 +49,10 @@
               </div>
 
               <div class="module-list">
-                <div class="module-list-wrapper projects-list">
+                <div class="module-list-wrapper">
 
                   <ul>
-                    {% include "core/project_list_detailed.html" with omit_all_users=True %}
+                    {% include "core/project_list_detailed.html" %}
                   </ul>
 
                 </div>

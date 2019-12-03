@@ -4,9 +4,9 @@ from __future__ import division, print_function, unicode_literals
 
 import os
 import sys
+from configparser import RawConfigParser
 
 import sphinx_rtd_theme
-from recommonmark.parser import CommonMarkParser
 
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.append(os.path.dirname(__file__))
@@ -19,35 +19,44 @@ import django
 django.setup()
 
 
+def get_version():
+    """Return package version from setup.cfg."""
+    config = RawConfigParser()
+    config.read(os.path.join('..', 'setup.cfg'))
+    return config.get('metadata', 'version')
+
+
 sys.path.append(os.path.abspath('_ext'))
 extensions = [
+    'sphinx.ext.autosectionlabel',
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinxcontrib.httpdomain',
     'djangodocs',
     'doc_extensions',
+    'sphinx_tabs.tabs',
+    'sphinx-prompt',
+    'recommonmark',
+    'notfound.extension',
+    'sphinx_search.extension',
 ]
 templates_path = ['_templates']
 
 source_suffix = ['.rst', '.md']
-source_parsers = {
-    '.md': CommonMarkParser,
-}
 
 master_doc = 'index'
 project = u'Read the Docs'
 copyright = '2010-{}, Read the Docs, Inc & contributors'.format(
     timezone.now().year
 )
-version = '1.0'
-release = '1.0'
+version = get_version()
+release = version
 exclude_patterns = ['_build']
 default_role = 'obj'
-pygments_style = 'sphinx'
 intersphinx_mapping = {
-    'python': ('http://python.readthedocs.io/en/latest/', None),
-    'django': ('http://django.readthedocs.io/en/1.8.x/', None),
-    'sphinx': ('http://sphinx.readthedocs.io/en/latest/', None),
+    'python': ('https://docs.python.org/3.6/', None),
+    'django': ('https://docs.djangoproject.com/en/1.11/', 'https://docs.djangoproject.com/en/1.11/_objects/'),
+    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
 }
 htmlhelp_basename = 'ReadTheDocsdoc'
 latex_documents = [
@@ -79,6 +88,22 @@ html_theme_options = {
     'display_version': False,
 }
 
+# Activate autosectionlabel plugin
+autosectionlabel_prefix_document = True
+
+# sphinx-notfound-page
+# https://github.com/readthedocs/sphinx-notfound-page
+notfound_context = {
+    'title': 'Page Not Found',
+    'body': '''
+<h1>Page Not Found</h1>
+
+<p>Sorry, we couldn't find that page.</p>
+
+<p>Try using the search box or go to the homepage.</p>
+''',
+}
+
 
 def setup(app):
-    app.add_stylesheet('custom.css')
+    app.add_stylesheet('css/sphinx_prompt_css.css')

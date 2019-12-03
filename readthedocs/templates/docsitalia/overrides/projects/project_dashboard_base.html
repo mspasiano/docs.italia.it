@@ -57,17 +57,17 @@
           <ul>
             {% for project in project_list %}
             <li class="module-item col-span">
-              <a href="{% url "projects_manage" project.slug %}">
+              <a class="d-flex flex-column flex-md-row justify-content-between" href="{% url "projects_manage" project.slug %}">
               {% block project-name %}
               {{ project.name }}
               {% endblock %}
               {% with builds=project.builds.count %}
               {% if builds == 0 %}
-              <span class="right quiet">
+              <span class="quiet d-flex align-items-center justify-content-end ml-4 mt-3 mt-sm-0 project-builds">
                             {% trans "No builds yet" %}
                           </span>
               {% else %}
-              <span class="right quiet">
+              <span class="quiet d-flex align-items-center justify-content-end ml-4 mt-3 mt-sm-0 project-builds">
                             <span class="build-count">
                               {% blocktrans count counter=builds %}
                                 1 build

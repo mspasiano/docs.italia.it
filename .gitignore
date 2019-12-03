@@ -1,4 +1,5 @@
 *.db
+*.rdb
 *.egg-info
 *.log
 *.pyc
@@ -6,12 +7,12 @@
 .DS_Store
 .cache
 .coverage
+.coverage.*
 .idea
 .vagrant
 .vscode
 .tox
 .env
-.sass-cache
 .rope_project/
 .ropeproject/
 _build
@@ -22,17 +23,19 @@ celerybeat-schedule.*
 deploy/.vagrant
 dist/*
 local_settings.py
-test_local_settings.py
-locks/*
+locks/**
 logs/*
 media/dash
 media/epub
 media/export
+media/external
+media/html
 media/htmlzip
 media/json
 media/man
 media/pdf
 media/static
+/static
 node_modules
 package-lock.json
 readthedocs/rtd_tests/builds
@@ -51,6 +54,7 @@ tags
 .python-version
 *.pyo
 .pytest_cache/
+scripts/travis/elasticsearch*
 
 # Environments
 .env
@@ -61,5 +65,9 @@ ENV/
 env.bak/
 venv.bak/
 
-readthedocs/settings/managed.py
-readthedocs/settings/admin.py
+dev.db-journal
+
+
+.secrets
+*.bz2
+*.sql

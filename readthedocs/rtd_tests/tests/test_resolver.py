@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-from __future__ import (
-    absolute_import, division, print_function, unicode_literals)
-
 import django_dynamic_fixture as fixture
 import mock
 from django.test import TestCase, override_settings
 
 from readthedocs.core.resolver import (
-    Resolver, resolve, resolve_domain, resolve_path
+    Resolver,
+    resolve,
+    resolve_domain,
+    resolve_path,
 )
 from readthedocs.projects.constants import PRIVATE
 from readthedocs.projects.models import Domain, Project, ProjectRelationship
@@ -65,41 +64,51 @@ class SmartResolverPathTests(ResolverBase):
     def test_resolver_filename_index(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.pip, filename='foo/bar/index.html')
-            self.assertEqual(url, '/docs/pip/en/latest/foo/bar/')
+            self.assertEqual(url, '/docs/pip/en/latest/foo/bar/index.html')
             url = resolve_path(
-                project=self.pip, filename='foo/index/index.html')
-            self.assertEqual(url, '/docs/pip/en/latest/foo/index/')
+                project=self.pip, filename='foo/index/index.html',
+            )
+            self.assertEqual(url, '/docs/pip/en/latest/foo/index/index.html')
 
     def test_resolver_filename_false_index(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.pip, filename='foo/foo_index.html')
             self.assertEqual(url, '/docs/pip/en/latest/foo/foo_index.html')
             url = resolve_path(
-                project=self.pip, filename='foo_index/foo_index.html')
+                project=self.pip, filename='foo_index/foo_index.html',
+            )
             self.assertEqual(
-                url, '/docs/pip/en/latest/foo_index/foo_index.html')
+                url, '/docs/pip/en/latest/foo_index/foo_index.html',
+            )
 
     def test_resolver_filename_sphinx(self):
         self.pip.documentation_type = 'sphinx'
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.pip, filename='foo/bar')
-            self.assertEqual(url, '/docs/pip/en/latest/foo/bar.html')
+            self.assertEqual(url, '/docs/pip/en/latest/foo/bar')
+
             url = resolve_path(project=self.pip, filename='foo/index')
-            self.assertEqual(url, '/docs/pip/en/latest/foo/')
+            self.assertEqual(url, '/docs/pip/en/latest/foo/index')
+
+    def test_resolver_filename_mkdocs(self):
         self.pip.documentation_type = 'mkdocs'
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.pip, filename='foo/bar')
-            self.assertEqual(url, '/docs/pip/en/latest/foo/bar/')
-            url = resolve_path(project=self.pip, filename='foo/index')
-            self.assertEqual(url, '/docs/pip/en/latest/foo/')
+            self.assertEqual(url, '/docs/pip/en/latest/foo/bar')
+
+            url = resolve_path(project=self.pip, filename='foo/index.html')
+            self.assertEqual(url, '/docs/pip/en/latest/foo/index.html')
+
+            url = resolve_path(project=self.pip, filename='foo/bar.html')
+            self.assertEqual(url, '/docs/pip/en/latest/foo/bar.html')
 
     def test_resolver_subdomain(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.pip, filename='index.html')
-            self.assertEqual(url, '/docs/pip/en/latest/')
+            self.assertEqual(url, '/docs/pip/en/latest/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(project=self.pip, filename='index.html')
-            self.assertEqual(url, '/en/latest/')
+            self.assertEqual(url, '/en/latest/index.html')
 
     def test_resolver_domain_object(self):
         self.domain = fixture.get(
@@ -110,10 +119,10 @@ class SmartResolverPathTests(ResolverBase):
         )
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.pip, filename='index.html')
-            self.assertEqual(url, '/en/latest/')
+            self.assertEqual(url, '/en/latest/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(project=self.pip, filename='index.html')
-            self.assertEqual(url, '/en/latest/')
+            self.assertEqual(url, '/en/latest/index.html')
 
     def test_resolver_domain_object_not_canonical(self):
         self.domain = fixture.get(
@@ -132,37 +141,37 @@ class SmartResolverPathTests(ResolverBase):
     def test_resolver_subproject_subdomain(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.subproject, filename='index.html')
-            self.assertEqual(url, '/docs/pip/projects/sub/ja/latest/')
+            self.assertEqual(url, '/docs/pip/projects/sub/ja/latest/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(project=self.subproject, filename='index.html')
-            self.assertEqual(url, '/projects/sub/ja/latest/')
+            self.assertEqual(url, '/projects/sub/ja/latest/index.html')
 
     def test_resolver_subproject_single_version(self):
         self.subproject.single_version = True
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.subproject, filename='index.html')
-            self.assertEqual(url, '/docs/pip/projects/sub/')
+            self.assertEqual(url, '/docs/pip/projects/sub/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(project=self.subproject, filename='index.html')
-            self.assertEqual(url, '/projects/sub/')
+            self.assertEqual(url, '/projects/sub/index.html')
 
     def test_resolver_subproject_both_single_version(self):
         self.pip.single_version = True
         self.subproject.single_version = True
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.subproject, filename='index.html')
-            self.assertEqual(url, '/docs/pip/projects/sub/')
+            self.assertEqual(url, '/docs/pip/projects/sub/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(project=self.subproject, filename='index.html')
-            self.assertEqual(url, '/projects/sub/')
+            self.assertEqual(url, '/projects/sub/index.html')
 
     def test_resolver_translation(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(project=self.translation, filename='index.html')
-            self.assertEqual(url, '/docs/pip/ja/latest/')
+            self.assertEqual(url, '/docs/pip/ja/latest/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(project=self.translation, filename='index.html')
-            self.assertEqual(url, '/ja/latest/')
+            self.assertEqual(url, '/ja/latest/index.html')
 
 
 class ResolverPathOverrideTests(ResolverBase):
@@ -173,89 +182,105 @@ class ResolverPathOverrideTests(ResolverBase):
         self.pip.single_version = False
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(
-                project=self.pip, filename='index.html', single_version=True)
-            self.assertEqual(url, '/docs/pip/')
+                project=self.pip, filename='index.html', single_version=True,
+            )
+            self.assertEqual(url, '/docs/pip/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(
-                project=self.pip, filename='index.html', single_version=True)
-            self.assertEqual(url, '/')
+                project=self.pip, filename='index.html', single_version=True,
+            )
+            self.assertEqual(url, '/index.html')
 
     def test_resolver_force_domain(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(
-                project=self.pip, filename='index.html', cname=True)
-            self.assertEqual(url, '/en/latest/')
+                project=self.pip, filename='index.html', cname=True,
+            )
+            self.assertEqual(url, '/en/latest/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(
-                project=self.pip, filename='index.html', cname=True)
-            self.assertEqual(url, '/en/latest/')
+                project=self.pip, filename='index.html', cname=True,
+            )
+            self.assertEqual(url, '/en/latest/index.html')
 
     def test_resolver_force_domain_single_version(self):
         self.pip.single_version = False
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(
                 project=self.pip, filename='index.html', single_version=True,
-                cname=True)
-            self.assertEqual(url, '/')
+                cname=True,
+            )
+            self.assertEqual(url, '/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(
                 project=self.pip, filename='index.html', single_version=True,
-                cname=True)
-            self.assertEqual(url, '/')
+                cname=True,
+            )
+            self.assertEqual(url, '/index.html')
 
     def test_resolver_force_language(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(
-                project=self.pip, filename='index.html', language='cz')
-            self.assertEqual(url, '/docs/pip/cz/latest/')
+                project=self.pip, filename='index.html', language='cz',
+            )
+            self.assertEqual(url, '/docs/pip/cz/latest/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(
-                project=self.pip, filename='index.html', language='cz')
-            self.assertEqual(url, '/cz/latest/')
+                project=self.pip, filename='index.html', language='cz',
+            )
+            self.assertEqual(url, '/cz/latest/index.html')
 
     def test_resolver_force_version(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(
-                project=self.pip, filename='index.html', version_slug='foo')
-            self.assertEqual(url, '/docs/pip/en/foo/')
+                project=self.pip, filename='index.html', version_slug='foo',
+            )
+            self.assertEqual(url, '/docs/pip/en/foo/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(
-                project=self.pip, filename='index.html', version_slug='foo')
-            self.assertEqual(url, '/en/foo/')
+                project=self.pip, filename='index.html', version_slug='foo',
+            )
+            self.assertEqual(url, '/en/foo/index.html')
 
     def test_resolver_force_language_version(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(
                 project=self.pip, filename='index.html', language='cz',
-                version_slug='foo')
-            self.assertEqual(url, '/docs/pip/cz/foo/')
+                version_slug='foo',
+            )
+            self.assertEqual(url, '/docs/pip/cz/foo/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(
                 project=self.pip, filename='index.html', language='cz',
-                version_slug='foo')
-            self.assertEqual(url, '/cz/foo/')
+                version_slug='foo',
+            )
+            self.assertEqual(url, '/cz/foo/index.html')
 
     def test_resolver_no_force_translation(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(
-                project=self.translation, filename='index.html', language='cz')
-            self.assertEqual(url, '/docs/pip/ja/latest/')
+                project=self.translation, filename='index.html', language='cz',
+            )
+            self.assertEqual(url, '/docs/pip/ja/latest/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(
-                project=self.translation, filename='index.html', language='cz')
-            self.assertEqual(url, '/ja/latest/')
+                project=self.translation, filename='index.html', language='cz',
+            )
+            self.assertEqual(url, '/ja/latest/index.html')
 
     def test_resolver_no_force_translation_with_version(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_path(
                 project=self.translation, filename='index.html', language='cz',
-                version_slug='foo')
-            self.assertEqual(url, '/docs/pip/ja/foo/')
+                version_slug='foo',
+            )
+            self.assertEqual(url, '/docs/pip/ja/foo/index.html')
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve_path(
                 project=self.translation, filename='index.html', language='cz',
-                version_slug='foo')
-            self.assertEqual(url, '/ja/foo/')
+                version_slug='foo',
+            )
+            self.assertEqual(url, '/ja/foo/index.html')
 
 
 class ResolverCanonicalProject(TestCase):
@@ -274,7 +299,7 @@ class ResolverCanonicalProject(TestCase):
         proj1.save()
         self.assertEqual(
             proj1.main_language_project.main_language_project,
-            proj1
+            proj1,
         )
 
         # This tests that we aren't going to re-recurse back to resolving proj1
@@ -428,7 +453,8 @@ class ResolverDomainTests(ResolverBase):
 
     @override_settings(
         PRODUCTION_DOMAIN='readthedocs.org',
-        PUBLIC_DOMAIN='public.readthedocs.org')
+        PUBLIC_DOMAIN='public.readthedocs.org',
+    )
     def test_domain_public(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve_domain(project=self.translation)
@@ -472,15 +498,33 @@ class ResolverTests(ResolverBase):
             self.assertEqual(url, 'http://docs.foobar.com/en/latest/')
 
     @override_settings(PRODUCTION_DOMAIN='readthedocs.org')
+    def test_resolver_domain_https(self):
+        self.domain = fixture.get(
+            Domain,
+            domain='docs.foobar.com',
+            project=self.pip,
+            https=True,
+            canonical=True,
+        )
+        with override_settings(USE_SUBDOMAIN=False):
+            url = resolve(project=self.pip)
+            self.assertEqual(url, 'https://docs.foobar.com/en/latest/')
+        with override_settings(USE_SUBDOMAIN=True):
+            url = resolve(project=self.pip)
+            self.assertEqual(url, 'https://docs.foobar.com/en/latest/')
+
+    @override_settings(PRODUCTION_DOMAIN='readthedocs.org')
     def test_resolver_subproject(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve(project=self.subproject)
             self.assertEqual(
-                url, 'http://readthedocs.org/docs/pip/projects/sub/ja/latest/')
+                url, 'http://readthedocs.org/docs/pip/projects/sub/ja/latest/',
+            )
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve(project=self.subproject)
             self.assertEqual(
-                url, 'http://pip.readthedocs.org/projects/sub/ja/latest/')
+                url, 'http://pip.readthedocs.org/projects/sub/ja/latest/',
+            )
 
     @override_settings(PRODUCTION_DOMAIN='readthedocs.org')
     def test_resolver_translation(self):
@@ -560,7 +604,8 @@ class ResolverTests(ResolverBase):
 
     @override_settings(
         PRODUCTION_DOMAIN='readthedocs.org',
-        PUBLIC_DOMAIN='public.readthedocs.org')
+        PUBLIC_DOMAIN='public.readthedocs.org',
+    )
     def test_resolver_public_domain_overrides(self):
         with override_settings(USE_SUBDOMAIN=False):
             url = resolve(project=self.pip, private=True)
@@ -570,10 +615,12 @@ class ResolverTests(ResolverBase):
         with override_settings(USE_SUBDOMAIN=True):
             url = resolve(project=self.pip, private=True)
             self.assertEqual(
-                url, 'http://pip.public.readthedocs.org/en/latest/')
+                url, 'http://pip.public.readthedocs.org/en/latest/',
+            )
             url = resolve(project=self.pip, private=False)
             self.assertEqual(
-                url, 'http://pip.public.readthedocs.org/en/latest/')
+                url, 'http://pip.public.readthedocs.org/en/latest/',
+            )
 
         # Domain overrides PUBLIC_DOMAIN
         self.domain = fixture.get(
@@ -611,7 +658,7 @@ class ResolverTests(ResolverBase):
             self.assertEqual(url, 'http://pip.readthedocs.io/en/latest/')
 
 
-class ResolverAltSetUp(object):
+class ResolverAltSetUp:
 
     def setUp(self):
         with mock.patch('readthedocs.projects.models.broadcast'):
@@ -704,20 +751,24 @@ class TestSubprojectsWithTranslations(TestCase):
         self.assertEqual(
             url, 'http://{project.slug}.readthedocs.io/en/latest/'.format(
                 project=self.superproject_en,
-            ))
+            ),
+        )
 
         url = resolve(self.superproject_es, filename='')
         self.assertEqual(
             url, 'http://{project.slug}.readthedocs.io/es/latest/'.format(
                 project=self.superproject_en,
-            ))
+            ),
+        )
 
         url = resolve(self.subproject_en, filename='')
         # yapf: disable
         self.assertEqual(
             url,
-            ('http://{project.slug}.readthedocs.io/projects/'
-             '{subproject.slug}/en/latest/').format(
+            (
+                'http://{project.slug}.readthedocs.io/projects/'
+                '{subproject.slug}/en/latest/'
+            ).format(
                  project=self.superproject_en,
                  subproject=self.subproject_en,
             ),
@@ -726,8 +777,10 @@ class TestSubprojectsWithTranslations(TestCase):
         url = resolve(self.subproject_es, filename='')
         self.assertEqual(
             url,
-            ('http://{project.slug}.readthedocs.io/projects/'
-             '{subproject.slug}/es/latest/').format(
+            (
+                'http://{project.slug}.readthedocs.io/projects/'
+                '{subproject.slug}/es/latest/'
+            ).format(
                  project=self.superproject_en,
                  subproject=self.subproject_en,
             ),
@@ -740,7 +793,7 @@ class TestSubprojectsWithTranslations(TestCase):
             domain='docs.example.com',
             canonical=True,
             cname=True,
-            https=True,
+            https=False,
             project=self.superproject_en,
         )
 
@@ -754,8 +807,10 @@ class TestSubprojectsWithTranslations(TestCase):
         url = resolve(self.subproject_en, filename='')
         self.assertEqual(
             url,
-            ('http://docs.example.com/projects/'
-             '{subproject.slug}/en/latest/').format(
+            (
+                'http://docs.example.com/projects/'
+                '{subproject.slug}/en/latest/'
+            ).format(
                  subproject=self.subproject_en,
             ),
         )
@@ -763,8 +818,10 @@ class TestSubprojectsWithTranslations(TestCase):
         url = resolve(self.subproject_es, filename='')
         self.assertEqual(
             url,
-            ('http://docs.example.com/projects/'
-             '{subproject.slug}/es/latest/').format(
+            (
+                'http://docs.example.com/projects/'
+                '{subproject.slug}/es/latest/'
+            ).format(
                  subproject=self.subproject_en,
             ),
         )

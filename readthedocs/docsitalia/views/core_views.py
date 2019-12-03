@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """Public project views."""
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import logging
 
 from django.http import HttpResponseRedirect, Http404
@@ -11,11 +8,11 @@ from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, ListView, View
 
-from readthedocs.core.utils import trigger_build
 from readthedocs.oauth.models import RemoteRepository
 from readthedocs.projects.forms import ProjectBasicsForm, ProjectExtraForm
 from readthedocs.projects.models import Project
 from readthedocs.projects.signals import project_import
+from readthedocs.projects.views.mixins import ProjectImportMixin
 from readthedocs.projects.views.private import ImportView
 
 from ..github import get_metadata_for_document
@@ -28,14 +25,14 @@ log = logging.getLogger(__name__)  # noqa
 
 class DocsItaliaHomePage(ListView):  # pylint: disable=too-many-ancestors
 
-    """Docs italia Home Page"""
+    """Docs italia Home Page."""
 
     model = Project
     template_name = 'docsitalia/docsitalia_homepage.html'
 
     def get_queryset(self):
         """
-        Filter projects to show in homepage
+        Filter projects to show in homepage.
 
         We show in homepage projects that matches the following requirements:
         - Publisher is active
@@ -63,7 +60,7 @@ class PublisherList(ListView):  # pylint: disable=too-many-ancestors
 
     def get_queryset(self):
         """
-        Filter publisher to be listed
+        Filter publisher to be listed.
 
         We show publishers that matches the following requirements:
         - are active
@@ -92,7 +89,7 @@ class PublisherIndex(DetailView):  # pylint: disable=too-many-ancestors
     model = Publisher
 
     def get_queryset(self):
-        """Filter for active Publisher"""
+        """Filter for active Publisher."""
         return Publisher.objects.filter(active=True)
 
 
@@ -103,7 +100,7 @@ class PublisherProjectIndex(DetailView):  # pylint: disable=too-many-ancestors
     model = PublisherProject
 
     def get_queryset(self):
-        """Filter for active PublisherProject"""
+        """Filter for active PublisherProject."""
         return PublisherProject.objects.filter(
             active=True,
             publisher__active=True
@@ -112,29 +109,33 @@ class PublisherProjectIndex(DetailView):  # pylint: disable=too-many-ancestors
 
 class DocumentRedirect(View):
 
-    """Redirect unversioned / unlanguaged urls to the canonical document URL"""
+    """Redirect unversioned / unlanguaged urls to the canonical document URL."""
 
     def get_queryset(self):
-        """Filter projects based on user permissions"""
+        """Filter projects based on user permissions."""
         return Project.objects.protected(self.request.user)
 
     def get(self, request, *args, **kwargs):  # noqa
-        """Redirect to the canonical URL of the document"""
+        """Redirect to the canonical URL of the document."""
         try:
             document = self.get_queryset().get(slug=self.kwargs['slug'])
-            return HttpResponseRedirect(document.get_docs_url(lang_slug=self.kwargs.get('lang')))
+            return HttpResponseRedirect(
+                '{}index.html'.format(document.get_docs_url(
+                    lang_slug=self.kwargs.get('lang'), version_slug=self.kwargs.get('version')
+                ))
+            )
         except Project.DoesNotExist:
             raise Http404()
 
 
-class DocsItaliaImport(ImportView):  # pylint: disable=too-many-ancestors
+class DocsItaliaImport(ProjectImportMixin, ImportView):  # pylint: disable=too-many-ancestors
 
-    """Simplified ImportView for Docs Italia"""
+    """Simplified ImportView for Docs Italia."""
 
     def post(self, request, *args, **kwargs):  # noqa
 
         """
-        Handler for Project import
+        Handler for Project import.
 
         We import the Project only after validating the mandatory metadata.
         We then connect a Project to its PublisherProject.
@@ -175,7 +176,7 @@ class DocsItaliaImport(ImportView):  # pylint: disable=too-many-ancestors
         try:
             remote = RemoteRepository.objects.get(project=project)
         except RemoteRepository.DoesNotExist:
-            log.error('Missing RemoteRepository for project {}'.format(project))
+            log.error('Missing RemoteRepository for project %s', project)
         else:
             pub_projects = PublisherProject.objects.filter(
                 metadata__documents__contains=[{'repo_url': remote.html_url}]
@@ -183,11 +184,11 @@ class DocsItaliaImport(ImportView):  # pylint: disable=too-many-ancestors
             for pub_proj in pub_projects:
                 pub_proj.projects.add(project)
             if not pub_projects:
-                log.error('No PublisherProject found for repo {}'.format(remote.html_url))
+                log.error('No PublisherProject found for repo %s', remote.html_url)
 
         # and finally update the Project model with the metadata
         update_project_from_metadata(project, metadata)
 
         project_import.send(sender=project, request=self.request)
-        trigger_build(project, basic=True)
+        self.trigger_initial_build(project, request.user)
         return redirect('projects_detail', project_slug=project.slug)

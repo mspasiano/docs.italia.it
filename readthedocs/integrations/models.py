@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
-"""Integration models for external services."""
 
-from __future__ import (
-    absolute_import, division, print_function, unicode_literals)
+"""Integration models for external services."""
 
 import json
 import re
 import uuid
-from builtins import object, str
 
 from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation)
+    GenericForeignKey,
+    GenericRelation,
+)
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
-from past.utils import old_div
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
@@ -26,7 +23,7 @@ from rest_framework import status
 from readthedocs.core.fields import default_token
 from readthedocs.projects.models import Project
 
-from .utils import normalize_request_payload
+from .utils import get_secret, normalize_request_payload
 
 
 class HttpExchangeManager(models.Manager):
@@ -67,11 +64,11 @@ class HttpExchangeManager(models.Manager):
         # headers. HTTP headers are prefixed with `HTTP_`, which we remove,
         # and because the keys are all uppercase, we'll normalize them to
         # title case-y hyphen separated values.
-        request_headers = dict(
-            (key[5:].title().replace('_', '-'), str(val))
+        request_headers = {
+            key[5:].title().replace('_', '-'): str(val)
             for (key, val) in list(req.META.items())
-            if key.startswith('HTTP_'),
-        )  # yapf: disable
+            if key.startswith('HTTP_')
+        }  # yapf: disable
 
         request_headers['Content-Type'] = req.content_type
         # Remove unwanted headers
@@ -114,7 +111,6 @@ class HttpExchangeManager(models.Manager):
             exchange.delete()
 
 
-@python_2_unicode_compatible
 class HttpExchange(models.Model):
 
     """HTTP request/response exchange."""
@@ -140,7 +136,7 @@ class HttpExchange(models.Model):
 
     objects = HttpExchangeManager()
 
-    class Meta(object):
+    class Meta:
         ordering = ['-date']
 
     def __str__(self):
@@ -149,7 +145,7 @@ class HttpExchange(models.Model):
     @property
     def failed(self):
         # Assume anything that isn't 2xx level status code is an error
-        return int(old_div(self.status_code, 100)) != 2
+        return not (200 <= self.status_code < 300)
 
     def formatted_json(self, field):
         """Try to return pretty printed and Pygment highlighted code."""
@@ -185,11 +181,11 @@ class IntegrationQuerySet(models.QuerySet):
 
     def _get_subclass(self, integration_type):
         # Build a mapping of integration_type -> class dynamically
-        class_map = dict(
-            (cls.integration_type_id, cls)
+        class_map = {
+            cls.integration_type_id: cls
             for cls in self.model.__subclasses__()
-            if hasattr(cls, 'integration_type_id'),
-        )  # yapf: disable
+            if hasattr(cls, 'integration_type_id')
+        }  # yapf: disable
         return class_map.get(integration_type)
 
     def _get_subclass_replacement(self, original):
@@ -209,7 +205,7 @@ class IntegrationQuerySet(models.QuerySet):
         return new
 
     def get(self, *args, **kwargs):
-        original = super(IntegrationQuerySet, self).get(*args, **kwargs)
+        original = super().get(*args, **kwargs)
         return self._get_subclass_replacement(original)
 
     def subclass(self, instance):
@@ -232,7 +228,6 @@ class IntegrationQuerySet(models.QuerySet):
         return obj
 
 
-@python_2_unicode_compatible
 class Integration(models.Model):
 
     """Inbound webhook integration for projects."""
@@ -262,16 +257,32 @@ class Integration(models.Model):
         'HttpExchange',
         related_query_name='integrations',
     )
+    secret = models.CharField(
+        help_text=_('Secret used to validate the payload of the webhook'),
+        max_length=255,
+        blank=True,
+        null=True,
+        default=get_secret,
+    )
 
     objects = IntegrationQuerySet.as_manager()
 
     # Integration attributes
     has_sync = False
 
+    def recreate_secret(self):
+        self.secret = get_secret()
+        self.save(update_fields=['secret'])
+
+    def remove_secret(self):
+        self.secret = None
+        self.save(update_fields=['secret'])
+
     def __str__(self):
         return (
             _('{0} for {1}')
-            .format(self.get_integration_type_display(), self.project.name))
+            .format(self.get_integration_type_display(), self.project.name)
+        )
 
 
 class GitHubWebhook(Integration):
@@ -279,7 +290,7 @@ class GitHubWebhook(Integration):
     integration_type_id = Integration.GITHUB_WEBHOOK
     has_sync = True
 
-    class Meta(object):
+    class Meta:
         proxy = True
 
     @property
@@ -295,7 +306,7 @@ class BitbucketWebhook(Integration):
     integration_type_id = Integration.BITBUCKET_WEBHOOK
     has_sync = True
 
-    class Meta(object):
+    class Meta:
         proxy = True
 
     @property
@@ -311,7 +322,7 @@ class GitLabWebhook(Integration):
     integration_type_id = Integration.GITLAB_WEBHOOK
     has_sync = True
 
-    class Meta(object):
+    class Meta:
         proxy = True
 
     @property
@@ -327,7 +338,7 @@ class GenericAPIWebhook(Integration):
     integration_type_id = Integration.API_WEBHOOK
     has_sync = False
 
-    class Meta(object):
+    class Meta:
         proxy = True
 
     def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
@@ -340,7 +351,7 @@ class GenericAPIWebhook(Integration):
             if token is None:
                 token = default_token()
                 self.provider_data = {'token': token}
-        super(GenericAPIWebhook, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @property
     def token(self):

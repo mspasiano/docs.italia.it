@@ -1,13 +1,12 @@
-"""Project model QuerySet classes"""
-
-from __future__ import absolute_import
+"""Project model QuerySet classes."""
 
 from django.db import models
-from django.db.models import Q
-from guardian.shortcuts import get_objects_for_user
+from django.db.models import OuterRef, Prefetch, Q, Subquery
+
+from readthedocs.builds.constants import EXTERNAL
+from readthedocs.core.utils.extend import SettingsOverrideObject
 
 from . import constants
-from readthedocs.core.utils.extend import SettingsOverrideObject
 
 
 class ProjectQuerySetBase(models.QuerySet):
@@ -18,56 +17,109 @@ class ProjectQuerySetBase(models.QuerySet):
 
     def _add_user_repos(self, queryset, user):
         if user.has_perm('projects.view_project'):
-            return self.all().distinct()
-        if user.is_authenticated():
-            user_queryset = get_objects_for_user(user, 'projects.view_project')
+            return self.all()
+        if user.is_authenticated:
+            user_queryset = user.projects.all()
             queryset = user_queryset | queryset
-        return queryset.distinct()
+        return queryset
 
     def for_user_and_viewer(self, user, viewer):
         """Show projects that a user owns, that another user can see."""
         queryset = self.filter(privacy_level=constants.PUBLIC)
         queryset = self._add_user_repos(queryset, viewer)
         queryset = queryset.filter(users__in=[user])
-        return queryset
+        return queryset.distinct()
 
-    def for_admin_user(self, user=None):
-        """Projects owned by the user, i.e. where the user is admin"""
-        if user.is_authenticated():
+    def for_admin_user(self, user):
+        """Projects owned by the user, i.e. where the user is admin."""
+        if user.is_authenticated:
             return self.filter(users__in=[user])
         return self.none()
 
     def user_can_admin(self, user):
-        """Like for_admin_user but allows all projects access to superusers"""
+        """Like for_admin_user but allows all projects access to superusers."""
         if user.is_superuser:
             return self.all()
+
         return self.for_admin_user(user)
 
     def public(self, user=None):
         queryset = self.filter(privacy_level=constants.PUBLIC)
         if user:
-            return self._add_user_repos(queryset, user)
-        return queryset
+            queryset = self._add_user_repos(queryset, user)
+        return queryset.distinct()
 
     def protected(self, user=None):
-        queryset = self.filter(privacy_level__in=[constants.PUBLIC, constants.PROTECTED])
+        queryset = self.filter(
+            privacy_level__in=[constants.PUBLIC, constants.PROTECTED],
+        )
         if user:
-            return self._add_user_repos(queryset, user)
-        return queryset
+            queryset = self._add_user_repos(queryset, user)
+        return queryset.distinct()
 
     def private(self, user=None):
         queryset = self.filter(privacy_level=constants.PRIVATE)
         if user:
-            return self._add_user_repos(queryset, user)
-        return queryset
+            queryset = self._add_user_repos(queryset, user)
+        return queryset.distinct()
+
+    def is_active(self, project):
+        """
+        Check if the project is active.
+
+        The check consists on,
+          * the Project shouldn't be marked as skipped.
+          * any of the project's owners is banned.
+
+        :param project: project to be checked
+        :type project: readthedocs.projects.models.Project
+
+        :returns: whether or not the project is active
+        :rtype: bool
+        """
+        any_owner_banned = any(u.profile.banned for u in project.users.all())
+        if project.skip or any_owner_banned:
+            return False
+
+        return True
+
+    def prefetch_latest_build(self):
+        """
+        Prefetch "latest build" for each project.
+
+        .. note::
+
+            This should come after any filtering.
+        """
+        from readthedocs.builds.models import Build
+
+        # Prefetch the latest build for each project.
+        subquery = Subquery(
+            Build.internal.filter(
+                project=OuterRef('project_id')
+            ).order_by('-date').values_list('id', flat=True)[:1]
+        )
+        latest_build = Prefetch(
+            'builds',
+            Build.internal.filter(pk__in=subquery),
+            to_attr=self.model.LATEST_BUILD_CACHE,
+        )
+        return self.prefetch_related(latest_build)
 
     # Aliases
 
-    def dashboard(self, user=None):
-        return self.for_admin_user(user)
+    def dashboard(self, user):
+        """Get the projects for this user including the latest build."""
+        return self.for_admin_user(user).prefetch_latest_build()
 
-    def api(self, user=None):
-        return self.public(user)
+    def api(self, user=None, detail=True):
+        if detail:
+            return self.public(user)
+
+        queryset = self.none()
+        if user:
+            queryset = self._add_user_repos(queryset, user)
+        return queryset.distinct()
 
 
 class ProjectQuerySet(SettingsOverrideObject):
@@ -78,25 +130,24 @@ class ProjectQuerySet(SettingsOverrideObject):
 class RelatedProjectQuerySetBase(models.QuerySet):
 
     """
-    A manager for things that relate to Project and need to get their perms from the project.
+    Useful for objects that relate to Project and its permissions.
 
-    This shouldn't be used as a subclass.
+    Objects get the permissions from the project itself.
+
+    ..note:: This shouldn't be used as a subclass.
     """
 
     use_for_related_fields = True
     project_field = 'project'
 
     def _add_user_repos(self, queryset, user=None):
-        # Hack around get_objects_for_user not supporting global perms
         if user.has_perm('projects.view_project'):
-            return self.all().distinct()
-        if user.is_authenticated():
-            # Add in possible user-specific views
-            project_qs = get_objects_for_user(user, 'projects.view_project')
-            pks = [p.pk for p in project_qs]
-            kwargs = {'%s__pk__in' % self.project_field: pks}
-            queryset = self.filter(**kwargs) | queryset
-        return queryset.distinct()
+            return self.all()
+        if user.is_authenticated:
+            projects_pk = user.projects.all().values_list('pk', flat=True)
+            user_queryset = self.filter(project__in=projects_pk)
+            queryset = user_queryset | queryset
+        return queryset
 
     def public(self, user=None, project=None):
         kwargs = {'%s__privacy_level' % self.project_field: constants.PUBLIC}
@@ -105,18 +156,21 @@ class RelatedProjectQuerySetBase(models.QuerySet):
             queryset = self._add_user_repos(queryset, user)
         if project:
             queryset = queryset.filter(project=project)
-        return queryset
+        return queryset.distinct()
 
     def protected(self, user=None, project=None):
         kwargs = {
-            '%s__privacy_level__in' % self.project_field: [constants.PUBLIC, constants.PROTECTED]
+            '%s__privacy_level__in' % self.project_field: [
+                constants.PUBLIC,
+                constants.PROTECTED,
+            ],
         }
         queryset = self.filter(**kwargs)
         if user:
             queryset = self._add_user_repos(queryset, user)
         if project:
             queryset = queryset.filter(project=project)
-        return queryset
+        return queryset.distinct()
 
     def private(self, user=None, project=None):
         kwargs = {
@@ -127,7 +181,7 @@ class RelatedProjectQuerySetBase(models.QuerySet):
             queryset = self._add_user_repos(queryset, user)
         if project:
             queryset = queryset.filter(project=project)
-        return queryset
+        return queryset.distinct()
 
     def api(self, user=None):
         return self.public(user)
@@ -164,5 +218,29 @@ class FeatureQuerySet(models.QuerySet):
     def for_project(self, project):
         return self.filter(
             Q(projects=project) |
-            Q(default_true=True, add_date__gt=project.pub_date)
+            Q(default_true=True, add_date__gt=project.pub_date),
         ).distinct()
+
+
+class HTMLFileQuerySetBase(models.QuerySet):
+
+    def internal(self):
+        """
+        HTMLFileQuerySet method that only includes internal version html files.
+
+        It will exclude pull request/merge request Version html files from the queries
+        and only include BRANCH, TAG, UNKNOWN type Version html files.
+        """
+        return self.exclude(version__type=EXTERNAL)
+
+    def external(self):
+        """
+        HTMLFileQuerySet method that only includes external version html files.
+
+        It will only include pull request/merge request Version html files in the queries.
+        """
+        return self.filter(version__type=EXTERNAL)
+
+
+class HTMLFileQuerySet(SettingsOverrideObject):
+    _default_class = HTMLFileQuerySetBase

@@ -1,5 +1,8 @@
+
 var rtd = require('readthedocs-client');
 var ko = require('knockout');
+var jquery = require('jquery');
+var $ = jquery;
 
 
 // Modal display

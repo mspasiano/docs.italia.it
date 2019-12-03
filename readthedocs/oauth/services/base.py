@@ -1,23 +1,28 @@
-# -*- coding: utf-8 -*-
 """OAuth utility functions."""
-
-from __future__ import (
-    absolute_import, division, print_function, unicode_literals)
 
 import logging
 from datetime import datetime
 
 from allauth.socialaccount.models import SocialAccount
-from builtins import object
+from allauth.socialaccount.providers import registry
 from django.conf import settings
+from django.utils import timezone
 from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError
 from requests.exceptions import RequestException
 from requests_oauthlib import OAuth2Session
 
+
 log = logging.getLogger(__name__)
 
 
-class Service(object):
+class SyncServiceError(Exception):
+
+    """Error raised when a service failed to sync."""
+
+    pass
+
+
+class Service:
 
     """
     Service mapping for local accounts.
@@ -56,6 +61,10 @@ class Service(object):
     def provider_id(self):
         return self.get_adapter().provider_id
 
+    @property
+    def provider_name(self):
+        return registry.by_id(self.provider_id).name
+
     def get_session(self):
         if self.session is None:
             self.create_session()
@@ -78,7 +87,7 @@ class Service(object):
             'token_type': 'bearer',
         }
         if token.expires_at is not None:
-            token_expires = (token.expires_at - datetime.now()).total_seconds()
+            token_expires = (token.expires_at - timezone.now()).total_seconds()
             token_config.update({
                 'refresh_token': token.token_secret,
                 'expires_in': token_expires,
@@ -112,9 +121,12 @@ class Service(object):
                 u'expires_at': 1449218652.558185
             }
         """
+
         def _updater(data):
             token.token = data['access_token']
-            token.expires_at = datetime.fromtimestamp(data['expires_at'])
+            token.expires_at = timezone.make_aware(
+                datetime.fromtimestamp(data['expires_at']),
+            )
             token.save()
             log.info('Updated token %s:', token)
 
@@ -131,6 +143,22 @@ class Service(object):
         """
         try:
             resp = self.get_session().get(url, data=kwargs)
+
+            # TODO: this check of the status_code would be better in the
+            # ``create_session`` method since it could be used from outside, but
+            # I didn't find a generic way to make a test request to each
+            # provider.
+            if resp.status_code == 401:
+                # Bad credentials: the token we have in our database is not
+                # valid. Probably the user has revoked the access to our App. He
+                # needs to reconnect his account
+                raise SyncServiceError(
+                    'Our access to your {provider} account was revoked. '
+                    'Please, reconnect it from your social account connections.'.format(
+                        provider=self.provider_name,
+                    ),
+                )
+
             next_url = self.get_next_url_to_paginate(resp)
             results = self.get_paginated_results(resp)
             if next_url:
@@ -156,12 +184,28 @@ class Service(object):
             return []
 
     def sync(self):
+        """Sync repositories and organizations."""
         raise NotImplementedError
 
     def create_repository(self, fields, privacy=None, organization=None):
+        """
+        Update or create a repository from API response.
+
+        :param fields: dictionary of response data from API
+        :param privacy: privacy level to support
+        :param organization: remote organization to associate with
+        :type organization: RemoteOrganization
+        :rtype: RemoteRepository
+        """
         raise NotImplementedError
 
     def create_organization(self, fields):
+        """
+        Update or create remote organization from API response.
+
+        :param fields: dictionary response of data from API
+        :rtype: RemoteOrganization
+        """
         raise NotImplementedError
 
     def get_next_url_to_paginate(self, response):
@@ -182,10 +226,58 @@ class Service(object):
         """
         raise NotImplementedError
 
-    def setup_webhook(self, project):
+    def get_provider_data(self, project, integration):
+        """
+        Gets provider data from Git Providers Webhooks API.
+
+        :param project: project
+        :type project: Project
+        :param integration: Integration for the project
+        :type integration: Integration
+        :returns: Dictionary containing provider data from the API or None
+        :rtype: dict
+        """
+        raise NotImplementedError
+
+    def setup_webhook(self, project, integration=None):
+        """
+        Setup webhook for project.
+
+        :param project: project to set up webhook for
+        :type project: Project
+        :param integration: Integration for the project
+        :type integration: Integration
+        :returns: boolean based on webhook set up success, and requests Response object
+        :rtype: (Bool, Response)
+        """
         raise NotImplementedError
 
     def update_webhook(self, project, integration):
+        """
+        Update webhook integration.
+
+        :param project: project to set up webhook for
+        :type project: Project
+        :param integration: Webhook integration to update
+        :type integration: Integration
+        :returns: boolean based on webhook update success, and requests Response object
+        :rtype: (Bool, Response)
+        """
+        raise NotImplementedError
+
+    def send_build_status(self, build, commit, state):
+        """
+        Create commit status for project.
+
+        :param build: Build to set up commit status for
+        :type build: Build
+        :param commit: commit sha of the pull/merge request
+        :type commit: str
+        :param state: build state failure, pending, or success.
+        :type state: str
+        :returns: boolean based on commit status creation was successful or not.
+        :rtype: Bool
+        """
         raise NotImplementedError
 
     @classmethod
@@ -202,4 +294,5 @@ class Service(object):
         # TODO Replace this check by keying project to remote repos
         return (
             cls.url_pattern is not None and
-            cls.url_pattern.search(project.repo) is not None)
+            cls.url_pattern.search(project.repo) is not None
+        )

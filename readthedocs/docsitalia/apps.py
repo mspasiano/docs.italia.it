@@ -6,7 +6,7 @@ from django.apps import AppConfig
 
 class DocsItaliaConfig(AppConfig):
 
-    """docsitalia app config"""
+    """docsitalia app config."""
 
     name = 'readthedocs.docsitalia'
     verbose_name = 'Docs Italia'

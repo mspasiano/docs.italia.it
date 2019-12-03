@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Signals for the docsitalia app."""
 
-from __future__ import absolute_import
-
 import logging
 
 from django.dispatch import receiver
@@ -48,7 +46,7 @@ def on_webhook_github(sender, project, data, event, **kwargs): # noqa
 @receiver(finalize_sphinx_context_data)
 def add_sphinx_context_data(sender, data, build_env, **kwargs):  # pylint: disable=unused-argument
     """
-    Provides additional data to the sphinx context
+    Provides additional data to the sphinx context.
 
     Data are injected in the provided context
 
@@ -77,7 +75,7 @@ def add_sphinx_context_data(sender, data, build_env, **kwargs):  # pylint: disab
 
 @receiver(pre_delete, sender=PublisherProject)
 def on_publisher_project_delete(sender, instance, **kwargs):  # noqa
-    """Remove all the projects associated at PublisherProject removal from db and ES indexes"""
+    """Remove all the projects associated at PublisherProject removal from db and ES indexes."""
     from readthedocs.docsitalia.tasks import clear_es_index
     reused_projects_pks = set(PublisherProject.objects.exclude(
         pk=instance.pk

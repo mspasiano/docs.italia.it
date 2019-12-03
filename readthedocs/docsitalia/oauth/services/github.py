@@ -3,12 +3,12 @@ from builtins import str
 import logging
 import json
 
+from django.apps import apps
 from django.db.models import Q
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from requests.exceptions import RequestException
 
-from readthedocs.integrations.models import Integration
 from readthedocs.oauth.services.github import GitHubService
 from readthedocs.oauth.models import RemoteOrganization, RemoteRepository
 
@@ -28,6 +28,15 @@ class DocsItaliaGithubService(GitHubService):
 
     def sync_organizations(self):
         """Sync organizations from GitHub API."""
+        dsl_app = apps.get_app_config('django_elasticsearch_dsl')
+        signal_processor = dsl_app.signal_processor
+        # this is a rather brutal way to handle this, but I cannot find a better solution
+        # when syncing the orgs, we repeatedly save the publisher, which is linked to
+        # the PageDocument and ProjectDocument. As django-elasticsearch-dsl is configured in
+        # autosync this triggers the ES update for all the linked documents, and with large
+        # organizations (namely: `italia`) this can yield a significant delay and unnecessary load.
+        # Completely silencing the signals during this process it's the only option I have found.
+        signal_processor.teardown()
         try:
             orgs = self.paginate('https://api.github.com/user/orgs')
             for org in orgs:
@@ -85,6 +94,7 @@ class DocsItaliaGithubService(GitHubService):
                       str(e), exc_info=True)
             raise Exception('Could not sync your GitHub organizations, '
                             'try reconnecting your account')
+        signal_processor.setup()
 
     def create_organization(self, fields):
         """

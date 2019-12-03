@@ -6,10 +6,11 @@ My project isn't building with autodoc
 
 First, you should check out the Builds tab of your project. That records all of the build attempts that RTD has made to build your project. If you see ``ImportError`` messages for custom Python modules, you should enable the virtualenv feature in the Admin page of your project, which will install your project into a virtualenv, and allow you to specify a ``requirements.txt`` file for your project.
 
-If you are still seeing errors because of C library dependencies, please see :ref:`mock-c-extensions`.
+If you are still seeing errors because of C library dependencies,
+please see :ref:`faq:I get import errors on libraries that depend on C modules`.
 
-How do I change my slug (the URL your docs are served at)?
-----------------------------------------------------------
+How do I change my project slug (the URL your docs are served at)?
+------------------------------------------------------------------
 
 We don't support allowing folks to change the slug for their project.
 You can update the name which is shown on the site,
@@ -19,6 +20,18 @@ The main reason for this is that all existing URLs to the content will break.
 You can delete and re-create the project with the proper name to get a new slug,
 but you really shouldn't do this if you have existing inbound links,
 as it `breaks the internet <http://www.w3.org/Provider/Style/URI.html>`_.
+
+If that isn't enough,
+you can request the change sending an email to support@readthedocs.org.
+
+
+How do I change the version slug of my project?
+-----------------------------------------------
+
+We don't support allowing folks to change the slug for their versions.
+But you can rename the branch/tag to achieve this.
+If that isn't enough,
+you can request the change sending an email to support@readthedocs.org.
 
 Help, my build passed but my documentation page is 404 Not Found!
 -----------------------------------------------------------------
@@ -56,37 +69,29 @@ environment, and will be set to ``True`` when building on RTD::
     Woo
     {% endif %}
 
-.. _mock-c-extensions:
+My project requires different settings than those available under Admin
+-----------------------------------------------------------------------
+
+Read the Docs offers some settings which can be used for a variety of purposes,
+such as to use the latest version of sphinx or pip. To enable these settings,
+please send an email to support@readthedocs.org and we will change the settings for the project.
+Read more about these settings :doc:`here <guides/feature-flags>`.
 
 I get import errors on libraries that depend on C modules
 ---------------------------------------------------------
 
 .. note::
-    Another use case for this is when you have a module with a C extension.
 
-This happens because our build system doesn't have the dependencies for building your project. This happens with things like libevent and mysql, and other python things that depend on C libraries. We can't support installing random C binaries on our system, so there is another way to fix these imports.
+   Another use case for this is when you have a module with a C extension.
 
-You can mock out the imports for these modules in your ``conf.py`` with the following snippet::
+This happens because our build system doesn't have the dependencies for building your project.
+This happens with things like ``libevent``, ``mysql``, and other python packages that depend on C libraries.
+We can't support installing random C binaries on our system, so there is another way to fix these imports.
 
-    import sys
-    from unittest.mock import MagicMock
-
-    class Mock(MagicMock):
-        @classmethod
-        def __getattr__(cls, name):
-            return MagicMock()
-
-    MOCK_MODULES = ['pygtk', 'gtk', 'gobject', 'argparse', 'numpy', 'pandas']
-    sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
-Of course, replacing `MOCK_MODULES` with the modules that you want to mock out.
-
-.. Tip:: The library ``unittest.mock`` was introduced on python 3.3. On earlier versions install the ``mock`` library
-    from PyPI with (ie ``pip install mock``) and replace the above import::
-
-        from mock import Mock as MagicMock
-
+With Sphinx you can use the built-in `autodoc_mock_imports`_ for mocking.
 If such libraries are installed via ``setup.py``, you also will need to remove all the C-dependent libraries from your ``install_requires`` in the RTD environment.
+
+.. _autodoc_mock_imports: http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_mock_imports
 
 `Client Error 401` when building documentation
 ----------------------------------------------
@@ -113,12 +118,12 @@ Deleting a stale or broken build environment
 
 See :doc:`guides/wipe-environment`.
 
-How do I host multiple projects on one CNAME?
----------------------------------------------
+How do I host multiple projects on one custom domain?
+-----------------------------------------------------
 
-We support the concept of Subprojects.
-If you add a subproject to a project,
-that documentation will also be served under the parent project's subdomain.
+We support the concept of subprojects, which allows multiple projects to share a
+single domain. If you add a subproject to a project, that documentation will
+be served under the parent project's subdomain or custom domain.
 
 For example,
 Kombu is a subproject of Celery,
@@ -126,11 +131,11 @@ so you can access it on the `celery.readthedocs.io` domain:
 
 http://celery.readthedocs.io/projects/kombu/en/latest/
 
-This also works the same for CNAMEs:
+This also works the same for custom domains:
 
 http://docs.celeryproject.org/projects/kombu/en/latest/
 
-You can add subprojects in the Admin section for your project.
+You can add subprojects in the project admin dashboard.
 
 Where do I need to put my docs for RTD to find it?
 --------------------------------------------------
@@ -145,7 +150,7 @@ We think that our theme is badass, and better than the default for many reasons.
 I want to use the Read the Docs theme locally
 ---------------------------------------------
 
-There is a repository for that: https://github.com/snide/sphinx_rtd_theme.
+There is a repository for that: https://github.com/readthedocs/sphinx_rtd_theme.
 Simply follow the instructions in the README.
 
 Image scaling doesn't work in my documentation
@@ -164,7 +169,7 @@ RTD doesn't have explicit support for this. That said, a tool like `Disqus`_ (an
 How do I support multiple languages of documentation?
 -----------------------------------------------------
 
-See the section on :ref:`Localization of Documentation`.
+See the section on :doc:`localization`.
 
 Does Read The Docs work well with "legible" docstrings?
 -------------------------------------------------------
@@ -191,7 +196,7 @@ Can I document a python package that is not at the root of my repository?
 
 Yes. The most convenient way to access a python package for example via
 `Sphinx's autoapi`_ in your documentation is to use the *Install your project
-inside a virtualenv using ``setup.py install``* option in the admin panel of
+inside a virtualenv using setup.py install* option in the admin panel of
 your project. However this assumes that your ``setup.py`` is in the root of
 your repository.
 
@@ -221,4 +226,56 @@ file* field.
 What commit of Read the Docs is in production?
 ----------------------------------------------
 
-We deploy readthedocs.org from the `rel` branch in our GitHub repository. You can see the latest commits that have been deployed by looking on GitHub: https://github.com/rtfd/readthedocs.org/commits/rel
+We deploy readthedocs.org from the `rel` branch in our GitHub repository. You can see the latest commits that have been deployed by looking on GitHub: https://github.com/readthedocs/readthedocs.org/commits/rel
+
+
+How can I avoid search results having a deprecated version of my docs?
+----------------------------------------------------------------------
+
+If readers search something related to your docs in Google, it will probably return the most relevant version of your documentation.
+It may happen that this version is already deprecated and you want to stop Google indexing it as a result,
+and start suggesting the latest (or newer) one.
+
+To accomplish this, you can add a ``robots.txt`` file to your documentation's root so it ends up served at the root URL of your project
+(for example, https://yourproject.readthedocs.io/robots.txt).
+
+
+Minimal example of ``robots.txt``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+   User-agent: *
+   Disallow: /en/deprecated-version/
+   Disallow: /en/2.0/
+
+.. note::
+
+   See `Google's docs`_ for its full syntax.
+
+This file has to be served as is under ``/robots.txt``.
+
+Setup
+~~~~~
+
+The ``robots.txt`` file will be served from the **default version** of your Project.
+This is because the ``robots.txt`` file is served at the top-level of your domain,
+so we must choose a version to find the file in.
+The **default version** is the best place to look for it.
+
+Sphinx and Mkdocs both have different ways of outputting static files in the build:
+
+Sphinx
+++++++
+
+Sphinx uses `html_extra_path`_ option to add static files to the output.
+You need to create a ``robots.txt`` file and put it under the path defined in ``html_extra_path``.
+
+MkDocs
+++++++
+
+MkDocs needs the ``robots.txt`` to be at the directory defined at `docs_dir`_ config.
+
+.. _Google's docs: https://support.google.com/webmasters/answer/6062608
+.. _html_extra_path: https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_extra_path
+.. _docs_dir: https://www.mkdocs.org/user-guide/configuration/#docs_dir

@@ -1,7 +1,9 @@
-"""Django admin configuration for the Gold Membership app."""
+# -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+"""Django admin configuration for the Gold membership app."""
+
 from django.contrib import admin
+
 from .models import GoldUser
 
 
@@ -10,5 +12,7 @@ class GoldAdmin(admin.ModelAdmin):
     raw_id_fields = ('user', 'projects')
     list_display = ('user', 'level', 'modified_date', 'subscribed')
     list_filter = ('level',)
+    search_fields = ('projects__slug', 'user__email', 'user__username', 'stripe_id')
+
 
 admin.site.register(GoldUser, GoldAdmin)

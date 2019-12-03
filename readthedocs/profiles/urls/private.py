@@ -1,23 +1,43 @@
+# -*- coding: utf-8 -*-
+
 """URL patterns for views to modify user profiles."""
 
-from __future__ import absolute_import
 from django.conf.urls import url
 
 from readthedocs.core.forms import UserProfileForm
 from readthedocs.profiles import views
 
-urlpatterns = [
-    url(r'^create/', views.create_profile,
-        {
-            'form_class': UserProfileForm,
-        },
-        name='profiles_profile_create'),
-    url(r'^edit/', views.edit_profile,
+# Split URLs into different lists to be able to selectively import them from a
+# another application (like Read the Docs Corporate), where we may don't need to
+# define Token URLs, for example.
+urlpatterns = []
+
+account_urls = [
+    url(
+        r'^edit/',
+        views.edit_profile,
         {
             'form_class': UserProfileForm,
             'template_name': 'profiles/private/edit_profile.html',
         },
-        name='profiles_profile_edit'),
+        name='profiles_profile_edit',
+    ),
     url(r'^delete/', views.delete_account, name='delete_account'),
-    url(r'^advertising/$', views.account_advertising, name='account_advertising'),
+    url(
+        r'^advertising/$',
+        views.account_advertising,
+        name='account_advertising',
+    ),
 ]
+
+urlpatterns += account_urls
+
+tokens_urls = [
+    url(
+        r'^tokens/$',
+        views.TokenList.as_view(),
+        name='profiles_tokens',
+    ),
+]
+
+urlpatterns += tokens_urls

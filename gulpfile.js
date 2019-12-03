@@ -27,6 +27,7 @@ var sources = {
         'css/badge_only.css': {src: 'bower_components/sphinx-rtd-theme/sphinx_rtd_theme/static/css/badge_only.css'},
         'css/theme.css': {src: 'bower_components/sphinx-rtd-theme/sphinx_rtd_theme/static/css/theme.css'},
 
+        'font/Lato-BoldItalic.ttf': {src: 'bower_components/lato-googlefont/Lato-BoldItalic.ttf'},
         'font/Lato-Bold.ttf': {src: 'bower_components/lato-googlefont/Lato-Bold.ttf'},
         'font/Lato-Regular.ttf': {src: 'bower_components/lato-googlefont/Lato-Regular.ttf'},
         'font/Lato-Italic.ttf': {src: 'bower_components/lato-googlefont/Lato-Italic.ttf'},
@@ -43,12 +44,11 @@ var sources = {
         'font/fontawesome-webfont.woff2': {src: 'bower_components/font-awesome/fonts/fontawesome-webfont.woff2'},
         'font/FontAwesome.otf': {src: 'bower_components/font-awesome/fonts/FontAwesome.otf'}
     },
-    projects: {
+    docsitalia: {
         'js/tools.js': {},
         'js/import.js': {},
         'css/import.less': {},
         'css/admin.less': {},
-        'css/main.less': {},
     },
     gold: {'js/gold.js': {}},
     donate: {'js/donate.js': {}}

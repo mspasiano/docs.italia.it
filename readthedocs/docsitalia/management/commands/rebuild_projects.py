@@ -1,10 +1,9 @@
-"""Rebuild documentation for all projects"""
+"""Rebuild documentation for all projects."""
 
-from __future__ import absolute_import
 from django.core.management.base import BaseCommand, CommandError
 
 from readthedocs.builds.models import Build, Version
-from readthedocs.projects.tasks import UpdateDocsTask
+from readthedocs.projects.tasks import update_docs_task
 from readthedocs.projects.models import Project
 
 
@@ -13,12 +12,12 @@ from readthedocs.docsitalia.models import Publisher, PublisherProject
 
 class Command(BaseCommand):
 
-    """Rebuild all projects command"""
+    """Rebuild all projects command."""
 
     help = 'Rebuild projects'
 
     def add_arguments(self, parser):
-        """adds arguments"""
+        """adds arguments."""
         parser.add_argument(
             '--publisher', nargs='?', type=str,
             help='A publisher project slug'
@@ -28,7 +27,7 @@ class Command(BaseCommand):
             help='A Read the docs document slug'
         )
         parser.add_argument(
-            '--version_slug', nargs='?', type=str,
+            '--version-slug', nargs='?', type=str,
             help='A Read the docs version slug'
         )
         parser.add_argument(
@@ -36,18 +35,18 @@ class Command(BaseCommand):
             help='Run the rebuild tasks async'
         )
 
+    # pylint: disable=too-many-branches
     def handle(self, *args, **options):
-        """handle command"""
+        """handle command."""
         versions = Version.objects.all()
         publisher = options['publisher']
-        version = options['version_slug']
+        version_slug = options['version_slug']
         document = options['document']
         run_async = options['async']
         if publisher:
             try:
-                publisher_obj = Publisher.objects.get(slug=publisher)
                 projects = PublisherProject.objects.filter(
-                    publisher=publisher_obj
+                    publisher=Publisher.objects.get(slug=publisher)
                 ).values_list('projects', flat=True)
                 versions = versions.filter(project__in=projects)
             except Publisher.DoesNotExist:
@@ -58,13 +57,15 @@ class Command(BaseCommand):
                 versions = versions.filter(project=project)
             except Project.DoesNotExist:
                 raise CommandError("Project {} doesn't exist".format(document))
-        if version:
+
+        if version_slug:
             try:
-                versions = versions.filter(slug=version)
+                versions = versions.filter(slug=version_slug)
             except Project.DoesNotExist:
-                raise CommandError("Project {} doesn't exist".format(document))
+                raise CommandError("Version {} doesn't exist".format(version_slug))
+
         for version in versions:
-            task = UpdateDocsTask()
+            task = update_docs_task
             build = Build.objects.create(
                 project=version.project,
                 version=version,
@@ -72,9 +73,9 @@ class Command(BaseCommand):
                 state='triggered',
             )
             kwargs = dict(
-                pk=version.project.pk, version_pk=version.pk, build_pk=build.pk, search=True
+                version_pk=version.pk, build_pk=build.pk
             )
             if run_async:
-                task.apply_async(kwargs=kwargs)
+                task.apply_async(kwargs=kwargs, queue='docs')
             else:
                 task.run(**kwargs)

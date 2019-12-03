@@ -1,4 +1,4 @@
-"""Remove the readthedocs elasticsearch index"""
+"""Remove the readthedocs elasticsearch index."""
 
 from __future__ import absolute_import
 
@@ -10,9 +10,9 @@ from elasticsearch import Elasticsearch
 
 class Command(BaseCommand):
 
-    """Clear elasticsearch index"""
+    """Clear elasticsearch index."""
 
     def handle(self, *args, **options):
-        """handle command"""
+        """handle command."""
         e_s = Elasticsearch(settings.ES_HOSTS)
-        e_s.indices.delete(index='readthedocs')
+        e_s.indices.delete(index='_all')

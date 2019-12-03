@@ -1,15 +1,23 @@
+# -*- coding: utf-8 -*-
+
 """Django admin interface for core models."""
 
-from __future__ import absolute_import
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.contrib import admin
-from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from readthedocs.core.models import UserProfile
 from readthedocs.projects.models import Project
+from rest_framework.authtoken.admin import TokenAdmin
+
+
+# Monkeypatch raw_id_fields onto the TokenAdmin
+# https://www.django-rest-framework.org/api-guide/authentication/#with-django-admin
+TokenAdmin.raw_id_fields = ['user']
 
 
 class UserProjectInline(admin.TabularInline):
@@ -50,7 +58,7 @@ class UserProjectFilter(admin.SimpleListFilter):
         if self.value() == self.PROJECT_BUILT:
             return queryset.filter(projects__versions__built=True)
         if self.value() == self.PROJECT_RECENT:
-            recent_date = datetime.today() - timedelta(days=365)
+            recent_date = timezone.now() - timedelta(days=365)
             return queryset.filter(projects__builds__date__gt=recent_date)
 
 
@@ -58,8 +66,14 @@ class UserAdminExtra(UserAdmin):
 
     """Admin configuration for User."""
 
-    list_display = ('username', 'email', 'first_name',
-                    'last_name', 'is_staff', 'is_banned')
+    list_display = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'is_staff',
+        'is_banned',
+    )
     list_filter = (UserProjectFilter,) + UserAdmin.list_filter
     actions = ['ban_user']
     inlines = [UserProjectInline]

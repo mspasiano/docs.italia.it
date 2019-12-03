@@ -1,12 +1,20 @@
 {% load static %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha256-98vAGjEDGN79TjHkYWVD4s87rvWkdWLHPs5MC3FvFX4=" crossorigin="anonymous"></script>
+<script src="{% static 'vendor/jquery.js' %}"></script>
+<script src="{% static 'vendor/jquery-migrate.js' %}"></script>
+<script src="{% static 'vendor/jquery-ui.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
+<script >
+require('jquery');
+</script>
+<!-- Global variable to Fonts - Bootstrap Italia -->
+<script>
+  window.__PUBLIC_PATH__ = "{% static 'vendor/bootstrap-italia/fonts' %}"
+</script>
 
 <script src="{% static 'vendor/bootstrap-italia/js/bootstrap-italia.min.js' %}"></script>
 
 <!-- necessari solo per il backoffice -->
-<script src="{{ MEDIA_URL }}javascript/instantsearch.js"></script>
 <script src="{{ MEDIA_URL }}javascript/base.js"></script>
 <script src="{% static 'core/js/site.js' %}"></script>
 <script>

@@ -1,38 +1,41 @@
-from __future__ import absolute_import
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from mock import patch
-from django.test import TestCase
+from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
-from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.contrib.messages import constants as message_const
-from django.core.urlresolvers import reverse
 from django.http.response import HttpResponseRedirect
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
 from django.views.generic.base import ContextMixin
-from django_dynamic_fixture import get
-from django_dynamic_fixture import new
+from django_dynamic_fixture import get, new
+from mock import patch
 
-import six
-
+from readthedocs.builds.constants import EXTERNAL, LATEST
 from readthedocs.builds.models import Build, Version
-from readthedocs.rtd_tests.base import (WizardTestCase, MockBuildTestCase,
-                                        RequestFactoryTestMixin)
+from readthedocs.integrations.models import GenericAPIWebhook, GitHubWebhook
 from readthedocs.oauth.models import RemoteRepository
-from readthedocs.projects.exceptions import ProjectSpamError
-from readthedocs.projects.models import Project, Domain
-from readthedocs.projects.views.private import ImportWizardView
-from readthedocs.projects.views.mixins import ProjectRelationMixin
 from readthedocs.projects import tasks
+from readthedocs.projects.constants import PUBLIC
+from readthedocs.projects.exceptions import ProjectSpamError
+from readthedocs.projects.models import Domain, Project
+from readthedocs.projects.views.mixins import ProjectRelationMixin
+from readthedocs.projects.views.private import ImportWizardView
+from readthedocs.rtd_tests.base import (
+    MockBuildTestCase,
+    RequestFactoryTestMixin,
+    WizardTestCase,
+)
 
 
-@patch('readthedocs.projects.views.private.trigger_build', lambda x, basic: None)
+@patch('readthedocs.projects.views.private.trigger_build', lambda x: None)
 class TestProfileMiddleware(RequestFactoryTestMixin, TestCase):
 
     wizard_class_slug = 'import_wizard_view'
     url = '/dashboard/import/manual/'
 
     def setUp(self):
-        super(TestProfileMiddleware, self).setUp()
+        super().setUp()
         data = {
             'basics': {
                 'name': 'foobar',
@@ -47,12 +50,12 @@ class TestProfileMiddleware(RequestFactoryTestMixin, TestCase):
         }
         self.data = {}
         for key in data:
-            self.data.update({('{0}-{1}'.format(key, k), v)
+            self.data.update({('{}-{}'.format(key, k), v)
                               for (k, v) in list(data[key].items())})
-        self.data['{0}-current_step'.format(self.wizard_class_slug)] = 'extra'
+        self.data['{}-current_step'.format(self.wizard_class_slug)] = 'extra'
 
     def test_profile_middleware_no_profile(self):
-        """User without profile and isn't banned"""
+        """User without profile and isn't banned."""
         req = self.request('/projects/import', method='post', data=self.data)
         req.user = get(User, profile=None)
         resp = ImportWizardView.as_view()(req)
@@ -61,7 +64,7 @@ class TestProfileMiddleware(RequestFactoryTestMixin, TestCase):
 
     @patch('readthedocs.projects.views.private.ProjectBasicsForm.clean')
     def test_profile_middleware_spam(self, form):
-        """User will be banned"""
+        """User will be banned."""
         form.side_effect = ProjectSpamError
         req = self.request('/projects/import', method='post', data=self.data)
         req.user = get(User)
@@ -71,7 +74,7 @@ class TestProfileMiddleware(RequestFactoryTestMixin, TestCase):
         self.assertTrue(req.user.profile.banned)
 
     def test_profile_middleware_banned(self):
-        """User is banned"""
+        """User is banned."""
         req = self.request('/projects/import', method='post', data=self.data)
         req.user = get(User)
         req.user.profile.banned = True
@@ -101,10 +104,31 @@ class TestBasicsForm(WizardTestCase):
 
     def request(self, *args, **kwargs):
         kwargs['user'] = self.user
-        return super(TestBasicsForm, self).request(*args, **kwargs)
+        return super().request(*args, **kwargs)
+
+    def test_form_import_from_remote_repo(self):
+        self.client.force_login(self.user)
+
+        data = {
+            'name': 'pipdocs',
+            'repo': 'https://github.com/fail/sauce',
+            'repo_type': 'git',
+            'remote_repository': '1234',
+        }
+        resp = self.client.post(
+            '/dashboard/import/',
+            data,
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # The form is filled with the previous information
+        self.assertEqual(
+            resp.context['form'].initial,
+            data,
+        )
 
     def test_form_pass(self):
-        """Only submit the basics"""
+        """Only submit the basics."""
         resp = self.post_step('basics')
         self.assertIsInstance(resp, HttpResponseRedirect)
         self.assertEqual(resp.status_code, 302)
@@ -136,7 +160,7 @@ class TestBasicsForm(WizardTestCase):
         self.assertWizardFailure(resp, 'remote_repository')
 
     def test_form_missing(self):
-        """Submit form with missing data, expect to get failures"""
+        """Submit form with missing data, expect to get failures."""
         self.step_data['basics'] = {'advanced': True}
         resp = self.post_step('basics')
         self.assertWizardFailure(resp, 'name')
@@ -146,7 +170,7 @@ class TestBasicsForm(WizardTestCase):
 class TestAdvancedForm(TestBasicsForm):
 
     def setUp(self):
-        super(TestAdvancedForm, self).setUp()
+        super().setUp()
         self.step_data['basics']['advanced'] = True
         self.step_data['extra'] = {
             'description': 'Describe foobar',
@@ -156,7 +180,7 @@ class TestAdvancedForm(TestBasicsForm):
         }
 
     def test_form_pass(self):
-        """Test all forms pass validation"""
+        """Test all forms pass validation."""
         resp = self.post_step('basics')
         self.assertWizardResponse(resp, 'extra')
         resp = self.post_step('extra', session=list(resp._request.session.items()))
@@ -169,16 +193,16 @@ class TestAdvancedForm(TestBasicsForm):
         data = self.step_data['basics']
         del data['advanced']
         del self.step_data['extra']['tags']
-        six.assertCountEqual(
-            self,
+        self.assertCountEqual(
             [tag.name for tag in proj.tags.all()],
-            [u'bar', u'baz', u'foo'])
+            ['bar', 'baz', 'foo'],
+        )
         data.update(self.step_data['extra'])
         for (key, val) in list(data.items()):
             self.assertEqual(getattr(proj, key), val)
 
     def test_form_missing_extra(self):
-        """Submit extra form with missing data, expect to get failures"""
+        """Submit extra form with missing data, expect to get failures."""
         # Remove extra data to trigger validation errors
         self.step_data['extra'] = {}
 
@@ -203,11 +227,13 @@ class TestAdvancedForm(TestBasicsForm):
         self.assertIsNotNone(proj)
         self.assertEqual(proj.remote_repository, remote_repo)
 
-    @patch('readthedocs.projects.views.private.ProjectExtraForm.clean_description',
-           create=True)
+    @patch(
+        'readthedocs.projects.views.private.ProjectExtraForm.clean_description',
+        create=True,
+    )
     def test_form_spam(self, mocked_validator):
-        """Don't add project on a spammy description"""
-        self.user.date_joined = datetime.now() - timedelta(days=365)
+        """Don't add project on a spammy description."""
+        self.user.date_joined = timezone.now() - timedelta(days=365)
         self.user.save()
         mocked_validator.side_effect = ProjectSpamError
 
@@ -225,11 +251,13 @@ class TestAdvancedForm(TestBasicsForm):
             proj = Project.objects.get(name='foobar')
         self.assertFalse(self.user.profile.banned)
 
-    @patch('readthedocs.projects.views.private.ProjectExtraForm.clean_description',
-           create=True)
+    @patch(
+        'readthedocs.projects.views.private.ProjectExtraForm.clean_description',
+        create=True,
+    )
     def test_form_spam_ban_user(self, mocked_validator):
-        """Don't add spam and ban new user"""
-        self.user.date_joined = datetime.now()
+        """Don't add spam and ban new user."""
+        self.user.date_joined = timezone.now()
         self.user.save()
         mocked_validator.side_effect = ProjectSpamError
 
@@ -249,9 +277,9 @@ class TestAdvancedForm(TestBasicsForm):
 
 
 class TestImportDemoView(MockBuildTestCase):
-    """Test project import demo view"""
+    """Test project import demo view."""
 
-    fixtures = ['test_data', 'eric']
+    fixtures = ['eric', 'test_data']
 
     def setUp(self):
         self.client.login(username='eric', password='test')
@@ -266,7 +294,7 @@ class TestImportDemoView(MockBuildTestCase):
         self.assertEqual(messages[0].level, message_const.SUCCESS)
 
     def test_import_demo_already_imported(self):
-        """Import demo project multiple times, expect failure 2nd post"""
+        """Import demo project multiple times, expect failure 2nd post."""
         self.test_import_demo_pass()
         project = Project.objects.get(slug='eric-demo')
 
@@ -279,11 +307,13 @@ class TestImportDemoView(MockBuildTestCase):
         messages = list(resp_redir.context['messages'])
         self.assertEqual(messages[0].level, message_const.SUCCESS)
 
-        self.assertEqual(project,
-                         Project.objects.get(slug='eric-demo'))
+        self.assertEqual(
+            project,
+            Project.objects.get(slug='eric-demo'),
+        )
 
     def test_import_demo_another_user_imported(self):
-        """Import demo project after another user, expect success"""
+        """Import demo project after another user, expect success."""
         self.test_import_demo_pass()
         project = Project.objects.get(slug='eric-demo')
 
@@ -299,7 +329,7 @@ class TestImportDemoView(MockBuildTestCase):
         self.assertEqual(messages[0].level, message_const.SUCCESS)
 
     def test_import_demo_imported_renamed(self):
-        """If the demo project is renamed, don't import another"""
+        """If the demo project is renamed, don't import another."""
         self.test_import_demo_pass()
         project = Project.objects.get(slug='eric-demo')
         project.name = 'eric-demo-foobar'
@@ -313,14 +343,19 @@ class TestImportDemoView(MockBuildTestCase):
         self.assertEqual(resp_redir.status_code, 200)
         messages = list(resp_redir.context['messages'])
         self.assertEqual(messages[0].level, message_const.SUCCESS)
-        self.assertRegexpMatches(messages[0].message,
-                                 r'already imported')
+        self.assertRegex(
+            messages[0].message,
+            r'already imported',
+        )
 
-        self.assertEqual(project,
-                         Project.objects.get(slug='eric-demo'))
+        self.assertEqual(
+            project,
+            Project.objects.get(slug='eric-demo'),
+        )
 
     def test_import_demo_imported_duplicate(self):
-        """If a project exists with same name, expect a failure importing demo
+        """
+        If a project exists with same name, expect a failure importing demo.
 
         This should be edge case, user would have to import a project (not the
         demo project), named user-demo, and then manually enter the demo import
@@ -331,6 +366,10 @@ class TestImportDemoView(MockBuildTestCase):
         project.repo = 'file:///foobar'
         project.save()
 
+        # Setting the primary and verified email of the test user.
+        user = User.objects.get(username='eric')
+        user_email = get(EmailAddress, user=user, primary=True, verified=True)
+
         resp = self.client.get('/dashboard/import/manual/demo/')
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], '/dashboard/')
@@ -339,11 +378,53 @@ class TestImportDemoView(MockBuildTestCase):
         self.assertEqual(resp_redir.status_code, 200)
         messages = list(resp_redir.context['messages'])
         self.assertEqual(messages[0].level, message_const.ERROR)
-        self.assertRegexpMatches(messages[0].message,
-                                 r'There was a problem')
+        self.assertRegex(
+            messages[0].message,
+            r'There was a problem',
+        )
 
-        self.assertEqual(project,
-                         Project.objects.get(slug='eric-demo'))
+        self.assertEqual(
+            project,
+            Project.objects.get(slug='eric-demo'),
+        )
+
+
+class TestPublicViews(MockBuildTestCase):
+    def setUp(self):
+        self.pip = get(Project, slug='pip', privacy_level=PUBLIC)
+        self.external_version = get(
+            Version,
+            identifier='pr-version',
+            verbose_name='pr-version',
+            slug='pr-9999',
+            project=self.pip,
+            active=True,
+            type=EXTERNAL
+        )
+
+    def test_project_download_media(self):
+        url = reverse('project_download_media', args=[self.pip.slug, 'pdf', LATEST])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_project_detail_view_only_shows_internal_versons(self):
+        url = reverse('projects_detail', args=[self.pip.slug])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(self.external_version, response.context['versions'])
+
+    def test_project_downloads_only_shows_internal_versons(self):
+        url = reverse('project_downloads', args=[self.pip.slug])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(self.external_version, response.context['versions'])
+
+    def test_project_versions_only_shows_internal_versons(self):
+        url = reverse('project_version_list', args=[self.pip.slug])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(self.external_version, response.context['active_versions'])
+        self.assertNotIn(self.external_version, response.context['inactive_versions'])
 
 
 class TestPrivateViews(MockBuildTestCase):
@@ -373,14 +454,33 @@ class TestPrivateViews(MockBuildTestCase):
         response = self.client.get('/dashboard/pip/delete/')
         self.assertEqual(response.status_code, 200)
 
-        with patch('readthedocs.projects.views.private.broadcast') as broadcast:
+        with patch('readthedocs.projects.models.broadcast') as broadcast:
             response = self.client.post('/dashboard/pip/delete/')
             self.assertEqual(response.status_code, 302)
             self.assertFalse(Project.objects.filter(slug='pip').exists())
             broadcast.assert_called_with(
                 type='app',
-                task=tasks.remove_dir,
-                args=[project.doc_path])
+                task=tasks.remove_dirs,
+                args=[(project.doc_path,)],
+            )
+
+    def test_delete_superproject(self):
+        super_proj = get(Project, slug='pip', users=[self.user])
+        sub_proj = get(Project, slug='test-sub-project', users=[self.user])
+
+        self.assertFalse(super_proj.subprojects.all().exists())
+        super_proj.add_subproject(sub_proj)
+
+        response = self.client.get('/dashboard/pip/delete/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'This project <a href="/dashboard/pip/subprojects/">has subprojects</a> under it. '
+            'Deleting this project will make them to become regular projects. '
+            'This will break the URLs of all its subprojects and they will be served normally as other projects.',
+            count=1,
+            html=True,
+        )
 
     def test_subproject_create(self):
         project = get(Project, slug='pip', users=[self.user])
@@ -395,7 +495,46 @@ class TestPrivateViews(MockBuildTestCase):
             broadcast.assert_called_with(
                 type='app',
                 task=tasks.symlink_subproject,
-                args=[project.pk])
+                args=[project.pk],
+            )
+
+    @patch('readthedocs.projects.views.private.attach_webhook')
+    def test_integration_create(self, attach_webhook):
+        project = get(Project, slug='pip', users=[self.user])
+
+        response = self.client.post(
+            reverse('projects_integrations_create', args=[project.slug]),
+            data={
+                'project': project.pk,
+                'integration_type': GitHubWebhook.GITHUB_WEBHOOK
+            },
+        )
+        integration = GitHubWebhook.objects.filter(project=project)
+
+        self.assertTrue(integration.exists())
+        self.assertEqual(response.status_code, 302)
+        attach_webhook.assert_called_once_with(
+            project_pk=project.pk,
+            user_pk=self.user.pk,
+            integration=integration.first()
+        )
+
+    @patch('readthedocs.projects.views.private.attach_webhook')
+    def test_integration_create_generic_webhook(self, attach_webhook):
+        project = get(Project, slug='pip', users=[self.user])
+
+        response = self.client.post(
+            reverse('projects_integrations_create', args=[project.slug]),
+            data={
+                'project': project.pk,
+                'integration_type': GenericAPIWebhook.API_WEBHOOK
+            },
+        )
+        integration = GenericAPIWebhook.objects.filter(project=project)
+
+        self.assertTrue(integration.exists())
+        self.assertEqual(response.status_code, 302)
+        attach_webhook.assert_not_called()
 
 
 class TestPrivateMixins(MockBuildTestCase):
@@ -405,7 +544,7 @@ class TestPrivateMixins(MockBuildTestCase):
         self.domain = get(Domain, project=self.project)
 
     def test_project_relation(self):
-        """Class using project relation mixin class"""
+        """Class using project relation mixin class."""
 
         class FoobarView(ProjectRelationMixin, ContextMixin):
             model = Domain
@@ -421,62 +560,57 @@ class TestPrivateMixins(MockBuildTestCase):
         self.assertEqual(view.get_context_data()['project'], self.project)
 
 
-class TestAdminPrivateViews(TestCase):
-    fixtures = ['test_data', 'eric']
-
-    def test_admin_can_see_other_user_project_data(self):
-        pip = Project.objects.get(slug='pip')
-        pip.versions.create_latest()
-        urls = [
-            '/dashboard/pip/version/latest/',
-            '/dashboard/pip/versions/',
-            '/dashboard/pip/users/',
-            '/dashboard/pip/notifications/',
-            '/dashboard/pip/translations/',
-            '/dashboard/pip/redirects/',
-        ]
-
-        self.client.login(username='eric', password='test')
-        for url in urls:
-            response = self.client.get(url)
-            self.assertEqual(response.status_code, 200)
-
-        self.client.login(username='super', password='test')
-        for url in urls:
-            response = self.client.get(url)
-            self.assertEqual(response.status_code, 200)
-
-        self.client.login(username='tester', password='test')
-        for url in urls:
-            response = self.client.get(url)
-            self.assertEqual(response.status_code, 404)
-
-
 class TestBadges(TestCase):
     """Test a static badge asset is served for each build."""
 
     def setUp(self):
-        self.BADGE_PATH = 'projects/badges/%s.svg'
+        self.BADGE_PATH = 'projects/badges/%s-%s.svg'
         self.project = get(Project, slug='badgey')
         self.version = Version.objects.get(project=self.project)
         self.badge_url = reverse('project_badge', args=[self.project.slug])
 
     def test_unknown_badge(self):
         res = self.client.get(self.badge_url, {'version': self.version.slug})
-        static_badge = static(self.BADGE_PATH % 'unknown')
-        self.assertEquals(res.url, static_badge)
+        self.assertContains(res, 'unknown')
+
+        # Unknown project
+        unknown_project_url = reverse('project_badge', args=['fake-project'])
+        res = self.client.get(unknown_project_url, {'version': 'latest'})
+        self.assertContains(res, 'unknown')
 
     def test_passing_badge(self):
         get(Build, project=self.project, version=self.version, success=True)
         res = self.client.get(self.badge_url, {'version': self.version.slug})
-        static_badge = static(self.BADGE_PATH % 'passing')
-        self.assertEquals(res.url, static_badge)
+        self.assertContains(res, 'passing')
+        self.assertEqual(res['Content-Type'], 'image/svg+xml')
 
     def test_failing_badge(self):
         get(Build, project=self.project, version=self.version, success=False)
         res = self.client.get(self.badge_url, {'version': self.version.slug})
-        static_badge = static(self.BADGE_PATH % 'failing')
-        self.assertEquals(res.url, static_badge)
+        self.assertContains(res, 'failing')
+
+    def test_plastic_failing_badge(self):
+        get(Build, project=self.project, version=self.version, success=False)
+        res = self.client.get(self.badge_url, {'version': self.version.slug, 'style': 'plastic'})
+        self.assertContains(res, 'failing')
+
+        # The plastic badge has slightly more rounding
+        self.assertContains(res, 'rx="4"')
+
+    def test_social_passing_badge(self):
+        get(Build, project=self.project, version=self.version, success=True)
+        res = self.client.get(self.badge_url, {'version': self.version.slug, 'style': 'social'})
+        self.assertContains(res, 'passing')
+
+        # The social badge (but not the other badges) has this element
+        self.assertContains(res, 'rlink')
+
+    def test_badge_redirect(self):
+        # Test that a project with an underscore redirects
+        badge_url = reverse('project_badge', args=['project_slug'])
+        resp = self.client.get(badge_url, {'version': 'latest'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue('project-slug' in resp['location'])
 
 
 class TestTags(TestCase):

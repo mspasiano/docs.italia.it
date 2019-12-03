@@ -7,9 +7,12 @@ from builtins import str # noqa
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+from readthedocs.projects import forms as projects_forms
+
 from .github import get_metadata_for_publisher
 from .metadata import PUBLISHER_SETTINGS, PROJECTS_SETTINGS, InvalidMetadata
 from .models import Publisher
+from .widgets import WhitelistedTaggitSelect2
 
 
 log = logging.getLogger(__name__) # noqa
@@ -17,10 +20,10 @@ log = logging.getLogger(__name__) # noqa
 
 class PublisherAdminForm(forms.ModelForm):
 
-    """Form for Publisher Admin"""
+    """Form for Publisher Admin."""
 
     def clean(self):
-        """Check if the metadata is valid at clean time"""
+        """Check if the metadata is valid at clean time."""
         super(PublisherAdminForm, self).clean()
 
         # create the minimal object required for validation. We mock the
@@ -38,7 +41,7 @@ class PublisherAdminForm(forms.ModelForm):
             log.debug(
                 'Cannot save publisher: %s', exception)
             raise forms.ValidationError(str(exception))
-        except Exception as exception:
+        except Exception:
             msg = msg.format(filename=PUBLISHER_SETTINGS)
             log.debug(
                 'Cannot save publisher: %s', msg)
@@ -51,7 +54,7 @@ class PublisherAdminForm(forms.ModelForm):
             log.debug(
                 'Cannot save publisher: %s', exception)
             raise forms.ValidationError(str(exception))
-        except Exception as exception:
+        except Exception:
             msg = msg.format(filename=PROJECTS_SETTINGS)
             log.debug(
                 'Cannot save publisher: %s', msg)
@@ -60,3 +63,15 @@ class PublisherAdminForm(forms.ModelForm):
     class Meta:
         model = Publisher
         fields = '__all__'
+
+
+# pylint: disable=too-many-ancestors
+class DocsItaliaUpdateProjectForm(projects_forms.UpdateProjectForm):
+    def __init__(self, *args, **kwargs):
+        super(DocsItaliaUpdateProjectForm, self).__init__(*args, **kwargs)
+        self.fields['tags'].help_text = _('Project tags.')
+
+    class Meta(projects_forms.UpdateProjectForm.Meta):
+        widgets = {
+            'tags': WhitelistedTaggitSelect2(url='allowedtag-autocomplete'),
+        }

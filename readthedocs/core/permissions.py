@@ -1,14 +1,16 @@
-"""Objects for User permission checks"""
+# -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+"""Objects for User permission checks."""
 
 from readthedocs.core.utils.extend import SettingsOverrideObject
 
 
-class AdminPermissionBase(object):
+class AdminPermissionBase:
 
     @classmethod
     def is_admin(cls, user, project):
+        # This explicitly uses "user in project.users.all" so that
+        # users on projects can be cached using prefetch_related or prefetch_related_objects
         return user in project.users.all() or user.is_superuser
 
     @classmethod

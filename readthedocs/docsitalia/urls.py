@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from django.apps import apps
 from django.conf.urls import include, url
 from django.views.generic.base import RedirectView, TemplateView
@@ -38,7 +36,11 @@ docsitalia_urls = [
 
 urlpatterns = [
     url(r'^docsitalia/', include(docsitalia_urls)),
-    url(r'^api/v2/docsearch/$', api.DocSearch.as_view(), name='doc_search'),
+    url(
+        r'^api/v2/allowedtag-autocomplete/$',
+        api.AllowedTagAutocomplete.as_view(),
+        name='allowedtag-autocomplete'
+    ),
     url(
         r'^$',
         DocsItaliaHomePage.as_view(),
@@ -91,6 +93,14 @@ urlpatterns = [
     ),
     url(
         r'^(?P<publisherslug>[-\w]+)/(?P<projectslug>[-\w]+)/(?P<slug>[-\w]+)/(?P<lang>[\w]{2})/$',
+        DocumentRedirect.as_view(),
+        name='document_redirect'
+    ),
+    url(
+        (
+            r'^(?P<publisherslug>[-\w]+)/(?P<projectslug>[-\w]+)/(?P<slug>[-\w]+)/'
+            r'(?P<lang>[\w]{2})/(?P<version>[^/]+)(/?)$'
+        ),
         DocumentRedirect.as_view(),
         name='document_redirect'
     ),

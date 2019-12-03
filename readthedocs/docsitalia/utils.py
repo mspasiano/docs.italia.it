@@ -6,13 +6,16 @@ from __future__ import unicode_literals
 
 import yaml
 
+# pylint: disable=redefined-builtin
+from requests.exceptions import ConnectionError
+
 from readthedocs.builds.models import Build
 from readthedocs.projects.models import Project
-from readthedocs.restapi.client import api as apiv2
+from readthedocs.api.v2.client import api as apiv2
 
 
 def load_yaml(txt):
-    """Helper for yaml parsing"""
+    """Helper for yaml parsing."""
     try:
         return yaml.safe_load(txt)
     except yaml.YAMLError as exc:
@@ -28,7 +31,7 @@ def load_yaml(txt):
 
 def get_subprojects(project_pk):
     """
-    Returns the list of subprojects from a project primary key by using the API
+    Returns the list of subprojects from a project primary key by using the API.
 
     This makes it suitable for using in signals and wherever you don't have access to the
     project context
@@ -36,24 +39,30 @@ def get_subprojects(project_pk):
     :param project_pk:
     :return:
     """
-    return (
-        apiv2.project(project_pk)
-        .subprojects()
-        .get()['subprojects']
-    )
+    try:
+        return (
+            apiv2.project(project_pk)
+            .subprojects()
+            .get()['subprojects']
+        )
+    except ConnectionError:
+        return []
 
 
-def get_projects_with_builds():
-    """Returns a queryset of Projects with active public builds"""
-    with_ok_build_and_pub_version = Build.objects.filter(
+def get_projects_with_builds(only_public=True):
+    """Returns a queryset of Projects with active only public by default builds."""
+    builds = Build.objects.filter(
         success=True,
         state='finished',
-        version__privacy_level='public',
         version__active=True
-    ).values_list(
+    )
+    if only_public:
+        builds = builds.filter(version__privacy_level='public',)
+
+    filtered_projects = builds.values_list(
         'project',
         flat=True
     )
     return Project.objects.filter(
-        pk__in=with_ok_build_and_pub_version
+        pk__in=filtered_projects
     )

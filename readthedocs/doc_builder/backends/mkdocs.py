@@ -3,63 +3,105 @@ MkDocs_ backend for building docs.
 
 .. _MkDocs: http://www.mkdocs.org/
 """
-from __future__ import absolute_import
-import os
-import logging
-import json
-import yaml
 
+import json
+import logging
+import os
+
+import yaml
 from django.conf import settings
 from django.template import loader as template_loader
 
 from readthedocs.doc_builder.base import BaseBuilder
-from readthedocs.doc_builder.exceptions import BuildEnvironmentError
+from readthedocs.doc_builder.exceptions import MkDocsYAMLParseError
+from readthedocs.projects.models import Feature
+
 
 log = logging.getLogger(__name__)
 
-TEMPLATE_DIR = '%s/readthedocs/templates/mkdocs/readthedocs' % settings.SITE_ROOT
-OVERRIDE_TEMPLATE_DIR = '%s/readthedocs/templates/mkdocs/overrides' % settings.SITE_ROOT
 
-
-def get_absolute_media_url():
+def get_absolute_static_url():
     """
-    Get the fully qualified media URL from settings.
+    Get the fully qualified static URL from settings.
 
-    Mkdocs needs a full domain because it tries to link to local media files.
+    Mkdocs needs a full domain because it tries to link to local files.
     """
-    media_url = settings.MEDIA_URL
+    static_url = settings.STATIC_URL
 
-    if not media_url.startswith('http'):
-        domain = getattr(settings, 'PRODUCTION_DOMAIN')
-        media_url = 'http://{}{}'.format(domain, media_url)
+    if not static_url.startswith('http'):
+        domain = settings.PRODUCTION_DOMAIN
+        static_url = 'http://{}{}'.format(domain, static_url)
 
-    return media_url
+    return static_url
 
 
 class BaseMkdocs(BaseBuilder):
 
     """Mkdocs builder."""
 
-    use_theme = True
+    # The default theme for mkdocs is the 'mkdocs' theme
+    DEFAULT_THEME_NAME = 'mkdocs'
 
     def __init__(self, *args, **kwargs):
-        super(BaseMkdocs, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.yaml_file = self.get_yaml_config()
         self.old_artifact_path = os.path.join(
-            self.version.project.checkout_path(self.version.slug),
-            self.build_dir)
+            os.path.dirname(self.yaml_file),
+            self.build_dir,
+        )
         self.root_path = self.version.project.checkout_path(self.version.slug)
+
+        # README: historically, the default theme was ``readthedocs`` but in
+        # https://github.com/rtfd/readthedocs.org/pull/4556 we change it to
+        # ``mkdocs`` to maintain the same behavior in Read the Docs than
+        # building locally. Although, we can't apply this into the Corporate
+        # site. To keep the same default theme there, we created a Feature flag
+        # for these project that were building with MkDocs in the Corporate
+        # site.
+        if self.project.has_feature(Feature.MKDOCS_THEME_RTD):
+            self.DEFAULT_THEME_NAME = 'readthedocs'
+            log.warning(
+                'Project using readthedocs theme as default for MkDocs: slug=%s',
+                self.project.slug,
+            )
+        else:
+            self.DEFAULT_THEME_NAME = 'mkdocs'
+
+    def get_yaml_config(self):
+        """Find the ``mkdocs.yml`` file in the project root."""
+        mkdocs_path = self.config.mkdocs.configuration
+        if not mkdocs_path:
+            mkdocs_path = 'mkdocs.yml'
+        return os.path.join(
+            self.project.checkout_path(self.version.slug),
+            mkdocs_path,
+        )
 
     def load_yaml_config(self):
         """
         Load a YAML config.
 
-        Raise BuildEnvironmentError if failed due to syntax errors.
+        :raises: ``MkDocsYAMLParseError`` if failed due to syntax errors.
         """
         try:
-            return yaml.safe_load(
-                open(os.path.join(self.root_path, 'mkdocs.yml'), 'r')
-            )
+            config = yaml.safe_load(open(self.yaml_file, 'r'))
+
+            if not config:
+                raise MkDocsYAMLParseError(
+                    MkDocsYAMLParseError.EMPTY_CONFIG
+                )
+            if not isinstance(config, dict):
+                raise MkDocsYAMLParseError(
+                    MkDocsYAMLParseError.CONFIG_NOT_DICT
+                )
+            return config
+
         except IOError:
+            log.info(
+                'Creating default MkDocs config file for project: %s:%s',
+                self.project.slug,
+                self.version.slug,
+            )
             return {
                 'site_name': self.version.project.name,
             }
@@ -67,43 +109,86 @@ class BaseMkdocs(BaseBuilder):
             note = ''
             if hasattr(exc, 'problem_mark'):
                 mark = exc.problem_mark
-                note = ' (line %d, column %d)' % (mark.line + 1, mark.column + 1)
-            raise BuildEnvironmentError(
-                "Your mkdocs.yml could not be loaded, "
-                "possibly due to a syntax error%s" % (
-                    note,))
+                note = ' (line %d, column %d)' % (
+                    mark.line + 1,
+                    mark.column + 1,
+                )
+            raise MkDocsYAMLParseError(
+                'Your mkdocs.yml could not be loaded, '
+                'possibly due to a syntax error{note}'.format(note=note),
+            )
 
     def append_conf(self, **__):
-        """Set mkdocs config values."""
-        # Pull mkdocs config data
+        """
+        Set mkdocs config values.
+
+        :raises: ``MkDocsYAMLParseError`` if failed due to known type errors
+                 (i.e. expecting a list and a string is found).
+        """
         user_config = self.load_yaml_config()
 
         # Handle custom docs dirs
         user_docs_dir = user_config.get('docs_dir')
+        if not isinstance(user_docs_dir, (type(None), str)):
+            raise MkDocsYAMLParseError(
+                MkDocsYAMLParseError.INVALID_DOCS_DIR_CONFIG,
+            )
+
         docs_dir = self.docs_dir(docs_dir=user_docs_dir)
-        self.create_index(extensions=['md'])
+
+        self.create_index(extension='md')
         user_config['docs_dir'] = docs_dir
 
         # Set mkdocs config values
-        media_url = get_absolute_media_url()
-        user_config.setdefault('extra_javascript', []).extend([
+        static_url = get_absolute_static_url()
+
+        for config in ('extra_css', 'extra_javascript'):
+            user_value = user_config.get(config, [])
+            if not isinstance(user_value, list):
+                raise MkDocsYAMLParseError(
+                    MkDocsYAMLParseError.INVALID_EXTRA_CONFIG.format(
+                        config=config,
+                    ),
+                )
+
+        extra_javascript_list = [
             'readthedocs-data.js',
-            '%sstatic/core/js/readthedocs-doc-embed.js' % media_url,
-            '%sjavascript/readthedocs-analytics.js' % media_url,
-        ])
-        user_config.setdefault('extra_css', []).extend([
-            '%scss/badge_only.css' % media_url,
-            '%scss/readthedocs-doc-embed.css' % media_url,
-        ])
+            '%score/js/readthedocs-doc-embed.js' % static_url,
+            '%sjavascript/readthedocs-analytics.js' % static_url,
+        ]
+        extra_css_list = [
+            '%scss/badge_only.css' % static_url,
+            '%scss/readthedocs-doc-embed.css' % static_url,
+        ]
 
-        # Set our custom theme dir for mkdocs
-        if 'theme_dir' not in user_config and self.use_theme:
-            user_config['theme_dir'] = TEMPLATE_DIR
+        # Only add static file if the files are not already in the list
+        user_config.setdefault('extra_javascript', []).extend(
+            [js for js in extra_javascript_list if js not in user_config.get(
+                'extra_javascript')]
+        )
+        user_config.setdefault('extra_css', []).extend(
+            [css for css in extra_css_list if css not in user_config.get(
+                'extra_css')]
+        )
 
-        docs_path = os.path.join(self.root_path, docs_dir)
+        # The docs path is relative to the location
+        # of the mkdocs configuration file.
+        docs_path = os.path.join(
+            os.path.dirname(self.yaml_file),
+            docs_dir,
+        )
+
+        # if user puts an invalid `docs_dir` path raise an Exception
+        if not os.path.exists(docs_path):
+            raise MkDocsYAMLParseError(
+                MkDocsYAMLParseError.INVALID_DOCS_DIR_PATH,
+            )
 
         # RTD javascript writing
-        rtd_data = self.generate_rtd_data(docs_dir=docs_dir, mkdocs_config=user_config)
+        rtd_data = self.generate_rtd_data(
+            docs_dir=os.path.relpath(docs_path, self.root_path),
+            mkdocs_config=user_config,
+        )
         with open(os.path.join(docs_path, 'readthedocs-data.js'), 'w') as f:
             f.write(rtd_data)
 
@@ -111,21 +196,30 @@ class BaseMkdocs(BaseBuilder):
         # This supports using RTD's privacy improvements around analytics
         user_config['google_analytics'] = None
 
-        # Write the mkdocs configuration
+        # README: make MkDocs to use ``readthedocs`` theme as default if the
+        # user didn't specify a specific theme manually
+        if self.project.has_feature(Feature.MKDOCS_THEME_RTD):
+            if 'theme' not in user_config:
+                # mkdocs<0.17 syntax
+                user_config['theme'] = self.DEFAULT_THEME_NAME
+
+        # Write the modified mkdocs configuration
         yaml.safe_dump(
             user_config,
-            open(os.path.join(self.root_path, 'mkdocs.yml'), 'w')
+            open(self.yaml_file, 'w'),
+        )
+
+        # Write the mkdocs.yml to the build logs
+        self.run(
+            'cat',
+            os.path.relpath(self.yaml_file, self.root_path),
+            cwd=self.root_path,
         )
 
     def generate_rtd_data(self, docs_dir, mkdocs_config):
         """Generate template properties and render readthedocs-data.js."""
-        # Get the theme name
-        theme_name = 'readthedocs'
-        theme_dir = mkdocs_config.get('theme_dir')
-        if theme_dir:
-            theme_name = theme_dir.rstrip('/').split('/')[-1]
-
-        # Use the analytics code from mkdocs.yml if it isn't set already by Read the Docs
+        # Use the analytics code from mkdocs.yml
+        # if it isn't set already by Read the Docs,
         analytics_code = self.version.project.analytics_code
         if not analytics_code and mkdocs_config.get('google_analytics'):
             # http://www.mkdocs.org/user-guide/configuration/#google_analytics
@@ -138,18 +232,19 @@ class BaseMkdocs(BaseBuilder):
             'language': self.version.project.language,
             'programming_language': self.version.project.programming_language,
             'page': None,
-            'theme': theme_name,
-            'builder': "mkdocs",
+            'theme': self.get_theme_name(mkdocs_config),
+            'builder': 'mkdocs',
             'docroot': docs_dir,
-            'source_suffix': ".md",
-            'api_host': getattr(settings, 'PUBLIC_API_URL', 'https://readthedocs.org'),
+            'source_suffix': '.md',
+            'api_host': settings.PUBLIC_API_URL,
+            'ad_free': not self.project.show_advertising,
             'commit': self.version.project.vcs_repo(self.version.slug).commit,
-            'global_analytics_code': getattr(settings, 'GLOBAL_ANALYTICS_CODE', 'UA-17997319-1'),
+            'global_analytics_code': settings.GLOBAL_ANALYTICS_CODE,
             'user_analytics_code': analytics_code,
         }
-        data_json = json.dumps(readthedocs_data, indent=4)
+
         data_ctx = {
-            'data_json': data_json,
+            'readthedocs_data': readthedocs_data,
             'current_version': readthedocs_data['version'],
             'slug': readthedocs_data['project'],
             'html_theme': readthedocs_data['theme'],
@@ -161,20 +256,49 @@ class BaseMkdocs(BaseBuilder):
     def build(self):
         checkout_path = self.project.checkout_path(self.version.slug)
         build_command = [
-            'python',
-            self.python_env.venv_bin(filename='mkdocs'),
+            self.python_env.venv_bin(filename='python'),
+            '-m',
+            'mkdocs',
             self.builder,
             '--clean',
-            '--site-dir', self.build_dir,
+            '--site-dir',
+            self.build_dir,
+            '--config-file',
+            os.path.relpath(self.yaml_file, self.root_path),
         ]
-        if self.use_theme:
-            build_command.extend(['--theme', 'readthedocs'])
+        if self.config.mkdocs.fail_on_warning:
+            build_command.append('--strict')
         cmd_ret = self.run(
-            *build_command,
-            cwd=checkout_path,
+            *build_command, cwd=checkout_path,
             bin_path=self.python_env.venv_bin()
         )
         return cmd_ret.successful
+
+    def get_theme_name(self, mkdocs_config):
+        """
+        Get the theme configuration in the mkdocs_config.
+
+        In v0.17.0, the theme configuration switched
+        from two separate configs (both optional) to a nested directive.
+
+        :see: http://www.mkdocs.org/about/release-notes/#theme-customization-1164
+        :returns: the name of the theme RTD will use
+        """
+        theme_setting = mkdocs_config.get('theme')
+        if isinstance(theme_setting, dict):
+            # Full nested theme config (the new configuration)
+            return theme_setting.get('name') or self.DEFAULT_THEME_NAME
+
+        if theme_setting:
+            # A string which is the name of the theme
+            return theme_setting
+
+        theme_dir = mkdocs_config.get('theme_dir')
+        if theme_dir:
+            # Use the name of the directory in this project's custom theme directory
+            return theme_dir.rstrip('/').split('/')[-1]
+
+        return self.DEFAULT_THEME_NAME
 
 
 class MkdocsHTML(BaseMkdocs):
@@ -187,16 +311,3 @@ class MkdocsJSON(BaseMkdocs):
     type = 'mkdocs_json'
     builder = 'json'
     build_dir = '_build/json'
-    use_theme = False
-
-    def build(self):
-        user_config = yaml.safe_load(
-            open(os.path.join(self.root_path, 'mkdocs.yml'), 'r')
-        )
-        if user_config['theme_dir'] == TEMPLATE_DIR:
-            del user_config['theme_dir']
-        yaml.safe_dump(
-            user_config,
-            open(os.path.join(self.root_path, 'mkdocs.yml'), 'w')
-        )
-        return super(MkdocsJSON, self).build()

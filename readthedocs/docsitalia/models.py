@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """Models for the docsitalia app."""
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils.encoding import python_2_unicode_compatible
@@ -13,16 +10,17 @@ from django.core.urlresolvers import reverse
 from readthedocs.builds.models import Version
 from readthedocs.core.utils import broadcast
 from readthedocs.projects.models import Project
-from readthedocs.projects import tasks
 from readthedocs.oauth.models import RemoteOrganization, RemoteRepository
 
 from readthedocs.core.resolver import resolver
 
+from . import tags_vocabulary
 from .utils import get_projects_with_builds
+from .monkeypatch import monkey_patch_project_model  # NOQA
 
 
 def update_project_from_metadata(project, metadata):
-    """Update a project instance with the validated  project metadata"""
+    """Update a project instance with the validated  project metadata."""
     document = metadata['document']
     project.name = document['name']
     project.description = document['description']
@@ -38,7 +36,7 @@ def update_project_from_metadata(project, metadata):
 class Publisher(models.Model):
 
     """
-    The Publisher is the organization that hosts projects (PublisherProject)
+    The Publisher is the organization that hosts projects (PublisherProject).
 
     The idea is to tie a Publisher to a RemoteOrganization, if we have a
     Publisher instance for a RemoteOrganization we can sync its data as
@@ -92,7 +90,7 @@ class Publisher(models.Model):
         return self.name
 
     def create_projects_from_metadata(self, settings):  # pylint: disable=too-many-locals
-        """Create PublisherProjects from metadata"""
+        """Create PublisherProjects from metadata."""
         slugs = []
         repo_urls_cache = {}
         for project in settings['projects']:
@@ -158,7 +156,7 @@ class Publisher(models.Model):
             new_pub_proj.projects.add(project)
 
     def active_publisher_projects(self):
-        """Active publisher projects with active documents"""
+        """Active publisher projects with active documents."""
         with_public_version = Version.objects.filter(
             privacy_level='public',
             active=True,
@@ -174,15 +172,15 @@ class Publisher(models.Model):
         ).distinct()
 
     def get_absolute_url(self):
-        """Get absolute url for publisher"""
+        """Get absolute url for publisher."""
         return reverse('publisher_detail', args=[self.slug])
 
     def get_canonical_url(self):
-        """Get canonical url for publisher"""
+        """Get canonical url for publisher."""
         return resolver.resolve_docsitalia(self.slug)
 
     def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
-        """Delete Publisher and its organization"""
+        """Delete Publisher and its organization."""
         if self.remote_organization:
             self.remote_organization.delete()
         super(Publisher, self).delete(*args, **kwargs)
@@ -192,7 +190,7 @@ class Publisher(models.Model):
 class PublisherProject(models.Model):
 
     """
-    The PublisherProject is the project that contains documents
+    The PublisherProject is the project that contains documents.
 
     These are created from the organization metadata and created at import time
 
@@ -226,7 +224,7 @@ class PublisherProject(models.Model):
         return self.name
 
     def active_documents(self):
-        """Active documents"""
+        """Active documents."""
         builded_projects = get_projects_with_builds().filter(
             publisherproject=self
         )
@@ -235,23 +233,29 @@ class PublisherProject(models.Model):
         )
 
     def description(self):
-        """Get publisher project description from metadata"""
+        """Get publisher project description from metadata."""
         return self.metadata.get('description', '')
 
+    def short_name(self):
+        """Get publisher project short-name from metadata."""
+        return self.metadata.get('short-name', '')
+
     def get_absolute_url(self):
-        """get absolute url for publisher project"""
+        """get absolute url for publisher project."""
         return reverse('publisher_project_detail', args=[self.publisher.slug, self.slug])
 
     def get_canonical_url(self):
-        """get canonical url for publisher project"""
+        """get canonical url for publisher project."""
         return resolver.resolve_docsitalia(self.publisher.slug, self.slug)
 
     def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
-        """delete pb and all its projects and builds"""
+        """delete pb and all its projects and builds."""
+        from readthedocs.projects import tasks
+
         projects = Project.objects.filter(publisherproject=self)
         versions = Version.objects.filter(project__in=projects)
         for version in versions:
-            broadcast(type='app', task=tasks.clear_html_artifacts, args=[version.pk])
+            broadcast(type='app', task=tasks.remove_build_storage_paths, args=[version.pk])
         projects.delete()
         super(PublisherProject, self).delete(*args, **kwargs)
 
@@ -284,3 +288,42 @@ class PublisherIntegration(models.Model):
         return (
             _('{0} for {1}')
             .format(self.get_integration_type_display(), self.publisher.name))
+
+
+@python_2_unicode_compatible
+class AllowedTag(models.Model):
+
+    """
+    Tags allowed to be used for a document.
+
+    If a document contains a tag that does not belong to this table, it
+    will be removed.
+    """
+
+    BASE_TAGS = tags_vocabulary.BASE_TAGS
+
+    name = models.CharField(_('Name'), max_length=255, unique=True)
+    enabled = models.BooleanField(_('Enabled'), default=True)
+
+    class Meta:
+        verbose_name = _('allowed tag')
+        verbose_name_plural = _('allowed tags')
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        """Save the model instance to the database."""
+        self.clean()
+        return super(AllowedTag, self).save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
+
+    def clean(self):
+        """Perform custom validation."""
+        self.name = self.name.strip().lower()
+        return super(AllowedTag, self).clean()

@@ -3,9 +3,6 @@ Endpoints integrating with Github webhooks for our metadata.
 
 See restapi.views.integrations.
 """
-
-from __future__ import absolute_import
-
 import json
 import logging
 
@@ -56,7 +53,7 @@ class MetadataWebhookMixin(object): # noqa
 
     def finalize_response(self, req, *args, **kwargs):
         """If the publisher was set on POST, store an HTTP exchange."""
-        resp = super(MetadataWebhookMixin, self).finalize_response(req, *args, **kwargs)
+        resp = super().finalize_response(req, *args, **kwargs)
         if hasattr(self, 'publisher') and self.publisher:
             HttpExchange.objects.from_exchange(
                 req,
@@ -168,7 +165,7 @@ class MetadataGitHubWebhookView(MetadataWebhookMixin, APIView):
                 return json.loads(self.request.data['payload'])
             except (ValueError, KeyError):
                 pass
-        return super(MetadataGitHubWebhookView, self).get_data()
+        return super().get_data()
 
     def handle_webhook(self):
         """Handle webhook payload."""

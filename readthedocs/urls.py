@@ -1,29 +1,25 @@
 # pylint: disable=missing-docstring
-from __future__ import absolute_import
-
+import os
 from functools import reduce
 from operator import add
 
-from django.conf.urls import url, include
-from django.contrib import admin
 from django.conf import settings
+from django.conf.urls import include, url
 from django.conf.urls.static import static
-from django.views.generic.base import TemplateView
-from tastypie.api import Api
+from django.contrib import admin
+from django.views.generic.base import RedirectView, TemplateView
 
-from readthedocs.api.base import (ProjectResource, UserResource,
-                                  VersionResource, FileResource)
-from readthedocs.core.urls import docs_urls, core_urls, deprecated_urls
-from readthedocs.core.views import (SupportView,
-                                    server_error_404, server_error_500)
+from readthedocs.core.urls import core_urls, deprecated_urls, docs_urls
+from readthedocs.core.views import (
+    HomepageView,
+    SupportView,
+    do_not_track,
+    server_error_404,
+    server_error_500,
+)
 from readthedocs.search import views as search_views
+from readthedocs.search.api import PageSearchAPIView
 
-
-v1_api = Api(api_name='v1')
-v1_api.register(UserResource())
-v1_api.register(ProjectResource())
-v1_api.register(VersionResource())
-v1_api.register(FileResource())
 
 admin.autodiscover()
 
@@ -33,8 +29,11 @@ handler500 = server_error_500
 basic_urls = [
     url(r'^support/', SupportView.as_view(), name='support'),
     url(r'^security/', TemplateView.as_view(template_name='security.html')),
-    url(r'^.well-known/security.txt',
-        TemplateView.as_view(template_name='security.txt', content_type='text/plain')),
+    url(
+        r'^\.well-known/security.txt$',
+        TemplateView
+        .as_view(template_name='security.txt', content_type='text/plain'),
+    ),
 ]
 
 rtd_urls = [
@@ -58,9 +57,14 @@ project_urls = [
 ]
 
 api_urls = [
-    url(r'^api/', include(v1_api.urls)),
-    url(r'^api/v2/', include('readthedocs.restapi.urls')),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/v2/', include('readthedocs.api.v2.urls')),
+    # Keep the `doc_search` at root level, so the test does not fail for other API
+    url(r'^api/v2/docsearch/$', PageSearchAPIView.as_view(), name='doc_search'),
+    url(
+        r'^api-auth/',
+        include('rest_framework.urls', namespace='rest_framework')
+    ),
+    url(r'^api/v3/', include('readthedocs.api.v3.urls')),
 ]
 
 i18n_urls = [
@@ -68,44 +72,71 @@ i18n_urls = [
 ]
 
 admin_urls = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 ]
 
-debug_urls = add(
-    [
-        url('style-catalog/$',
-            TemplateView.as_view(template_name='style_catalog.html')),
-    ],
-    static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-)
+dnt_urls = [
+    url(r'^\.well-known/dnt/$', do_not_track),
+
+    # https://github.com/EFForg/dnt-guide#12-how-to-assert-dnt-compliance
+    url(
+        r'^\.well-known/dnt-policy.txt$',
+        TemplateView
+        .as_view(template_name='dnt-policy.txt', content_type='text/plain'),
+    ),
+]
+
+debug_urls = []
+for build_format in ('epub', 'htmlzip', 'json', 'pdf'):
+    debug_urls += static(
+        settings.MEDIA_URL + build_format,
+        document_root=os.path.join(settings.MEDIA_ROOT, build_format),
+    )
+debug_urls += [
+    url(
+        'style-catalog/$',
+        TemplateView.as_view(template_name='style_catalog.html'),
+    ),
+
+    # This must come last after the build output files
+    url(
+        r'^media/(?P<remainder>.+)$',
+        RedirectView.as_view(url=settings.STATIC_URL + '%(remainder)s'),
+        name='media-redirect',
+    ),
+]
 
 # Export URLs
-groups = [basic_urls, rtd_urls, project_urls, api_urls, core_urls, i18n_urls,
-          deprecated_urls]
+groups = [
+    basic_urls,
+    rtd_urls,
+    project_urls,
+    api_urls,
+    core_urls,
+    i18n_urls,
+    deprecated_urls,
+]
 
-if settings.USE_PROMOS:
-    # Include donation URL's
-    groups.insert(0, [
-        url(r'^sustainability/', include('readthedocsext.donate.urls')),
+if settings.DO_NOT_TRACK_ENABLED:
+    # Include Do Not Track URLs if DNT is supported
+    groups.append(dnt_urls)
+
+
+if settings.READ_THE_DOCS_EXTENSIONS:
+    groups.append([
+        url(r'^', include('readthedocsext.urls'))
     ])
 
-if 'readthedocsext.embed' in settings.INSTALLED_APPS:
-    api_urls.insert(
-        0,
-        url(r'^api/v1/embed/', include('readthedocsext.embed.urls'))
-    )
-
-if 'readthedocsext.search' in settings.INSTALLED_APPS:
-    for num, _url in enumerate(rtd_urls):
-        if _url and hasattr(_url, 'name') and _url.name == 'search':
-            rtd_urls[num] = \
-                url(r'^search/', 'readthedocsext.search.mainsearch.elastic_search', name='search'),
-
-if not getattr(settings, 'USE_SUBDOMAIN', False) or settings.DEBUG:
+if not settings.USE_SUBDOMAIN or settings.DEBUG:
     groups.insert(0, docs_urls)
-if getattr(settings, 'ALLOW_ADMIN', True):
+if settings.ALLOW_ADMIN:
     groups.append(admin_urls)
-if getattr(settings, 'DEBUG', False):
+if settings.DEBUG:
+    import debug_toolbar
+
+    debug_urls += [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ]
     groups.append(debug_urls)
 
 docsitalia_urls = [
