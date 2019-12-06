@@ -331,12 +331,15 @@ class AllowedTag(models.Model):
 
 class ProjectOrder(models.Model):
     project = models.OneToOneField(Project, verbose_name=_('Projects'), on_delete=models.CASCADE)
-    order = models.PositiveIntegerField()
+    priority = models.PositiveIntegerField(
+        default=0,
+        help_text=_('Greater number goes first in Project list')
+    )
 
     class Meta:
         verbose_name = _('project order')
         verbose_name_plural = _('projects order')
-        ordering = ('order',)
+        ordering = ('-priority',)
 
     def __str__(self):
-        return '{} - {}'.format(self.order, self.project.name)
+        return self.project.name

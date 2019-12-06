@@ -594,17 +594,6 @@ class DocsItaliaViewsTest(TestCase):
             success=True
         )
 
-        qs = hp.get_queryset()
-
-        # order by modified date descending
-        self.assertEqual(list(qs), [project2, project])
-
-        project.description = 'new descr'
-        project.save()
-
-        qs = hp.get_queryset()
-        self.assertEqual(list(qs), [project, project2])
-
         project3 = Project.objects.create(
             name='my project 3',
             slug='projectslug3',
@@ -623,36 +612,37 @@ class DocsItaliaViewsTest(TestCase):
         )
 
         qs = hp.get_queryset()
-        self.assertEqual(list(qs), [project3, project, project2])
 
-        # add ProjectOrder
-        ProjectOrder.objects.create(
-            project=project2,
-            order=0
+        self.assertEqual(list(qs), [project, project2, project3])
+
+        # change ProjectOrder
+        project_order = ProjectOrder.objects.get(
+            project=project2
         )
-
-        qs = hp.get_queryset()
-        self.assertEqual(list(qs), [project2, project3, project])
-
-        # project with ProjectOrder got priority greater than others,
-        # so even Project with order=100 is earlier than Project without ProjectOrder
-        ProjectOrder.objects.create(
-            project=project,
-            order=100
-        )
+        project_order.priority = 100
+        project_order.save()
 
         qs = hp.get_queryset()
         self.assertEqual(list(qs), [project2, project, project3])
 
-        # test Projects with same order should be ordered by modified date
-        # order is not unique for convenience purpose
-        ProjectOrder.objects.create(
-            project=project3,
-            order=0
+        project_order2 = ProjectOrder.objects.get(
+            project=project3
         )
+        project_order2.priority = 1
+        project_order2.save()
 
         qs = hp.get_queryset()
         self.assertEqual(list(qs), [project2, project3, project])
+
+        # test Projects with same priority should be ordered by modified date
+        project_order3 = ProjectOrder.objects.get(
+            project=project
+        )
+        project_order3.priority = 100
+        project_order3.save()
+
+        qs = hp.get_queryset()
+        self.assertEqual(list(qs), [project2, project, project3])
 
 
 

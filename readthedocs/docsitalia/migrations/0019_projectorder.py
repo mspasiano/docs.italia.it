@@ -18,13 +18,13 @@ class Migration(migrations.Migration):
             name='ProjectOrder',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('order', models.PositiveIntegerField()),
+                ('priority', models.PositiveIntegerField(default=0, help_text='Greater number goes first in Project list')),
                 ('project', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='projects.Project', verbose_name='Projects')),
             ],
             options={
                 'verbose_name': 'project order',
                 'verbose_name_plural': 'projects order',
-                'ordering': ('order',),
+                'ordering': ('-priority',),
             },
         ),
     ]

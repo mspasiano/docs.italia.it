@@ -4,13 +4,14 @@
 import logging
 
 from django.dispatch import receiver
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_save
 
 from readthedocs.core.signals import webhook_github
 from readthedocs.doc_builder.signals import finalize_sphinx_context_data
+from readthedocs.projects.models import Project
 
 from .github import get_metadata_for_document
-from .models import PublisherProject, update_project_from_metadata
+from .models import ProjectOrder, PublisherProject, update_project_from_metadata
 
 
 log = logging.getLogger(__name__) # noqa
@@ -87,3 +88,11 @@ def on_publisher_project_delete(sender, instance, **kwargs):  # noqa
     if projects_pks:
         instance.projects.filter(pk__in=projects_pks).delete()
         clear_es_index.delay(projects=projects_pks)
+
+
+@receiver(post_save, sender=Project)
+def on_project_create(sender, instance, created, **kwargs):  # noqa
+    """Create ProjectOrder on Project create"""
+    if not created:
+        return
+    ProjectOrder.objects.create(project=instance)

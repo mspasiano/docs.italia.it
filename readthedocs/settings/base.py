@@ -120,6 +120,7 @@ class CommunityBaseSettings(Settings):
             'django_elasticsearch_dsl',
             'django_filters',
             'polymorphic',
+            'adminsortable2',
 
             # our apps
             'readthedocs.projects',
