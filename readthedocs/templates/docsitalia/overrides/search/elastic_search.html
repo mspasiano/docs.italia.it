@@ -206,6 +206,20 @@
           </div>
           <!-- END search results -->
 
+          <div class="bootstrap-select-wrapper pageSizeSelectForm">
+            <!-- items per page select -->
+            <label for="pageSizeSelect">Quanti documenti mostrare per pagina</label>
+            <select class="form-control" onchange="location = this.value;" id="pageSizeSelect">
+              {% for page_size in page_sizes_list %}
+                <option {% if page_size == page.paginator.per_page %}selected="selected"{% endif %} value="?{% url_replace request 'page_size' page_size %}"> {{ page_size }} per pagina </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <span class="pagination__pages">
+            Page {{ page.number }} of {{ page.paginator.num_pages }}
+          </span>
+
           {% if page.has_previous or page.has_next %}
           <!-- BEGIN search pagination -->
           <div class="pagination">
@@ -224,18 +238,6 @@
           <!-- END search pagination -->
           {% endif %}
 
-          <div class="form-group">
-            <!-- items per page select -->
-            <label for="pageSizeSelect">Quanti documenti mostrare per pagina</label>
-            <select class="form-control" onchange="location = this.value;" id="pageSizeSelect">
-              {% for page_size in page_sizes_list %}
-                <option {% if page_size == page.paginator.per_page %}selected="selected"{% endif %} value="?{% url_replace request 'page_size' page_size %}"> {{ page_size }} per pagina </option>
-              {% endfor %}
-            </select>
-            <span>
-              Page {{ page.number }} of {{ page.paginator.num_pages }}
-            </span>
-          </div>
         {% else %}
           {# Show some example queries to run, maybe query syntax, something else? #}
         {% endif %}
