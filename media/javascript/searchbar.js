@@ -11,7 +11,7 @@ var fetchSearchbarResultsFromApi = function () {
   }
 
   searchbarPendingRequest = $.ajax({
-    url: '/api/v2/search/',
+    url: '/api/quicksearch/',
     type: 'GET',
     data: {
       q: searchbarValue
@@ -51,14 +51,14 @@ var createSearchbarMoreItemList = function () {
 var createSearchbarItemList = function (item) {
   if (!item) return ''
 
-  var title = item.text.replace('<span>', '<mark>').replace('</span>', '</mark>')
+  var title = item.text
   var link = item.link
   var icon = 'it-file'
-  var type = (item.kind || '').toUpperCase()
+  var type = (item.model || '').toUpperCase()
 
-  if (item.kind === 'documento') icon = 'it-file'
-  else if (item.kind === 'progetto') icon = 'it-folder'
-  else if (item.kind === 'amministrazione') icon = 'it-pa'
+  if (item.model === 'documento') icon = 'it-file'
+  else if (item.model === 'progetto') icon = 'it-folder'
+  else if (item.model === 'amministrazione') icon = 'it-pa'
 
   return (
     '<li>' +
@@ -85,10 +85,10 @@ var hideSearchbarResults = function () {
   $('#id_site_search_results').hide()
 }
 
-var BlurEventListener = function (e) {
+var SearchbarBlurEventListener = function (e) {
   if (!$(e.target).parents('.search-main .autocomplete-wrapper-big').length) {
     hideSearchbarResults()
-    window.removeEventListener('click', BlurEventListener)
+    window.removeEventListener('click', SearchbarBlurEventListener)
   }
 }
 
@@ -122,7 +122,7 @@ $(document).ready(function () {
       // TODO: Chiamare qui le ricerce frequenti
     }
 
-    window.addEventListener('click', BlurEventListener)
+    window.addEventListener('click', SearchbarBlurEventListener)
   })
 })
 
