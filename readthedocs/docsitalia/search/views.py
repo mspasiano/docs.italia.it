@@ -3,17 +3,11 @@
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Q, Search
-from rest_framework import generics, response, serializers, views
-from rest_framework.exceptions import ValidationError
+from rest_framework import generics, serializers
 
 from readthedocs.builds.constants import LATEST
-from readthedocs.builds.models import Version
-from readthedocs.projects.constants import PRIVATE
-from readthedocs.search.documents import PageDocument
-from readthedocs.projects.models import Project
 
 from .documents import quicksearch_index
-
 
 
 class SearchSerializer(serializers.Serializer):  # pylint: disable=abstract-method
@@ -53,9 +47,10 @@ class QuickSearchAPIView(generics.ListAPIView):
             index=f'{quicksearch_index}',
             using=using,
         ).filter(
-            Q('terms', model=['project', 'publisher']) |
-            (
-                Q('term', model='page') & Q('term', version=version)
+            Q(
+                'terms', model=['progetto', 'amministrazione']
+            ) | (
+                Q('term', model='documento') & Q('term', version=version)
             )
         ).query('match', text=query).highlight(
             'text', pre_tags=['<mark>'], post_tags=['</mark>'], fragment_size=100

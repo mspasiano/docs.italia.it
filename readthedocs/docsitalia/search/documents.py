@@ -45,7 +45,7 @@ class PageQuickSearchDocument(RTDDocTypeMixin, DocType):
 
     def prepare_model(self, obj):
         """Return the document model name."""
-        return "page"
+        return "documento"
 
 
 @quicksearch_index.doc_type
@@ -61,7 +61,7 @@ class ProjectQuickSearchDocument(RTDDocTypeMixin, DocType):
 
     def prepare_model(self, obj):
         """Return the document model name."""
-        return "project"
+        return "progetto"
 
 
 @quicksearch_index.doc_type
@@ -77,4 +77,4 @@ class PublisherQuickSearchDocument(RTDDocTypeMixin, DocType):
 
     def prepare_model(self, obj):
         """Return the document model name."""
-        return "publisher"
+        return "amministrazione"
