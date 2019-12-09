@@ -8,12 +8,6 @@
 <div id="project_bar" class="project-bar">
   <div class="wrapper container">
 
-    {% if project.has_good_build %}
-      <div class="project-view-docs">
-        <a href="{{ project.get_docs_url }}">{% trans "View Docs" %}</a>
-      </div>
-    {% endif %}
-
     <div class="project-title">
       <h1>
         <span class="project-breadcrumb quiet">
@@ -24,6 +18,13 @@
         <a href="{{ project.get_absolute_url }}">{{ project }}</a>
       </h1>
     </div>
+
+  <div class="project-detail-actions">
+    {% if project.has_good_build %}
+      <div class="project-view-docs">
+        <a href="{{ project.get_docs_url }}">{% trans "View Docs" %}</a>
+      </div>
+    {% endif %}
 
     <div class="options">
     {% if project.skip %}
@@ -57,6 +58,7 @@
         {% endif %}
       </ul>
     </div>
+  </div>
 
 
   </div>
