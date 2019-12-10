@@ -249,9 +249,12 @@ li.module-item > p.error {
 }
 
 .module-item.col-span a {
-    text-decoration: none;
-    display: block;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
     padding: 10px;
+    text-decoration: none;
 }
 
 .module-item.col-span a:hover {
@@ -1430,4 +1433,66 @@ div.module.project-subprojects div.subproject-meta {
   .document-card:nth-child(3n):before {
     display: block;
   }
+}
+
+
+.version-item {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.module-list-version-details {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.module-list-version-details > * {
+    display: inline-block;
+    margin-left: 80px;
+    min-width: 80px;
+    text-align: left;
+}
+
+
+@media screen and (max-width: 768px) {
+    .module-list-version-details > * {
+        margin: 0 0 0 40px;
+    }
+}
+
+
+@media screen and (max-width: 420px) {
+    .version-item {
+        flex-direction: column;
+    }
+
+    .module-list-version-details > * {
+        margin: 10px 20px 0 0;
+    }
+
+    .version-button {
+        margin-right: 0;
+    }
+}
+
+.version-button {
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8CA1AF url(../images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    min-width: unset;
 }
