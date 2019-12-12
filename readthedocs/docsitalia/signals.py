@@ -4,10 +4,13 @@
 import logging
 
 from django.dispatch import receiver
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_save
+from django_elasticsearch_dsl.apps import DEDConfig
 
+from readthedocs.projects.models import Project, HTMLFile
 from readthedocs.core.signals import webhook_github
 from readthedocs.doc_builder.signals import finalize_sphinx_context_data
+from readthedocs.search.tasks import index_objects_to_es
 
 from .github import get_metadata_for_document
 from .models import PublisherProject, update_project_from_metadata
@@ -87,3 +90,20 @@ def on_publisher_project_delete(sender, instance, **kwargs):  # noqa
     if projects_pks:
         instance.projects.filter(pk__in=projects_pks).delete()
         clear_es_index.delay(projects=projects_pks)
+
+
+@receiver(post_save, sender=Project)
+def index_documents_project_save(instance, *args, **kwargs):
+    from readthedocs.search.documents import PageDocument
+
+    html_obj_ids = HTMLFile.objects.filter(project=instance).values_list('id', flat=True)
+
+    if html_obj_ids and DEDConfig.autosync_enabled():
+        kwargs = {
+            'app_label': HTMLFile._meta.app_label,
+            'model_name': HTMLFile.__name__,
+            'document_class': str(PageDocument),
+            'objects_id': list(html_obj_ids),
+        }
+
+        index_objects_to_es.delay(**kwargs)

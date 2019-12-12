@@ -45,6 +45,7 @@ UserInput = collections.namedtuple(
         'sort',
         'tags',
         'page',
+        'is_default',
     ),
 )
 
@@ -90,7 +91,7 @@ def elastic_search(request, project_slug=None):
         query=request.GET.get('q'),
         type=request_type or request.GET.get('type', 'project'),
         project=project_slug or request.GET.get('project'),
-        version=request.GET.get('version', LATEST),
+        version=request.GET.get('version'),
         taxonomy=request.GET.get('taxonomy'),
         language=request.GET.get('language'),
         role_name=request.GET.get('role_name'),
@@ -100,6 +101,7 @@ def elastic_search(request, project_slug=None):
         sort=request.GET.get('sort'),
         tags=request.GET.getlist('tags'),
         page=request.GET.get('page'),
+        is_default=True if not request.GET.get('version') else None
     )
     search_facets = collections.defaultdict(
         lambda: ProjectSearch,
