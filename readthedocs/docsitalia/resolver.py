@@ -87,6 +87,11 @@ class ItaliaResolver(ResolverBase):
         :return: string
         """
         require_https = getattr(settings, 'PUBLIC_DOMAIN_USES_HTTPS', False)
+        # get readable international slug name if language is not italian
+        from readthedocs.docsitalia.utils import get_international_version_slug
+        kwargs['version_slug'] = get_international_version_slug(
+            project, kwargs.get('language', None), kwargs.get('version_slug', None)
+        )
         return super(ItaliaResolver, self).resolve(
             project, require_https=require_https, filename=filename, private=private, **kwargs
         )
