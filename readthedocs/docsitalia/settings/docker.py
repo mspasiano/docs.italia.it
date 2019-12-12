@@ -30,6 +30,8 @@ class DocsItaliaDockerSettings(CommunityBaseSettings):
     RTD_LATEST_VERBOSE_NAME = RTD_LATEST
     RTD_STABLE = 'stabile'
     RTD_STABLE_VERBOSE_NAME = RTD_STABLE
+    RTD_LATEST_EN = 'draft'
+    RTD_STABLE_EN = 'stable'
 
     # General settings
     DEBUG = os.environ['DEBUG']
