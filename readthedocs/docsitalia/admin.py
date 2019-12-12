@@ -64,11 +64,18 @@ class AllowedTagAdmin(admin.ModelAdmin):
 
 class ProjectOrderAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_filter = ('project',)
+    search_fields = ('project__name',)
+    list_display = ('priority', 'project', 'priority_value')
     ordering = ('-priority',)
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.exclude = None
+
+    def priority_value(self, obj=None):
+        if obj:
+            return obj.priority
+        return None
 
 
 admin.site.register(ProjectOrder, ProjectOrderAdmin)
