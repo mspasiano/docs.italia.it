@@ -1,15 +1,16 @@
 from django.apps import apps
 from django.conf.urls import include, url
 from django.views.generic.base import RedirectView, TemplateView
-
-from readthedocs.constants import pattern_opts
 from rest_framework import routers
 
+from readthedocs.constants import pattern_opts
+
+from .search.views import QuickSearchAPIView
+from .views import integrations, api
 from .views.core_views import (
     PublisherList, DocsItaliaHomePage, PublisherIndex, PublisherProjectIndex, DocsItaliaImport,
     DocumentRedirect
 )
-from .views import integrations, api
 
 router = routers.DefaultRouter()
 router.register(r'document', api.DocsItaliaProjectViewSet, base_name='docsitalia-document')
@@ -36,6 +37,7 @@ docsitalia_urls = [
 
 urlpatterns = [
     url(r'^docsitalia/', include(docsitalia_urls)),
+    url(r'^api/quicksearch/$', QuickSearchAPIView.as_view(), name='api_quicksearch'),
     url(
         r'^api/v2/allowedtag-autocomplete/$',
         api.AllowedTagAutocomplete.as_view(),

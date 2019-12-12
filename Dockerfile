@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libpq-dev \
         locales \
         wait-for-it \
+        gettext \
+        libgettextpo-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' -e 's/# \(it_IT\.UTF-8 .*\)/\1/'  /etc/locale.gen && \
