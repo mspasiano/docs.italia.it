@@ -20,6 +20,7 @@ quicksearch_index.settings(**quicksearch_conf['settings'])
 
 @quicksearch_index.doc_type
 class PageQuickSearchDocument(RTDDocTypeMixin, DocType):
+
     """
     Page document based on HTMLFile.
 
