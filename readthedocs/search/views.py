@@ -24,16 +24,20 @@ DEFAULT_PAGE_SIZE = 12
 PAGE_SIZES_LIST = [6, 12, 24, 48]
 
 ALL_SORTS = {
-    'priority': {'value': 'priority', 'label': 'Più popolari'},
+    'priority': {'value': '-priority', 'label': 'Più popolari'},
     'relevance': {'value': '_score', 'label': 'Rilevanza'},
     'alphabetical': {'value': 'name', 'label': 'Ordine alfabetico'},
     'newest': {'value': 'date', 'label': 'Più recente'},
     'oldest': {'value': '-date', 'label': 'Meno recente'},
 }
-DEFAULT_SORT = [
+DEFAULT_SORT_FILE = [
     ALL_SORTS['priority']['value'],
     ALL_SORTS['relevance']['value'],
     ALL_SORTS['newest']['value'],
+]
+DEFAULT_SORT_PROJECT = [
+    ALL_SORTS['priority']['value'],
+    ALL_SORTS['relevance']['value'],
 ]
 
 UserInput = collections.namedtuple(
@@ -130,7 +134,8 @@ def elastic_search(request, project_slug=None):
     sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else None
     if user_input.query:
         kwargs = {}
-        kwargs['sort'] = [ALL_SORTS[sort_key]['value']] if sort_key else DEFAULT_SORT
+        default_sort = DEFAULT_SORT_FILE if user_input.type == 'file' else DEFAULT_SORT_PROJECT
+        kwargs['sort'] = [ALL_SORTS[sort_key]['value']] if sort_key else default_sort
 
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)

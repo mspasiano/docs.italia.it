@@ -72,6 +72,7 @@ class ProjectOrderAdmin(SortableAdminMixin, admin.ModelAdmin):
         super().__init__(model, admin_site)
         self.exclude = None
 
+    # pylint: disable=no-self-use
     def priority_value(self, obj=None):
         if obj:
             return obj.priority
