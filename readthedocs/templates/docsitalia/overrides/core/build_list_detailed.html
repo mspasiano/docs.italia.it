@@ -3,7 +3,7 @@
 {% for build in build_qs %}
 <li class="module-item col-span">
     <div id="build-{{ build.id }}">
-        <a href="{{ build.get_absolute_url }}">
+        <a href="{{ build.get_absolute_url }}" class="d-flex flex-row flex-wrap justify-content-between">
           {% if build.is_stale %}
           <span class="icon-warning" title="{% trans 'This build is still waiting to be built' %}"></span>
           {% endif %}

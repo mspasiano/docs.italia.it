@@ -31,13 +31,13 @@ Versions
             <ul>
               {% for version in active_versions|sort_version_aware %}
                 {% block active-versions %}
-                  <li class="module-item version-item">
+                  <li class="module-item d-flex flex-column flex-md-row flex-wrap justify-content-between align-middle">
                     {# Link to the docs #}
                     <a class="module-item-title" href="{{ version.get_absolute_url }}">{{ version.slug }}</a>
 
-                  <span class="module-list-version-details">
+                  <span class="module-list-version-details d-flex align-middle flex-row justify-content-between">
                     {% if request.user|is_admin:project %}
-                      <span>
+                      <span class="ml-0">
                         {{ version.get_privacy_level_display }}
                       </span>
                     {% endif %}
@@ -48,9 +48,9 @@ Versions
 
 
                     {% if request.user|is_admin:project %}
-                      <a class="version-button" href="{% url "project_version_detail" project.slug version.slug %}">{% trans "Edit" %}</a>
+                      <a class="version-button mr-sm-0" href="{% url "project_version_detail" project.slug version.slug %}">{% trans "Edit" %}</a>
                     {% else %}
-                      <a class="version-button" href="{{ version.get_absolute_url }}">{% trans "View Docs" %}</a>
+                      <a class="version-button mr-sm-0" href="{{ version.get_absolute_url }}">{% trans "View Docs" %}</a>
                     {% endif %}
                   </span>
 
@@ -86,13 +86,13 @@ Versions
                 {% for version in inactive_versions|sort_version_aware %}
 
                   {% block inactive-versions %}
-                    <li class="module-item version-item">
+                    <li class="module-item d-flex flex-column flex-md-row flex-wrap justify-content-between align-middle">
                       {# Link to the docs #}
                       <span class="quiet">{{ version.slug }}</span>
 
-                      <span class="module-list-version-details">
+                      <span class="module-list-version-details d-flex align-middle flex-row justify-content-between">
                         {% if request.user|is_admin:project %}
-                          <span>
+                          <span class="ml-0">
                             {{ version.get_privacy_level_display }}
                           </span>
                         {% endif %}
@@ -102,7 +102,7 @@ Versions
                         {% endif %}
 
                         {% if request.user|is_admin:project %}
-                            <a class="version-button" href="{% url "project_version_detail" project.slug version.slug %}">{% trans "Edit" %}</a>
+                            <a class="version-button mr-sm-0" href="{% url "project_version_detail" project.slug version.slug %}">{% trans "Edit" %}</a>
                         {% endif %}
                       </span>
 

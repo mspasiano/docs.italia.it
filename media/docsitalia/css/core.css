@@ -249,9 +249,6 @@ li.module-item > p.error {
 }
 
 .module-item.col-span a {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
     justify-content: space-between;
     padding: 10px;
     text-decoration: none;
@@ -860,11 +857,6 @@ p.build-missing {
 }
 
 /* project detail */
-.project_detail .container .wrapper {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
 
 .project_detail .module {
     width: 50%;
@@ -892,18 +884,6 @@ p.build-missing {
 .project_detail .project_details h3 {
     margin-bottom: 0;
     font-size: 16px;
-}
-
-.project-detail-actions {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: space-between;
-}
-
-@media (max-width: 420px) {
-    .project-detail-actions {
-        flex-direction: column-reverse;
-    }
 }
 
 @media (max-width: 800px) {
@@ -1435,21 +1415,6 @@ div.module.project-subprojects div.subproject-meta {
   }
 }
 
-
-.version-item {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
-
-.module-list-version-details {
-    align-items: center;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
 .module-list-version-details > * {
     display: inline-block;
     margin-left: 80px;
@@ -1457,25 +1422,15 @@ div.module.project-subprojects div.subproject-meta {
     text-align: left;
 }
 
-
 @media screen and (max-width: 768px) {
     .module-list-version-details > * {
         margin: 0 0 0 40px;
     }
 }
 
-
 @media screen and (max-width: 420px) {
-    .version-item {
-        flex-direction: column;
-    }
-
     .module-list-version-details > * {
         margin: 10px 20px 0 0;
-    }
-
-    .version-button {
-        margin-right: 0;
     }
 }
 

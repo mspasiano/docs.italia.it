@@ -19,7 +19,7 @@
       </h1>
     </div>
 
-  <div class="project-detail-actions">
+  <div class="d-flex flex-column-reverse flex-md-row-reverse justify-content-between">
     {% if project.has_good_build %}
       <div class="project-view-docs">
         <a href="{{ project.get_docs_url }}">{% trans "View Docs" %}</a>
