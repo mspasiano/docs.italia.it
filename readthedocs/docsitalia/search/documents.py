@@ -2,9 +2,9 @@ from django.conf import settings
 from django_elasticsearch_dsl import DocType, Index, fields
 from elasticsearch_dsl import analyzer, tokenizer
 
-from readthedocs.docsitalia.models import Publisher
+from readthedocs.docsitalia.models import Publisher, PublisherProject
 from readthedocs.projects.constants import PRIVATE
-from readthedocs.projects.models import HTMLFile, Project
+from readthedocs.projects.models import HTMLFile
 from readthedocs.search.documents import RTDDocTypeMixin
 
 trigram_analyzer = analyzer(
@@ -20,6 +20,13 @@ quicksearch_index.settings(**quicksearch_conf['settings'])
 
 @quicksearch_index.doc_type
 class PageQuickSearchDocument(RTDDocTypeMixin, DocType):
+
+    """
+    Page document based on HTMLFile.
+
+    The use of HTMLFile as in :class:`~readthedocs.search.documents.PageDocument`
+    allows a uniform user experience between the autocomplete search and the SERP.
+    """
 
     model = fields.KeywordField()
     link = fields.KeywordField(attr='get_absolute_url')
@@ -56,7 +63,7 @@ class ProjectQuickSearchDocument(RTDDocTypeMixin, DocType):
     text = fields.TextField(attr='name', analyzer=trigram_analyzer)
 
     class Meta:
-        model = Project
+        model = PublisherProject
         ignore_signals = True
 
     def prepare_model(self, obj):
