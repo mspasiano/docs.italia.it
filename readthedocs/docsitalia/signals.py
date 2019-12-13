@@ -4,7 +4,7 @@
 import logging
 
 from django.dispatch import receiver
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import pre_delete, pre_save
 from django_elasticsearch_dsl.apps import DEDConfig
 
 from readthedocs.projects.models import Project, HTMLFile
@@ -92,18 +92,32 @@ def on_publisher_project_delete(sender, instance, **kwargs):  # noqa
         clear_es_index.delay(projects=projects_pks)
 
 
-@receiver(post_save, sender=Project)
-def index_documents_project_save(instance, *args, **kwargs):
+@receiver(pre_save, sender=Project)
+def index_documents_project_save(instance, *args, **kwargs):  # noqa
+    """If project default_version has changed - reindex PageDocument."""
     from readthedocs.search.documents import PageDocument
 
-    html_obj_ids = HTMLFile.objects.filter(project=instance).values_list('id', flat=True)
+    if not instance.id or not DEDConfig.autosync_enabled():
+        return
 
-    if html_obj_ids and DEDConfig.autosync_enabled():
-        kwargs = {
-            'app_label': HTMLFile._meta.app_label,
-            'model_name': HTMLFile.__name__,
-            'document_class': str(PageDocument),
-            'objects_id': list(html_obj_ids),
-        }
+    previous = Project.objects.get(id=instance.id)
 
-        index_objects_to_es.delay(**kwargs)
+    if previous.default_version == instance.default_version:
+        return
+
+    html_obj_ids = HTMLFile.objects.filter(
+        project=instance, version__slug__in=[previous.default_version, instance.default_version]
+    ).values_list('id', flat=True)
+
+    if not html_obj_ids:
+        return
+
+    kwargs = {
+        'app_label': HTMLFile._meta.app_label,
+        'model_name': HTMLFile.__name__,
+        'document_class': str(PageDocument),
+        'objects_id': list(html_obj_ids),
+    }
+
+    # execute in a second to get object after save
+    index_objects_to_es.apply_async(kwargs=kwargs, countdown=1)
