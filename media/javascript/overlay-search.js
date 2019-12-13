@@ -4,30 +4,107 @@
  */
 
 var debounceInputTiming = 300
+var minCharacters = 3
 var params = {
-  filter: 'all',
+  filter: '',
   search: ''
 }
 
 var pendingRequest = null
 var fetchResultsFromApi = function () {
-  // TODO: Fetch here results from API
   if (pendingRequest) pendingRequest.abort('Canceled from user')
 
-  // console.log('Fetch API with those params', params)
+  if (params.search.length < minCharacters) {
+    return hideResults()
+  }
 
-  pendingRequest = $.ajax('https://jsonplaceholder.typicode.com/users')
+  var dataParams = { q: params.search }
+  if (params.filter) dataParams.model = params.filter
+
+  pendingRequest = $.ajax({
+    url: '/api/quicksearch/',
+    type: 'GET',
+    data: dataParams
+  })
     .done(function (response) {
-      // console.log('response', response)
+      showResults(response)
     })
     .fail(function (error) {
       if (error.statusText !== 'Canceled from user') {
-        console.log('fetchResultsFromApi error:', error)
+        hideResults()
       }
     })
 }
 
+var createSearchMoreItemList = function () {
+  var link = '/search/?q=' + params.search + '&type=file'
+  var title = 'Ricerca libera per "' + params.search + '"'
+
+  return (
+    '<li class="autocomplete-list-freesearch">' +
+      '<a class="ml-1" href="' + link + '">' +
+        '<svg class="icon icon-xs icon-primary search-icon">' +
+          '<use xlink:href="/media/static/vendor/bootstrap-italia/svg/sprite.svg#it-search"></use>' +
+        '</svg>' +
+        '<span class="autocomplete-list-text">' +
+          '<span>' + title + '</span>' +
+        '</span>' +
+        '<svg class="icon icon-xs icon-primary right-arrow-icon">' +
+          '<use xlink:href="/media/static/vendor/bootstrap-italia/svg/sprite.svg#it-arrow-right"></use>' +
+        '</svg>' +
+      '</a>' +
+    '</li>'
+  )
+}
+
+var createItemList = function (item) {
+  if (!item) return ''
+
+  var title = item.text
+  var link = item.link
+  var icon = 'it-file'
+  var type = (item.model || '').toUpperCase()
+
+  if (item.model === 'documento') icon = 'it-file'
+  else if (item.model === 'progetto') icon = 'it-folder'
+  else if (item.model === 'amministrazione') icon = 'it-pa'
+
+  return (
+    '<li>' +
+      '<a href="' + link + '">' +
+        '<svg class="icon icon-sm">' +
+          '<use xlink:href="/media/static/vendor/bootstrap-italia/svg/sprite.svg#' + icon + '"></use>' +
+        '</svg>' +
+        '<span class="autocomplete-list-text">' +
+          title + ' <em>' + type + '</em>' +
+        '</span>' +
+      '</a>' +
+    '</li>'
+  )
+}
+
+var showResults = function (results) {
+  var elementsList = results.map(createItemList)
+  elementsList.push(createSearchMoreItemList())
+  $('#autocompleteListSearchFullScreen').html(elementsList)
+  $('#autocompleteListSearchFullScreen').show()
+  $('#autocompleteFilters').hide()
+}
+
+var hideResults = function () {
+  $('#autocompleteListSearchFullScreen').hide()
+  $('#autocompleteFilters').show()
+}
+
+var BlurEventListener = function (e) {
+  if (!$(e.target).parents('.autocomplete-wrapper-big').length) {
+    hideResults()
+    window.removeEventListener('click', BlurEventListener)
+  }
+}
+
 $(document).ready(function () {
+  var form = $('#autocompleteSearchForm')
   var modal = $('#modalSearchFullScreen')
   var input = $('#autocompleteSearchFullScreen')
   var tagButtons = $('.sfs-btn-tag')
@@ -56,13 +133,29 @@ $(document).ready(function () {
 
   // Event triggered on close modal animation finished
   modal.on('hidden.bs.modal', function () {
+    input.val('')
+    hideResults()
+  })
 
+  // Prevent form submit with ENTER key
+  form.on('submit', function (e) {
+    e.preventDefault()
+
+    if (params.search.length) {
+      window.location.href = '/search/?q=' + params.search + '&type=file'
+    }
   })
 
   input.on('paste keyup', debounce(function () {
     params.search = $(this).val()
     fetchResultsFromApi()
   }, debounceInputTiming))
+
+  input.on('focus', function () {
+    params.search = $(this).val()
+    fetchResultsFromApi()
+    window.addEventListener('click', BlurEventListener)
+  })
 
   tagButtons.on('click', function () {
     var filter = $(this).attr('data-filter')
@@ -78,7 +171,7 @@ $(document).ready(function () {
       if (icon) icon.setAttribute('class', isActive ? 'icon icon-white' : 'icon icon-secondary')
     })
 
-    fetchResultsFromApi()
+    // fetchResultsFromApi()
   })
 })
 
