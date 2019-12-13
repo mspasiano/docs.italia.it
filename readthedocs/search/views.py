@@ -21,14 +21,24 @@ log = logging.getLogger(__name__)
 LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
 
 DEFAULT_PAGE_SIZE = 12
-RELEVANCE_KEY = 'relevance'
+PAGE_SIZES_LIST = [6, 12, 24, 48]
+
 ALL_SORTS = {
-    RELEVANCE_KEY: {'value': '_score', 'label': 'Rilevanza'},
+    'priority': {'value': '-priority', 'label': 'Più popolari'},
+    'relevance': {'value': '_score', 'label': 'Rilevanza'},
     'alphabetical': {'value': 'name', 'label': 'Ordine alfabetico'},
     'newest': {'value': 'date', 'label': 'Più recente'},
     'oldest': {'value': '-date', 'label': 'Meno recente'},
 }
-PAGE_SIZES_LIST = [6, 12, 24, 48]
+DEFAULT_SORT_FILE = [
+    ALL_SORTS['priority']['value'],
+    ALL_SORTS['relevance']['value'],
+    ALL_SORTS['newest']['value'],
+]
+DEFAULT_SORT_PROJECT = [
+    ALL_SORTS['priority']['value'],
+    ALL_SORTS['relevance']['value'],
+]
 
 UserInput = collections.namedtuple(
     'UserInput',
@@ -114,7 +124,6 @@ def elastic_search(request, project_slug=None):
     page_size = int(page_size) if page_size and page_size.isnumeric() else DEFAULT_PAGE_SIZE
     results = None
     facets = {}
-    sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else RELEVANCE_KEY
     try:
         page_int = int(user_input.page)
     except (TypeError, ValueError):
@@ -122,9 +131,11 @@ def elastic_search(request, project_slug=None):
     page_start = (page_int - 1) * page_size
     page_end = page_start + page_size
 
+    sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else None
     if user_input.query:
         kwargs = {}
-        kwargs['sort'] = [ALL_SORTS[sort_key]['value']]
+        default_sort = DEFAULT_SORT_FILE if user_input.type == 'file' else DEFAULT_SORT_PROJECT
+        kwargs['sort'] = [ALL_SORTS[sort_key]['value']] if sort_key else default_sort
 
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)
