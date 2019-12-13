@@ -20,6 +20,12 @@ quicksearch_index.settings(**quicksearch_conf['settings'])
 
 @quicksearch_index.doc_type
 class PageQuickSearchDocument(RTDDocTypeMixin, DocType):
+    """
+    Page document based on HTMLFile.
+
+    The use of HTMLFile as in :class:`~readthedocs.search.documents.PageDocument`
+    allows a uniform user experience between the autocomplete search and the SERP.
+    """
 
     model = fields.KeywordField()
     link = fields.KeywordField(attr='get_absolute_url')
