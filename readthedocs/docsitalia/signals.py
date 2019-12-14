@@ -4,16 +4,16 @@
 import logging
 
 from django.dispatch import receiver
-from django.db.models.signals import pre_delete, pre_save
+from django.db.models.signals import post_save, pre_delete, pre_save
 from django_elasticsearch_dsl.apps import DEDConfig
 
-from readthedocs.projects.models import Project, HTMLFile
 from readthedocs.core.signals import webhook_github
 from readthedocs.doc_builder.signals import finalize_sphinx_context_data
+from readthedocs.projects.models import Project, HTMLFile
 from readthedocs.search.tasks import index_objects_to_es
 
 from .github import get_metadata_for_document
-from .models import PublisherProject, update_project_from_metadata
+from .models import ProjectOrder, PublisherProject, update_project_from_metadata
 
 
 log = logging.getLogger(__name__) # noqa
@@ -121,3 +121,11 @@ def index_documents_project_save(instance, *args, **kwargs):  # noqa
 
     # execute in a second to get object after save
     index_objects_to_es.apply_async(kwargs=kwargs, countdown=1)
+
+
+@receiver(post_save, sender=Project)
+def on_project_create(sender, instance, created, **kwargs):  # noqa
+    """Create ProjectOrder on Project create"""
+    if not created:
+        return
+    ProjectOrder.objects.create(project=instance)

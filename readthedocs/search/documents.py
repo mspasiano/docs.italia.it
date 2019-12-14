@@ -5,7 +5,7 @@ from django_elasticsearch_dsl import DocType, Index, fields
 
 from elasticsearch import Elasticsearch
 
-from readthedocs.docsitalia.models import Publisher, PublisherProject
+from readthedocs.docsitalia.models import Publisher, PublisherProject, ProjectOrder
 from readthedocs.projects.models import HTMLFile, Project
 
 
@@ -50,6 +50,7 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
     publisher_project = fields.KeywordField()
     # publisher is currently used for faceting only, not for queries
     publisher = fields.KeywordField()
+    priority = fields.IntegerField(attr='projectorder.priority')
     tags = fields.NestedField(
         properties={
             'id': fields.KeywordField(),
@@ -63,7 +64,7 @@ class ProjectDocument(RTDDocTypeMixin, DocType):
         fields = ('name', 'slug', 'description')
         ignore_signals = True
         # ensure the Project is reindexed when Publisher or PublisherProject is updated
-        related_models = [PublisherProject, Publisher]
+        related_models = [PublisherProject, Publisher, ProjectOrder]
 
     def get_queryset(self):
         """Fetch related instances."""
@@ -174,6 +175,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
     # publisher is currently used for faceting only, not for queries
     publisher = fields.KeywordField()
     privacy_level = fields.KeywordField(attr='version.privacy_level')
+    priority = fields.IntegerField(attr='project.projectorder.priority')
     tags = fields.NestedField(
         attr='project.tags',
         properties={
@@ -187,8 +189,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
         model = HTMLFile
         fields = ('commit', 'build')
         ignore_signals = True
-        # ensure the Page is reindexed when Publisher or PublisherProject is updated
-        related_models = [PublisherProject, Publisher]
+        # ensure the Page is reindexed when Publisher or PublisherProject or ProjectOrder is updated
+        related_models = [PublisherProject, Publisher, ProjectOrder]
 
     def get_instances_from_related(self, related_instance):
         """
@@ -203,6 +205,8 @@ class PageDocument(RTDDocTypeMixin, DocType):
             return HTMLFile.objects.filter(project__publisherproject__publisher=related_instance)
         elif isinstance(related_instance, PublisherProject):
             return HTMLFile.objects.filter(project__publisherproject=related_instance)
+        elif isinstance(related_instance, ProjectOrder):
+            return HTMLFile.objects.filter(project__projectorder=related_instance)
 
     def prepare_domains(self, html_file):
         """Prepares and returns the values for domains field."""
@@ -247,16 +251,16 @@ class PageDocument(RTDDocTypeMixin, DocType):
         """Prepare docsitalia publisher project field."""
         # not using more sophisticated Django methods in order to exploit prefetching
         try:
-            return instance.project.publisherproject_set.all()[0].slug
-        except IndexError:
+            return instance.project.publisherproject_set.first().slug
+        except AttributeError:
             return
 
     def prepare_publisher(self, instance):
         """Prepare docsitalia publisher field."""
         # not using more sophisticated Django methods in order to exploit prefetching
         try:
-            return instance.project.publisherproject_set.all()[0].publisher.name
-        except IndexError:
+            return instance.project.publisherproject_set.first().publisher.name
+        except AttributeError:
             return
 
     def prepare_is_default(self, instance):
