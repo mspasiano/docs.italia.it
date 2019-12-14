@@ -135,6 +135,7 @@ class PageDocument(RTDDocTypeMixin, DocType):
     # Metadata
     project = fields.KeywordField(attr='project.slug')
     version = fields.KeywordField(attr='version.slug')
+    is_default = fields.BooleanField()
     path = fields.KeywordField(attr='processed_json.path')
     full_path = fields.KeywordField(attr='path')
 
@@ -261,6 +262,10 @@ class PageDocument(RTDDocTypeMixin, DocType):
             return instance.project.publisherproject_set.first().publisher.name
         except AttributeError:
             return
+
+    def prepare_is_default(self, instance):
+        """Prepare is_default field."""
+        return instance.version.slug == instance.project.default_version
 
     @classmethod
     def faceted_search(

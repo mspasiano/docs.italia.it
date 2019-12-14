@@ -15,6 +15,7 @@
     <div class="navigable row">
       <ul class="project_edit__menu col-3 col-sm-4 col-md-3 col-xl-2">
         <li class="{% block project-edit-active %}{% endblock %}"><a href="{% url "projects_edit" project.slug %}">{% trans "Settings" %} </a></li>
+        <li class="{% block project-advanced-active %}{% endblock %}"><a href="{% url "projects_advanced" project.slug %}">{% trans "Advanced Settings" %} </a></li>
         <li class="{% block project-users-active %}{% endblock %}"><a href="{% url "projects_users" project.slug %}">{% trans "Maintainers" %}</a></li>
 {#  FIXME: Enable for #241      <li class="{% block project-translations-active %}{% endblock %}"><a href="{% url "projects_translations" project.slug %}">{% trans "Translations" %}</a></li>#}
 {#  FIXME: Enable for #269      <li class="{% block project-subprojects-active %}{% endblock %}"><a href="{% url "projects_subprojects" project.slug %}">{% trans "Subprojects" %}</a></li>#}
