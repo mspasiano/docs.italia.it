@@ -5,7 +5,7 @@
 {% load projects_tags %}
 
 <div id="project_details">
-  <div class="wrapper">
+  <div class="wrapper d-flex flex-column flex-lg-row justify-content-between">
 
 <div class="module">
   {% if onboard %}
@@ -27,7 +27,7 @@
         <li class="module-item col-span">
         {% if version.uploaded or version.built %}
           {# Link to the docs #}
-          <a class="module-item-title" href="{{ version.get_absolute_url }}">
+          <a class="module-item-title d-flex flex-row justify-content-between" href="{{ version.get_absolute_url }}">
             {{ version.slug }}
           {% if request.user in project.users.all %}
             <span class="right-menu quiet">{{ version.get_privacy_level_display }}</span>
@@ -84,7 +84,7 @@
 
 </div>{# END .module #}
 
-<div class="project_details">
+<div class="project_details align-self-end">
   {% include "core/project_detail_right.html" with badge_url=badge_url site_url=site_url %}
 </div>{# END .project_details #}
 
