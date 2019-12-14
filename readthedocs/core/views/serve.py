@@ -43,6 +43,7 @@ from readthedocs.builds.models import Version
 from readthedocs.core.permissions import AdminPermission
 from readthedocs.core.resolver import resolve, resolve_path
 from readthedocs.core.symlink import PrivateSymlink, PublicSymlink
+from readthedocs.docsitalia.utils import get_real_version_slug
 from readthedocs.projects import constants
 from readthedocs.projects.models import Project, ProjectRelationship
 from readthedocs.projects.templatetags.projects_tags import sort_version_aware
@@ -218,6 +219,10 @@ def serve_docs(
     """Map existing proj, lang, version, filename views to the file format."""
     if not version_slug:
         version_slug = project.get_default_version()
+    else:
+        # get the real name of the slug in case of international version
+        version_slug = get_real_version_slug(lang_slug, version_slug)
+
     try:
         version = (
             Version.objects

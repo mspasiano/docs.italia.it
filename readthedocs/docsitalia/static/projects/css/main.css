@@ -209,39 +209,6 @@ select:hover {
   height: auto;
   width: 100%;
 }
-.search-main {
-  background: #d1e7ff left center no-repeat;
-}
-@media (min-width: 768px) {
-  .search-main {
-    background-image: url(../images/book-bg.png), url(../images/documents-bg.png);
-    background-position: left center, right bottom;
-    background-repeat: no-repeat, no-repeat;
-    background-size: 193px 357px, 192px 372px;
-  }
-}
-.search-main .bg-dark {
-  background-color: #d1e7ff !important;
-}
-.search-main .search-main-icon {
-  margin-right: -54px;
-  z-index: 1;
-}
-.search-main .search-main-icon .input-group-text {
-  background: transparent;
-}
-.search-main input[type=text].search-main-input {
-  height: 4.2rem;
-  line-height: 4.2rem;
-  font-size: 1.6rem;
-  font-weight: normal;
-  border-bottom: 0;
-  padding: .375rem .5rem .375rem 3.375rem;
-  box-shadow: 0 10px 40px 0 rgba(102, 165, 227, 0.4);
-}
-.search-main input[type=text].search-main-input:focus {
-  z-index: 0;
-}
 .simplelayout-main-content p,
 .simplelayout-main-content ul {
   font-family: "Lora", "Georgia", Serif;
@@ -665,7 +632,7 @@ select:hover {
 .sfs-modal-button {
   background: transparent;
   border: none;
-  color: white;
+  color: #fff;
 }
 .sfs-modal-button span {
   display: none;
@@ -686,14 +653,14 @@ select:hover {
 }
 @media (min-width: 576px) {
   .sfs-modal-button .sfs-modal-button-icon-bg {
-    background: white;
+    background: #fff;
     height: 44px;
     width: 44px;
     margin-left: 10px;
   }
 }
 .sfs-modal-button .sfs-modal-button-icon-bg .icon-primary {
-  fill: white !important;
+  fill: #fff !important;
 }
 @media (min-width: 576px) {
   .sfs-modal-button .sfs-modal-button-icon-bg .icon-primary {
@@ -708,7 +675,7 @@ select:hover {
   left: 0px;
   right: 0px;
   border: none;
-  background: white;
+  background: #fff;
   border-radius: 0px;
   padding: 0px;
   z-index: 1072;
@@ -726,7 +693,7 @@ select:hover {
   }
 }
 .sfs-modal.modal .modal-dialog {
-  background: white;
+  background: #fff;
   margin: 0px;
   max-width: none;
   height: 100%;
@@ -737,6 +704,20 @@ select:hover {
 }
 .sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete {
   padding-left: 65px;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list {
+  z-index: 1;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list .autocomplete-list-freesearch a {
+  font-size: 16px;
+  font-weight: 600;
+  color: #06c;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list .autocomplete-list-freesearch a .search-icon {
+  margin-top: 1px;
+}
+.sfs-modal.modal .modal-dialog .modal-content .autocomplete-wrapper-big .autocomplete-list .autocomplete-list-freesearch a .right-arrow-icon {
+  margin-top: 2px;
 }
 .sfs-modal.modal .sfs-modal-tags-container .sfs-btn-tag {
   margin-right: 5px;
@@ -821,4 +802,48 @@ select:hover {
   right: 3px;
   top: 3px;
   pointer-events: none;
+}
+.search-main {
+  background: #d1e7ff left center no-repeat;
+}
+@media (min-width: 768px) {
+  .search-main {
+    background-image: url(../images/book-bg.png), url(../images/documents-bg.png);
+    background-position: left center, right bottom;
+    background-repeat: no-repeat, no-repeat;
+    background-size: 193px 357px, 192px 372px;
+  }
+}
+.search-main .bg-dark {
+  background-color: #d1e7ff !important;
+}
+.search-main .search-main-icon {
+  margin-right: -54px;
+  z-index: 1;
+}
+.search-main .search-main-icon .input-group-text {
+  background: transparent;
+}
+.search-main .search-main-input {
+  font-size: 1.6rem;
+  border-bottom: 0;
+  box-shadow: 0 10px 40px 0 rgba(102, 165, 227, 0.4);
+  padding-left: 66px;
+}
+.search-main .autocomplete-list {
+  z-index: 1;
+}
+.search-main .autocomplete-list li a {
+  text-decoration: none;
+}
+.search-main .autocomplete-list .autocomplete-list-freesearch a {
+  font-size: 16px;
+  font-weight: 600;
+  color: #06c;
+}
+.search-main .autocomplete-list .autocomplete-list-freesearch a .search-icon {
+  margin-top: 1px;
+}
+.search-main .autocomplete-list .autocomplete-list-freesearch a .right-arrow-icon {
+  margin-top: 2px;
 }

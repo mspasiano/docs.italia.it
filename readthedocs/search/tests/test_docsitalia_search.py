@@ -3,19 +3,21 @@ from pprint import pprint
 
 import mock
 import pytest
+from django.conf import settings
 from django.urls import reverse
+from django_elasticsearch_dsl import Index
 
 from readthedocs.docsitalia.models import Publisher, PublisherProject
 from readthedocs.projects.models import Project
 from readthedocs.search.documents import ProjectDocument
 from readthedocs.search.tasks import index_objects_to_es
-from readthedocs.search.tests.utils import get_search_query_from_project_file
+from readthedocs.search.tests.utils import get_search_query_from_project_file, DATA_TYPES_VALUES
 
 
 
 @pytest.mark.django_db
 @pytest.mark.search
-class TestSearch:
+class TestDocsItaliaSearch:
     fixtures = ['eric', 'test_data']
 
     def test_docsitalia_api_results_with_publisher(self, all_projects, client, es_index):
@@ -67,3 +69,41 @@ class TestSearch:
         assert response.status_code == 200
         expected = {"count": 0, "next": None, "previous": None, "results": []}
         assert json.loads(response.content.decode('utf-8')) == expected
+
+
+@pytest.mark.django_db
+@pytest.mark.search
+class TestDocsItaliaPageSearch(object):
+    url = reverse('search')
+
+    def _get_search_result(self, url, client, search_params):
+        resp = client.get(url, search_params)
+        assert resp.status_code == 200
+
+        results = resp.context['results']
+        facets = resp.context['facets']
+
+        return results, facets
+
+    def test_search_file_priority(self, client, all_projects):
+        by_slug = {}
+        for index, project in enumerate(all_projects):
+            by_slug[project.slug] = project
+            project.projectorder.priority = 100 - index
+            project.projectorder.save()
+
+        results, _ = self._get_search_result(
+            url=self.url,
+            client=client,
+            search_params={ 'q': '*', 'type': 'file' }
+        )
+        assert len(results) >= 1
+
+        previous_priority = 100
+        # enumerating all the index content and checking that priority are strictly in decreasing order
+        # and project and index has the same priority for the same project
+        for index, result in enumerate(results):
+            project_by_slug = by_slug[result.project]
+            assert previous_priority >= result.priority
+            assert result.priority == project_by_slug.projectorder.priority
+            previous_priority = result.priority

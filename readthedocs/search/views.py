@@ -20,14 +20,25 @@ from readthedocs.search import utils
 log = logging.getLogger(__name__)
 LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(language)s] %(msg)s'
 
-PAGE_SIZE = 12
-RELEVANCE_KEY = 'relevance'
+DEFAULT_PAGE_SIZE = 12
+PAGE_SIZES_LIST = [6, 12, 24, 48]
+
 ALL_SORTS = {
-    RELEVANCE_KEY: {'value': '_score', 'label': 'Rilevanza'},
+    'priority': {'value': '-priority', 'label': 'Più popolari'},
+    'relevance': {'value': '_score', 'label': 'Rilevanza'},
     'alphabetical': {'value': 'name', 'label': 'Ordine alfabetico'},
     'newest': {'value': 'date', 'label': 'Più recente'},
     'oldest': {'value': '-date', 'label': 'Meno recente'},
 }
+DEFAULT_SORT_FILE = [
+    ALL_SORTS['priority']['value'],
+    ALL_SORTS['relevance']['value'],
+    ALL_SORTS['newest']['value'],
+]
+DEFAULT_SORT_PROJECT = [
+    ALL_SORTS['priority']['value'],
+    ALL_SORTS['relevance']['value'],
+]
 
 UserInput = collections.namedtuple(
     'UserInput',
@@ -109,19 +120,22 @@ def elastic_search(request, project_slug=None):
         }
     )
 
+    page_size = request.GET.get('page_size')
+    page_size = int(page_size) if page_size and page_size.isnumeric() else DEFAULT_PAGE_SIZE
     results = None
     facets = {}
-    sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else RELEVANCE_KEY
     try:
         page_int = int(user_input.page)
     except (TypeError, ValueError):
         page_int = 1
-    page_start = (page_int - 1) * PAGE_SIZE
-    page_end = page_start + PAGE_SIZE
+    page_start = (page_int - 1) * page_size
+    page_end = page_start + page_size
 
+    sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else None
     if user_input.query:
         kwargs = {}
-        kwargs['sort'] = [ALL_SORTS[sort_key]['value']]
+        default_sort = DEFAULT_SORT_FILE if user_input.type == 'file' else DEFAULT_SORT_PROJECT
+        kwargs['sort'] = [ALL_SORTS[sort_key]['value']] if sort_key else default_sort
 
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)
@@ -134,7 +148,7 @@ def elastic_search(request, project_slug=None):
         results = search[page_start:page_end].execute()
         if not results:
             page_int = 1
-            results = search[0:PAGE_SIZE].execute()
+            results = search[0:page_size].execute()
         facets = results.facets
 
         log.info(
@@ -186,13 +200,14 @@ def elastic_search(request, project_slug=None):
         log.debug('Search results: %s', results.to_dict())
         log.debug('Search facets: %s', results.facets.to_dict())
 
-    paginator = ESPaginator(results, PAGE_SIZE)
+    paginator = ESPaginator(results, page_size)
     page = paginator.page(page_int)
 
     template_vars = user_input._asdict()
     template_vars.update({
         'results': results,
         'page': page,
+        'page_sizes_list': PAGE_SIZES_LIST,
         'facets': facets,
         'results_dict': results.to_dict() if results else {},
         'facets_dict': facets.to_dict() if facets else {},

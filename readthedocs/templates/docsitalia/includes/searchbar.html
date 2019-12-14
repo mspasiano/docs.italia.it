@@ -2,25 +2,26 @@
 {% load static %}
 
 <!-- BEGIN wide search bar -->
+<form id="id_site_form" action="{% url 'search' %}" method="GET" autocomplete="off">
+  <div class="form-group autocomplete-wrapper-big">
+    <input
+      type="search"
+      class="autocomplete search-main-input"
+      name="q"
+      autocomplete="off"
+      id="id_site_search"
+      value="{{ term }}"
+      placeholder="{% trans 'Search all the docs' %}"
+    >
+    <span class="autocomplete-icon" aria-hidden="true">
+      <svg class="icon icon-sm">
+        <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-search"></use>
+      </svg>
+    </span>
 
-<form action="{% url 'search' %}" method="GET">
-  <div class="form-group d-flex align-items-center">
-    <div class="input-group">
-      <div class="input-group-prepend search-main-icon">
-        <div class="input-group-text border-0">
-          <svg class="icon icon-primary ml-1">
-            <use xlink:href="{% get_static_prefix %}vendor/bootstrap-italia/svg/sprite.svg#it-search"></use>
-          </svg>
-        </div>
-      </div>
-      <input type="text" class="form-control search-main-input" id="id_site_search" name="q" value="{{ term }}" placeholder="{% trans 'Search all the docs' %}">
-      <input type="hidden" name="type" value="file">
-      <label class="sr-only" for="id_site_search">{% trans 'Search all the docs' %}</label>
-    </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-6 bg-dark">
-      <button type="submit" class="btn btn-primary w-100">{% trans 'Search' %}</button>
-    </div>
+    <!-- Results list -->
+    <ul class="autocomplete-list" id="id_site_search_results"></ul>
+
+    <label for="id_site_search" class="sr-only">{% trans 'Search all the docs' %}</label>
   </div>
 </form>
