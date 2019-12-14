@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 ALL_FACETS = [
     'project', 'version', 'role_name', 'language', 'index',
-    'publisher', 'publisher_project', 'tags',
+    'publisher', 'publisher_project', 'tags', 'is_default',
 ]
 
 
@@ -110,6 +110,7 @@ class PageSearchBase(RTDFacetedSearch):
         'publisher': TermsFacet(field='publisher'),
         'publisher_project': TermsFacet(field='publisher_project'),
         'tags': NestedFacet('tags', TermsFacet(field='tags.name')),
+        'is_default': TermsFacet(field='is_default'),
     }
     doc_types = [PageDocument]
     index = PageDocument._doc_type.index

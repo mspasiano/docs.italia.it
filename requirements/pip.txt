@@ -112,6 +112,3 @@ django-storages==1.7.1  # pyup: <1.8
 
 # Required only in development and linting
 django-debug-toolbar==2.0
-
-# Git dependencies
-git+https://github.com/italia/docs-italia-convertitore-web.git@master#egg=docs-italia-convertitore-web
