@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Admin for the docsitalia app."""
 
-from adminsortable2.admin import SortableAdminMixin
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
@@ -62,21 +61,12 @@ class AllowedTagAdmin(admin.ModelAdmin):
     list_filter = ('enabled',)
 
 
-class ProjectOrderAdmin(SortableAdminMixin, admin.ModelAdmin):
+class ProjectOrderAdmin(admin.ModelAdmin):
     list_filter = ('project',)
     search_fields = ('project__name',)
-    list_display = ('priority', 'project', 'priority_value')
+    list_display = ('project', 'priority')
     ordering = ('-priority',)
-
-    def __init__(self, model, admin_site):
-        super().__init__(model, admin_site)
-        self.exclude = None
-
-    # pylint: disable=no-self-use
-    def priority_value(self, obj=None):
-        if obj:
-            return obj.priority
-        return None
+    list_editable = ('priority', )
 
 
 admin.site.register(ProjectOrder, ProjectOrderAdmin)

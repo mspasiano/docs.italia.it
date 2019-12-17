@@ -8,8 +8,8 @@ from django.db import migrations
 def create_project_order(apps, schema_editor):
     Project = apps.get_model('projects', 'Project')
     ProjectOrder = apps.get_model('docsitalia', 'ProjectOrder')
-    for priority, project in enumerate(Project.objects.all()):
-        ProjectOrder.objects.get_or_create(project=project, defaults={'priority':priority})
+    for project in Project.objects.all():
+        ProjectOrder.objects.get_or_create(project=project)
 
 
 class Migration(migrations.Migration):
