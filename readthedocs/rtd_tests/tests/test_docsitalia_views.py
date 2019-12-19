@@ -287,6 +287,47 @@ class DocsItaliaViewsTest(TestCase):
         self.assertEqual(qs.count(), 1)
         self.assertEqual(qs.first().pk, publisher.pk)
 
+    def test_docsitalia_publisher_list_filters_active_versions(self):
+        publisher_list = PublisherList()
+
+        publisher = Publisher.objects.create(
+            name='Org',
+            slug='testorg',
+            metadata={'some': 'meta'},
+            active=True
+        )
+        project = Project.objects.create(
+            name='my project',
+            slug='projectslug',
+            repo='https://github.com/testorg/myrepourl.git'
+        )
+        pub_project = PublisherProject.objects.create(
+            name='Test Project',
+            slug='testproject',
+            publisher=publisher,
+            active=True
+        )
+        pub_project.projects.add(project)
+        version = project.versions.last()
+        self.assertTrue(version.active)
+        Build.objects.create(
+            project=project,
+            version=version,
+            type='html',
+            state='finished',
+            success=True
+        )
+
+        qs = publisher_list.get_queryset()
+        self.assertTrue(qs.exists())
+        self.assertEqual(qs.count(), 1)
+
+        version.active = False
+        version.save()
+
+        qs = publisher_list.get_queryset()
+        self.assertFalse(qs.exists())
+
     def test_docsitalia_publisher_project_index_get_queryset_filter_active(self):
         index = PublisherProjectIndex()
 
