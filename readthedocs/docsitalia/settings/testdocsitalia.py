@@ -56,7 +56,6 @@ class DocsItaliaTestSettings(CommunityTestSettings):
         apps = super().INSTALLED_APPS
         apps.append('readthedocs.docsitalia')
         apps.append('dal',)
-        apps.append('adminsortable2',)
         apps.append('dal_select2',)
         apps.append('docs_italia_convertitore_web')
         return apps
