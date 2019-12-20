@@ -23,22 +23,14 @@ LOG_TEMPLATE = '(Elastic Search) [%(user)s:%(type)s] [%(project)s:%(version)s:%(
 DEFAULT_PAGE_SIZE = 12
 PAGE_SIZES_LIST = [6, 12, 24, 48]
 
+DEFAULT_SORT_KEY = 'relevance'
 ALL_SORTS = {
-    'priority': {'value': '-priority', 'label': 'Più popolari'},
-    'relevance': {'value': '_score', 'label': 'Rilevanza'},
-    'alphabetical': {'value': 'name', 'label': 'Ordine alfabetico'},
-    'newest': {'value': 'date', 'label': 'Più recente'},
-    'oldest': {'value': '-date', 'label': 'Meno recente'},
+    DEFAULT_SORT_KEY: {'value': ['_score'], 'label': 'Rilevanza'},
+    'priority': {'value': ['-priority', '_score'], 'label': 'Più popolari'},
+    'alphabetical': {'value': ['name'], 'label': 'Ordine alfabetico'},
+    'newest': {'value': ['date'], 'label': 'Più recente'},
+    'oldest': {'value': ['-date'], 'label': 'Meno recente'},
 }
-DEFAULT_SORT_FILE = [
-    ALL_SORTS['priority']['value'],
-    ALL_SORTS['relevance']['value'],
-    ALL_SORTS['newest']['value'],
-]
-DEFAULT_SORT_PROJECT = [
-    ALL_SORTS['priority']['value'],
-    ALL_SORTS['relevance']['value'],
-]
 
 UserInput = collections.namedtuple(
     'UserInput',
@@ -133,11 +125,10 @@ def elastic_search(request, project_slug=None):
     page_start = (page_int - 1) * page_size
     page_end = page_start + page_size
 
-    sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else None
+    sort_key = user_input.sort if user_input.sort in ALL_SORTS.keys() else DEFAULT_SORT_KEY
     if user_input.query:
         kwargs = {}
-        default_sort = DEFAULT_SORT_FILE if user_input.type == 'file' else DEFAULT_SORT_PROJECT
-        kwargs['sort'] = [ALL_SORTS[sort_key]['value']] if sort_key else default_sort
+        kwargs['sort'] = ALL_SORTS[sort_key]['value']
 
         for avail_facet in ALL_FACETS:
             value = getattr(user_input, avail_facet, None)

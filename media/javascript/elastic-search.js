@@ -6,7 +6,7 @@ $(document).ready(function () {
     var params = Qs.parse(window.location.search.replace('?', ''))
 
     // NOTE: Update this value if you want to change select default value
-    var defaultValue = 'priority'
+    var defaultValue = 'relevance'
 
     if (selectedOrder && selectedOrder !== defaultValue) {
       params.sort = selectedOrder
