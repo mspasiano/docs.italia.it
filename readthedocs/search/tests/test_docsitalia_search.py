@@ -191,13 +191,14 @@ class TestDocsItaliaPageSearch(object):
         results, _ = self._get_search_result(
             url=self.url,
             client=client,
-            search_params={ 'q': '*', 'type': 'file' }
+            search_params={'q': '*', 'type': 'file', 'sort': 'priority'}
         )
         assert len(results) >= 1
 
         previous_priority = 100
-        # enumerating all the index content and checking that priority are strictly in decreasing order
-        # and project and index has the same priority for the same project
+        # enumerating all the index content and checking that priority are
+        # strictly in decreasing order and project and index has the same
+        # priority for the same project
         for index, result in enumerate(results):
             project_by_slug = by_slug[result.project]
             assert previous_priority >= result.priority
