@@ -1,6 +1,6 @@
 {% load i18n %}
 
-{% for version, dict in version_data.items %}
+{% for version, dict in version_data.items %}{{ dict }}
   {% if dict.pdf %}
   <li class="module-item col-span">
     <a class="module-item-title" href="{{ dict.pdf }}">
