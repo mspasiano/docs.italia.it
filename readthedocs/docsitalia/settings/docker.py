@@ -34,7 +34,7 @@ class DocsItaliaDockerSettings(CommunityBaseSettings):
     RTD_STABLE_EN = 'stable'
 
     # General settings
-    DEBUG = os.environ['DEBUG']
+    DEBUG = False  # os.environ['DEBUG']
     TEMPLATE_DEBUG = False
 
     DOCS_BASE = os.environ.get('DOCS_BASE', CommunityBaseSettings.SITE_ROOT)
