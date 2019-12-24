@@ -39,13 +39,6 @@
     {% endif %}
       <ul>
         <li class="{{ overview_active }}"><a href="{{ project.get_absolute_url }}">{% trans "Overview" %}</a></li>
-
-        <li class="{{ downloads_active }}"><a href="{% url "project_downloads" project.slug %}" rel="nofollow,noindex">{% trans "Downloads" %}</a></li>
-
-        <li class="{{ builds_active }}"><a href="{{ project.get_builds_url }}">{% trans "Builds" %}</a></li>
-
-        <li class="{{ versions_active }}"><a href="{% url "project_version_list" project.slug %}" rel="nofollow,noindex">{% trans "Versions" %}</a></li>
-
         {% if request.user|is_admin:project %}
           <li class="{{ edit_active }} project-admin">
             <a href="{% url "projects_edit" project.slug %}">

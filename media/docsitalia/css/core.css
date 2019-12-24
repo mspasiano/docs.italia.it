@@ -864,10 +864,6 @@ p.build-missing {
 
 /* project detail */
 
-.project_detail .module {
-    width: 50%;
-}
-
 .project_detail .module .help_text {
     font-size: 14px;
 }
@@ -882,8 +878,6 @@ p.build-missing {
 
 .project_detail .project_details {
     margin-left: auto;
-    margin-top: 34px;
-    width: 20%;
 }
 
 .project_detail .project_details h3 {
