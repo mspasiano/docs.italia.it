@@ -17,8 +17,12 @@ Versions
 
 {% block content %}
 
-  <div class="project-version-list">
 
+<div id="project_edit" class="module">
+  <div class="wrapper">
+    <div class="navigable row">
+      {% include 'projects/project_dashboard_sidebar.html' %}
+  <div class="project-version-list col-12 col-md-8 col-lg-9 col-xl-10 px-3 px-md-0 pl-md-5">
     <div class="module">
       <div class="module-wrapper">
 
@@ -120,4 +124,7 @@ Versions
     {% endif %}
 
   </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

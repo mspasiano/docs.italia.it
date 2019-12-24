@@ -12,8 +12,7 @@ from readthedocs.projects import forms as projects_forms
 from .github import get_metadata_for_publisher
 from .metadata import PUBLISHER_SETTINGS, PROJECTS_SETTINGS, InvalidMetadata
 from .models import Publisher
-from .widgets import WhitelistedTaggitSelect2
-
+from .widgets import WhitelistedTaggitSelect2, VisibleHiddenInput
 
 log = logging.getLogger(__name__) # noqa
 
@@ -70,8 +69,16 @@ class DocsItaliaUpdateProjectForm(projects_forms.UpdateProjectForm):
     def __init__(self, *args, **kwargs):
         super(DocsItaliaUpdateProjectForm, self).__init__(*args, **kwargs)
         self.fields['tags'].help_text = _('Project tags.')
+        # being explicitly declared in form definition (in projects_forms.ProjectExtraForm) we must
+        # ovverride explicitly post-init
+        self.fields['description'].widget = VisibleHiddenInput()
 
     class Meta(projects_forms.UpdateProjectForm.Meta):
         widgets = {
             'tags': WhitelistedTaggitSelect2(url='allowedtag-autocomplete'),
+            'programming_language': forms.HiddenInput(),
+            'project_url': forms.HiddenInput(),
+            'name': VisibleHiddenInput(),
+            'repo': VisibleHiddenInput(),
+            'repo_type': VisibleHiddenInput(),
         }

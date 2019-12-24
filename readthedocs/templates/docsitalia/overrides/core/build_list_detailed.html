@@ -4,9 +4,7 @@
 <li class="module-item col-span">
     <div id="build-{{ build.id }}">
         <a href="{{ build.get_absolute_url }}" class="d-flex flex-row flex-wrap justify-content-between">
-          {% if build.is_stale %}
-          <span class="icon-warning" title="{% trans 'This build is still waiting to be built' %}"></span>
-          {% endif %}
+
           <div class="build-state-container">
             <span id="build-state">
               {% if build.state != 'finished' %}
@@ -22,6 +20,9 @@
               <img src="{% static 'core/img/loader.gif' %}" class="build-loading hide">
               <span class="quiet">{% if build.version %}{% if build.is_external %}{% blocktrans with build.external_version_name as external_version_name %}{{ external_version_name }} {% endblocktrans %}{% endif %}{% blocktrans with build.version.slug as slug and build.type as type %}version {{ slug }} ({{ type }}){% endblocktrans %}{% endif %}</span>
           </div>
+          {% if build.is_stale %}
+            <span class="icon-warning" title="{% trans 'This build is still waiting to be built' %}"></span>
+          {% endif %}
 
             <span class="quiet">{% blocktrans with build.date|timesince as date %}{{ date }} ago{% endblocktrans %}</span>
         </a>

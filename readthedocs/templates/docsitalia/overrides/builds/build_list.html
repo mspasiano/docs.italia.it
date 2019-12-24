@@ -17,21 +17,25 @@
 {% block content %}
 
 
-<div id="build_list">
+<div id="project_edit" class="module">
+  <div class="wrapper">
+    <div class="navigable row">
+      {% include 'projects/project_dashboard_sidebar.html' %}
 
+      <div id="build_list" class="col-12 col-md-8 col-lg-9 col-xl-10 px-3 px-md-0 pl-md-5">
         {% autopaginate build_qs 15 %}
 
         <!-- BEGIN builds list -->
         <div class="module">
           <div class="module-wrapper">
+            <h1>{% trans "Recent Builds" %}</h1>
 
             {% block build_versions %}
             {% if versions and request.user|is_admin:project %}
             <div class="module-header">
-              <div style="float:right;">
                 <form method="post" action="{% url "builds_project_list" project.slug %}">
                   {% csrf_token %}
-                  <ul class="build_a_version">
+                  <ul class="build_a_version mb-2">
                     <li style="display: inline-block">
                       <input class="btn-grey" type="submit" value="{% trans "Build Version:" %}">
                     </li>
@@ -44,12 +48,9 @@
                     </li>
                   </ul>
                 </form>
-              </div>
             </div>
             {% endif %}
             {% endblock %}
-
-              <h1>{% trans "Recent Builds" %}</h1>
             </div>
 
             <div class="module-list">
@@ -65,7 +66,9 @@
         <!-- END builds list -->
 
         {% paginate %}
-
+</div>
+</div>
+</div>
 </div>
 
 {% endblock %}
