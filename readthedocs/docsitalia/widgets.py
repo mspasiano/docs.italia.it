@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-"""django-autocomplete-light selectors."""
+"""Custom forms widget."""
 
 from dal import autocomplete
+from django import forms
 
 from .models import AllowedTag
 
@@ -20,3 +21,7 @@ class WhitelistedTaggitSelect2(autocomplete.TaggitSelect2):
             AllowedTag.objects.filter(enabled=True).values_list('name', flat=True),
         )
         return ','.join(filtered_tags)
+
+
+class VisibleHiddenInput(forms.TextInput):
+    template_name = 'docsitalia/widgets/visible_hidden.html'
