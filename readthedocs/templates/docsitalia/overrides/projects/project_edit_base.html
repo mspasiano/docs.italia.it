@@ -13,16 +13,8 @@
 <div id="project_edit" class="module">
   <div class="wrapper">
     <div class="navigable row">
-      <ul class="project_edit__menu col-3 col-sm-4 col-md-3 col-xl-2">
-        <li class="{% block project-edit-active %}{% endblock %}"><a href="{% url "projects_edit" project.slug %}">{% trans "Settings" %} </a></li>
-        <li class="{% block project-advanced-active %}{% endblock %}"><a href="{% url "projects_advanced" project.slug %}">{% trans "Advanced Settings" %} </a></li>
-        <li class="{% block project-users-active %}{% endblock %}"><a href="{% url "projects_users" project.slug %}">{% trans "Maintainers" %}</a></li>
-{#  FIXME: Enable for #241      <li class="{% block project-translations-active %}{% endblock %}"><a href="{% url "projects_translations" project.slug %}">{% trans "Translations" %}</a></li>#}
-{#  FIXME: Enable for #269      <li class="{% block project-subprojects-active %}{% endblock %}"><a href="{% url "projects_subprojects" project.slug %}">{% trans "Subprojects" %}</a></li>#}
-        <li class="{% block project-integrations-active %}{% endblock %}"><a href="{% url "projects_integrations" project.slug %}">{% trans "Integrations" %}</a></li>
-        <li class="{% block project-notifications-active %}{% endblock %}"><a href="{% url "projects_notifications" project.slug %}">{% trans "Notifications" %}</a></li>
-      </ul>
-      <div class="project_edit__form col-9 col-sm-8 col-md-9 col-xl-10">
+      {% include 'projects/project_dashboard_sidebar.html' %}
+      <div class="project_edit__form col-12 col-md-8 col-lg-9 col-xl-10 pl-md-5">
         <h2>{% block project_edit_content_header %}{% endblock %}</h2>
         {% block project_edit_content %}
 

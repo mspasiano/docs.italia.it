@@ -7,7 +7,7 @@
 <div id="project_details">
   <div class="wrapper d-flex flex-column flex-lg-row justify-content-between">
 
-<div class="module">
+<div class="module col-12 col-lg-6">
   {% if onboard %}
   <!-- BEGIN onboard -->
     {% include 'projects/onboard_detail.html' %}
@@ -54,6 +54,21 @@
     </div>
   </div>
 
+  <div class="module-header mt-4">
+    <h3>{% trans "Download" %}</h3>
+  </div>
+
+  <div class="module-list">
+    {% for version in versions|sort_version_aware %}
+      {% include 'core/project_downloads.html' with dict=version.get_downloads %}
+      {% empty %}
+
+      <p class="quiet">
+        {% trans "No downloads for this project." %}
+      </p>
+    {% endfor %}
+  </div>
+
 {% block build_versions %}
 {% if versions and request.user|is_admin:project %}
   <div class="build_a_version">
@@ -84,7 +99,7 @@
 
 </div>{# END .module #}
 
-<div class="project_details align-self-end">
+<div class="project_details col-12 col-lg-3 mt-0">
   {% include "core/project_detail_right.html" with badge_url=badge_url site_url=site_url %}
 </div>{# END .project_details #}
 
