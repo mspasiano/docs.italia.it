@@ -69,6 +69,8 @@ class DocsItaliaUpdateProjectForm(projects_forms.UpdateProjectForm):
     def __init__(self, *args, **kwargs):
         super(DocsItaliaUpdateProjectForm, self).__init__(*args, **kwargs)
         self.fields['tags'].help_text = _('Project tags.')
+        # being explicitly declared in form definition (in projects_forms.ProjectExtraForm) we must
+        # ovverride explicitly post-init
         self.fields['description'].widget = VisibleHiddenInput()
 
     class Meta(projects_forms.UpdateProjectForm.Meta):
