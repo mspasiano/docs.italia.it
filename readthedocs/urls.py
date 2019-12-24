@@ -21,8 +21,12 @@ from readthedocs.search import views as search_views
 from readthedocs.search.api import PageSearchAPIView
 
 
+from readthedocs.docsitalia.views.core_views import server_error_401
+
+
 admin.autodiscover()
 
+handler401 = server_error_401
 handler404 = server_error_404
 handler500 = server_error_500
 
