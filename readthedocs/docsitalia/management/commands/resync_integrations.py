@@ -9,6 +9,8 @@ from readthedocs.projects.models import Project
 
 def update_webhook(project, integration, user):
     """
+    Update integration service webhook.
+
     This code was taken from `readthedocs.oauth.utils.update_webhook` and was slightly modified.
     It was copied to not override `update_webhook` from the upstream (`request.user` / `messages`).
     Probably this command will be called only once but changes in the upstream function will
