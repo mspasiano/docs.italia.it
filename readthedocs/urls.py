@@ -51,6 +51,8 @@ rtd_urls = [
     url(r'^accounts/gold/', include('readthedocs.gold.urls')),
     # For redirects
     url(r'^builds/', include('readthedocs.builds.urls')),
+    # For testing the 401's with DEBUG on.
+    url(r'^401/$', handler401),
     # For testing the 404's with DEBUG on.
     url(r'^404/$', handler404),
     # For testing the 500's with DEBUG on.
