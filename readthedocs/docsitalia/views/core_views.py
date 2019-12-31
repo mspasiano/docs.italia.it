@@ -206,3 +206,10 @@ class DocsItaliaImport(ProjectImportMixin, ImportView):  # pylint: disable=too-m
         project_import.send(sender=project, request=self.request)
         self.trigger_initial_build(project, request.user)
         return redirect('projects_detail', project_slug=project.slug)
+
+
+def server_error_401(request, template_name='401.html'):
+    """A simple 401 handler so we get media."""
+    response = render(request, template_name)
+    response.status_code = 401
+    return response
