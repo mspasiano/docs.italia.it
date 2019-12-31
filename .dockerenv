@@ -46,3 +46,4 @@ PYTHONDONTWRITEBYTECODE=1
 # this variable has TRAVIS prefix to be passed from tox to pytest without further tox.ini customization
 # to reduce the chance of a conflict
 TRAVIS_DOCSITALIA_DOCKER=1
+ENABLE_DEBUG_TOOLBAR=1

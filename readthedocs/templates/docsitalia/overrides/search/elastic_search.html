@@ -120,10 +120,10 @@
 
         <div class="serp-results-info mt-5 pb-2">
           <p class="mb-0">
-            {% if page|length == 1 %}
-              <strong>{{page|length}} risultato</strong>
+            {% if results_dict.hits.total == 1 %}
+              <strong>{{results_dict.hits.total}} risultato</strong>
             {% else %}
-              <strong>{{page|length}} risultati</strong>
+              <strong>{{results_dict.hits.total}} risultati</strong>
             {% endif %}
           </p>
 
