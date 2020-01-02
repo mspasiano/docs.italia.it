@@ -193,6 +193,9 @@ def elastic_search(request, project_slug=None):
         log.debug('Search results: %s', results.to_dict())
         log.debug('Search facets: %s', results.facets.to_dict())
 
+    if facets and facets['version']:
+        facets['version'].sort()
+
     paginator = ESPaginator(results, page_size)
     page = paginator.page(page_int)
 
