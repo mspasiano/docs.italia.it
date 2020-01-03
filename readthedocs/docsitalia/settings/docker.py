@@ -263,7 +263,7 @@ class DocsItaliaDockerSettings(CommunityBaseSettings):
             index + 1,
             'restrictedsessions.middleware.RestrictedSessionsMiddleware'
         )
-        if os.environ.get('DEBUG', False):
+        if os.environ.get('DEBUG', False) and os.environ.get('ENABLE_DEBUG_TOOLBAR', True):
             middlewares.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
         return middlewares
 

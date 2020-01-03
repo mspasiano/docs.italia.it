@@ -21,8 +21,12 @@ from readthedocs.search import views as search_views
 from readthedocs.search.api import PageSearchAPIView
 
 
+from readthedocs.docsitalia.views.core_views import server_error_401
+
+
 admin.autodiscover()
 
+handler401 = server_error_401
 handler404 = server_error_404
 handler500 = server_error_500
 
@@ -47,6 +51,8 @@ rtd_urls = [
     url(r'^accounts/gold/', include('readthedocs.gold.urls')),
     # For redirects
     url(r'^builds/', include('readthedocs.builds.urls')),
+    # For testing the 401's with DEBUG on.
+    url(r'^401/$', handler401),
     # For testing the 404's with DEBUG on.
     url(r'^404/$', handler404),
     # For testing the 500's with DEBUG on.
