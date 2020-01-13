@@ -91,7 +91,7 @@ def elastic_search(request, project_slug=None):
         request_type = request.GET.get('type', 'file')
 
     user_input = UserInput(
-        query=request.GET.get('q'),
+        query=request.GET.get('q', '*'),
         type=request_type or request.GET.get('type', 'project'),
         project=project_slug or request.GET.get('project'),
         version=request.GET.get('version'),
